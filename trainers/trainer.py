@@ -115,7 +115,7 @@ class binary_logisticTrainer(cls_tripletTrainer):
             self._forward()
             self.optimizer.zero_grad()
             self._backward()
-            self.model.correct_grads()
+            self.model.module.correct_grads()
             self.optimizer.step()
 
             batch_time.update(time.time() - start)

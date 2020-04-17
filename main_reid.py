@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 from config import opt
 from datasets import data_manager
-from datasets.data_loader import ImageData, PairLoader
+from datasets.data_loader import ImageData, ImagePairData, PairLoader
 from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
 from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet
@@ -77,7 +77,7 @@ def train(**kwargs):
     if opt.model_name == 'braidnet':
         train_sampler = PosNegPairSampler(dataset.train, opt.pos_rate)
         trainloader = PairLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
+            ImagePairData(dataset.train, TrainTransform(opt.datatype, model_meta)),
             sampler=train_sampler,
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True

@@ -73,3 +73,11 @@ class ImageData(Dataset):
 
     def __len__(self):
         return len(self.dataset)
+
+
+class ImagePairData(ImageData):
+    def __getitem__(self, items):
+        sample1 = ImageData.__getitem__(self, items[0])
+        sample2 = ImageData.__getitem__(self, items[1])
+
+        return sample1, sample2

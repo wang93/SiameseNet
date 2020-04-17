@@ -186,7 +186,8 @@ class BiBlock(nn.Module, _BraidModule):
 
     def correct_grads(self):
         for p in self.parameters():
-            p.grad.mul_(2.)
+            if p is not None:
+                p.grad.mul_(2.)
 
 
 class Bi2Braid(nn.Module):

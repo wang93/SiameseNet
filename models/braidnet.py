@@ -104,10 +104,10 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
         self._set_eval_params()
 
     def _set_eval_params(self):
-        self.eval_running_mean = Parameter(torch.cat((self.running_mean, self.running_mean), dim=0).detach())
-        self.eval_running_var = Parameter(torch.cat((self.running_var, self.running_var), dim=0).detach())
-        self.eval_weight = Parameter(torch.cat((self.weight, self.weight), dim=0).detach())
-        self.eval_bias = Parameter(torch.cat((self.bias, self.bias), dim=0).detach())
+        self.eval_running_mean = Parameter(torch.cat((self.running_mean.detach(), self.running_mean.detach()), dim=0))
+        self.eval_running_var = Parameter(torch.cat((self.running_var.detach(), self.running_var.detach()), dim=0))
+        self.eval_weight = Parameter(torch.cat((self.weight.detach(), self.weight.detach()), dim=0))
+        self.eval_bias = Parameter(torch.cat((self.bias.detach(), self.bias.detach()), dim=0))
 
     def train(self, mode=True):
         r"""Sets the module in training mode.

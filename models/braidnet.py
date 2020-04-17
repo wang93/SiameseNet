@@ -101,28 +101,28 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
         #nn.BatchNorm2d.__init__(self, num_features=2*num_channels, eps=eps, **kwargs)
         nn.BatchNorm2d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
-        self._set_eval_params()
+        #self._set_eval_params()
 
-    def _set_eval_params(self):
-        self.eval_running_mean = Parameter(torch.cat((self.running_mean.detach(), self.running_mean.detach()), dim=0))
-        self.eval_running_var = Parameter(torch.cat((self.running_var.detach(), self.running_var.detach()), dim=0))
-        self.eval_weight = Parameter(torch.cat((self.weight.detach(), self.weight.detach()), dim=0))
-        self.eval_bias = Parameter(torch.cat((self.bias.detach(), self.bias.detach()), dim=0))
+    # def _set_eval_params(self):
+    #     self.eval_running_mean = Parameter(torch.cat((self.running_mean.detach(), self.running_mean.detach()), dim=0))
+    #     self.eval_running_var = Parameter(torch.cat((self.running_var.detach(), self.running_var.detach()), dim=0))
+    #     self.eval_weight = Parameter(torch.cat((self.weight.detach(), self.weight.detach()), dim=0))
+    #     self.eval_bias = Parameter(torch.cat((self.bias.detach(), self.bias.detach()), dim=0))
 
-    def train(self, mode=True):
-        r"""Sets the module in training mode.
-
-        Returns:
-            Module: self
-        """
-        self.training = mode
-        for module in self.children():
-            module.train(mode)
-
-        if not mode:
-            self._set_eval_params()
-
-        return self
+    # def train(self, mode=True):
+    #     r"""Sets the module in training mode.
+    #
+    #     Returns:
+    #         Module: self
+    #     """
+    #     self.training = mode
+    #     for module in self.children():
+    #         module.train(mode)
+    #
+    #     if not mode:
+    #         self._set_eval_params()
+    #
+    #     return self
 
 #    @weak_script_method
     def forward(self, input):
@@ -145,12 +145,16 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
                 exponential_average_factor, self.eps)
             output = torch.cat(torch.chunk(output, 2, dim=0), dim=1)
         else:
-            exponential_average_factor = 0.0
 
             output = F.batch_norm(
-                input, self.eval_running_mean, self.eval_running_var, self.eval_weight, self.eval_bias,
+                input, self.running_mean.repeat(2), self.running_var.repeat(2), self.weight.repeat(2), self.bias.repeat(2),
                 not self.track_running_stats,
-                exponential_average_factor, self.eps)
+                0.0, self.eps)
+            # exponential_average_factor = 0.0
+            # output = F.batch_norm(
+            #     input, self.eval_running_mean, self.eval_running_var, self.eval_weight, self.eval_bias,
+            #     not self.track_running_stats,
+            #     exponential_average_factor, self.eps)
 
         return output
 

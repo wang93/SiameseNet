@@ -26,7 +26,7 @@ class DefaultConfig(object):
     #random_crop = False
     pos_rate = 0.5
     margin = None
-    #num_instances = 4
+    num_instances = 4
     num_gpu = 1
     evaluate = False
     savefig = None 
@@ -44,6 +44,7 @@ class DefaultConfig(object):
     workers = 10
     start_epoch = 0
     best_rank = -np.inf
+
 
     def _parse(self, kwargs):
         for k, v in kwargs.items():

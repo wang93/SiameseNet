@@ -137,7 +137,7 @@ def train(**kwargs):
         return
 
     if opt.model_name == 'braidnet':
-        criterion = nn.BCELoss(reduction='sum')
+        criterion = nn.BCELoss(reduction='elementwise_mean')
     else:
         raise NotImplementedError
 

@@ -278,15 +278,15 @@ class BraidNetEvaluator(ResNetEvaluator):
             g_pids.extend(pids)
             g_camids.extend(camids)
 
-        num_q, num_g = len(queryloader), len(galleryloader)
+        num_q, num_g = len(q_pids), len(g_pids)
         q_g_dist = torch.zeros((num_q, num_g))
         with torch.no_grad():
             cur_query_index = -1
-            cur_gallery_index = 0
             for queries in queryloader:
                 q_features, _, _ = self._parse_data(queries)
                 for q_feature in q_features:
                     cur_query_index += 1
+                    cur_gallery_index = 0
                     for galleries in galleryloader:
                         g_features, _, _ = self._parse_data(galleries)
                         e = cur_gallery_index + g_features.size(0)
@@ -297,11 +297,11 @@ class BraidNetEvaluator(ResNetEvaluator):
 
             if eval_flip:
                 cur_query_index = -1
-                cur_gallery_index = 0
                 for queries in queryFliploader:
                     q_features, _, _ = self._parse_data(queries)
                     for q_feature in q_features:
                         cur_query_index += 1
+                        cur_gallery_index = 0
                         for galleries in galleryloader:
                             g_features, _, _ = self._parse_data(galleries)
                             e = cur_gallery_index + g_features.size(0)
@@ -311,11 +311,11 @@ class BraidNetEvaluator(ResNetEvaluator):
                             cur_gallery_index = e
 
                 cur_query_index = -1
-                cur_gallery_index = 0
                 for queries in queryFliploader:
                     q_features, _, _ = self._parse_data(queries)
                     for q_feature in q_features:
                         cur_query_index += 1
+                        cur_gallery_index = 0
                         for galleries in galleryFliploader:
                             g_features, _, _ = self._parse_data(galleries)
                             e = cur_gallery_index + g_features.size(0)
@@ -325,11 +325,11 @@ class BraidNetEvaluator(ResNetEvaluator):
                             cur_gallery_index = e
 
                 cur_query_index = -1
-                cur_gallery_index = 0
                 for queries in queryloader:
                     q_features, _, _ = self._parse_data(queries)
                     for q_feature in q_features:
                         cur_query_index += 1
+                        cur_gallery_index = 0
                         for galleries in galleryFliploader:
                             g_features, _, _ = self._parse_data(galleries)
                             e = cur_gallery_index + g_features.size(0)

@@ -307,7 +307,7 @@ class BraidNet(nn.Module):
             weights_init_kaiming(m)
         self.correct_params()
 
-        self.register_backward_hook(self.hook_correct_grads)
+        # self.register_backward_hook(self.hook_correct_grads)
 
     def forward(self, ims_a, ims_b):
         x = self.pair2bi(ims_a, ims_b)

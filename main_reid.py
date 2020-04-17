@@ -174,9 +174,6 @@ def train(**kwargs):
         if opt.adjust_lr:
             adjust_lr(optimizer, epoch + 1)
         reid_trainer.train(epoch, trainloader, opt.iter_num_per_epoch)
-        ################################
-        '''working front line'''
-        ################################
         # skip if not save model
         if opt.eval_step > 0 and (epoch + 1) % opt.eval_step == 0 or (epoch + 1) == opt.max_epoch:
             if opt.mode == 'class':

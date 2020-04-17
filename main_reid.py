@@ -56,8 +56,6 @@ def train(**kwargs):
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
-        # state_dict = {k: v for k, v in state_dict.items() \
-        #        if not ('reduction' in k or 'softmax' in k)}
         model.load_state_dict(state_dict, False)
         print('load pretrained model ' + opt.pretrained_model)
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))

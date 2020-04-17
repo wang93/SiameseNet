@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch
 import abc
 #from torch._jit_internal import weak_module, weak_script_method
-from torch import functional as F
+from torch.nn import functional as F
 
 
 def weights_init_kaiming(m):

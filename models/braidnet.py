@@ -4,7 +4,7 @@ import torch
 import abc
 #from torch._jit_internal import weak_module, weak_script_method
 from torch.nn import functional as F
-
+from torch.nn.parameter import Parameter
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
@@ -101,30 +101,57 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
         #nn.BatchNorm2d.__init__(self, num_features=2*num_channels, eps=eps, **kwargs)
         nn.BatchNorm2d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
+        self._set_eval_params()
+
+    def _set_eval_params(self):
+        self.eval_running_mean = Parameter(torch.cat((self.running_mean, self.running_mean), dim=0).data)
+        self.eval_running_var = Parameter(torch.cat((self.running_var, self.running_var), dim=0).data)
+        self.eval_weight = Parameter(torch.cat((self.weight, self.weight), dim=0).data)
+        self.eval_bias = Parameter(torch.cat((self.bias, self.bias), dim=0).data)
+
+    def train(self, mode=True):
+        r"""Sets the module in training mode.
+
+        Returns:
+            Module: self
+        """
+        self.training = mode
+        for module in self.children():
+            module.train(mode)
+
+        if not mode:
+            self._set_eval_params()
+
+        return self
 
 #    @weak_script_method
     def forward(self, input):
         self._check_input_dim(input)
 
-        input = torch.cat(torch.chunk(input, 2, dim=1), dim=0)
+        if self.training:
+            input = torch.cat(torch.chunk(input, 2, dim=1), dim=0)
+            exponential_average_factor = 0.0
+            if self.training and self.track_running_stats:
+                if self.num_batches_tracked is not None:
+                    self.num_batches_tracked += 1
+                    if self.momentum is None:  # use cumulative moving average
+                        exponential_average_factor = 1.0 / float(self.num_batches_tracked)
+                    else:  # use exponential moving average
+                        exponential_average_factor = self.momentum
 
-        exponential_average_factor = 0.0
+            output = F.batch_norm(
+                input, self.running_mean, self.running_var, self.weight, self.bias,
+                self.training or not self.track_running_stats,
+                exponential_average_factor, self.eps)
+            output = torch.cat(torch.chunk(output, 2, dim=0), dim=1)
+        else:
+            exponential_average_factor = 0.0
 
-        if self.training and self.track_running_stats:
-            # TODO: if statement only here to tell the jit to skip emitting this when it is None
-            if self.num_batches_tracked is not None:
-                self.num_batches_tracked += 1
-                if self.momentum is None:  # use cumulative moving average
-                    exponential_average_factor = 1.0 / float(self.num_batches_tracked)
-                else:  # use exponential moving average
-                    exponential_average_factor = self.momentum
-
-        output = F.batch_norm(
-            input, self.running_mean, self.running_var, self.weight, self.bias,
-            self.training or not self.track_running_stats,
-            exponential_average_factor, self.eps)
-
-        output = torch.cat(torch.chunk(output, 2, dim=0), dim=1)
+            output = F.batch_norm(
+                input, self.eval_running_mean, self.eval_running_var, self.eval_weight, self.eval_bias,
+                not self.track_running_stats,
+                exponential_average_factor, self.eps)
+            output = torch.cat(torch.chunk(output, 2, dim=0), dim=1)
 
         return output
 

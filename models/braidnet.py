@@ -185,7 +185,7 @@ class BiBlock(nn.Module, _BraidModule):
         pass
 
     def correct_grads(self):
-        for p in self.parameters(recurse=True):
+        for p in self.parameters():
             p.grad.mul_(2.)
 
 

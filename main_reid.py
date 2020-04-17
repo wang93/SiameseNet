@@ -60,6 +60,7 @@ def train(**kwargs):
         print('load pretrained model ' + opt.pretrained_model)
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
+    model_meta = model.meta
     if use_gpu:
         model = nn.DataParallel(model).cuda()
 #########################################################
@@ -76,7 +77,7 @@ def train(**kwargs):
     if opt.model_name == 'braidnet':
         train_sampler = PosNegPairSampler(dataset.train, opt.pos_rate)
         trainloader = PairLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model.meta)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
             sampler=train_sampler,
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
@@ -84,32 +85,32 @@ def train(**kwargs):
     else:
         train_sampler = RandomIdentitySampler(dataset.train, opt.num_instances)
         trainloader = DataLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model.meta)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
             sampler=train_sampler,
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
         )
 
     queryloader = DataLoader(
-        ImageData(dataset.query, TestTransform(opt.datatype, model.meta)),
+        ImageData(dataset.query, TestTransform(opt.datatype, model_meta)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
 
     galleryloader = DataLoader(
-        ImageData(dataset.gallery, TestTransform(opt.datatype, model.meta)),
+        ImageData(dataset.gallery, TestTransform(opt.datatype, model_meta)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
 
     queryFliploader = DataLoader(
-        ImageData(dataset.query, TestTransform(opt.datatype, model.meta, True)),
+        ImageData(dataset.query, TestTransform(opt.datatype, model_meta, True)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
 
     galleryFliploader = DataLoader(
-        ImageData(dataset.gallery, TestTransform(opt.datatype, model.meta, True)),
+        ImageData(dataset.gallery, TestTransform(opt.datatype, model_meta, True)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )

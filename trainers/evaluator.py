@@ -157,6 +157,7 @@ class ResNetEvaluator:
             max_rank = num_g
             print("Note: number of gallery samples is quite small, got {}".format(num_g))
         _, indices = torch.sort(distmat, dim=1)
+        print(g_pids[indices])
         matches = g_pids[indices] == q_pids.view([num_q, -1]) 
         keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
         #keep = g_camids[indices]  != q_camids.view([num_q, -1])

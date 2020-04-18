@@ -163,15 +163,17 @@ class ResNetEvaluator:
         print('****measure performance by averaging the performance scores on {0} testset minors****'.format(self.minors_num))
         qpid2index = defaultdict(list)
         gpid2index = defaultdict(list)
+        q_pids_all = q_pids_all.tolist()
+        g_pids_all = g_pids_all.tolist()
         for i, qpid in enumerate(q_pids_all):
             qpid2index[qpid].append(i)
         for i, gpid in enumerate(g_pids_all):
             gpid2index[gpid].append(i)
 
-        pids = torch.Tensor(list(set(q_pids_all)))
+        pids = list(set(q_pids_all))
 
-        q_pids = pids
-        g_pids = pids
+        q_pids = torch.Tensor(pids)
+        g_pids = torch.Tensor(pids)
 
         cmcs, mAPs, thresholds, eers = [], [], [], []
         for _ in range(self.minors_num):

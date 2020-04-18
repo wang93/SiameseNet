@@ -359,14 +359,16 @@ class BraidNetEvaluator(ResNetEvaluator):
         num_q, num_g = len(q_pids), len(g_pids)
         q_g_similarity = torch.zeros((num_q, num_g))
         with torch.no_grad():
+            galleries_all = [galleries for galleries, _, _ in galleryloader]
+
             cur_query_index = -1
             for queries in queryloader:
                 q_features, _, _ = self._parse_data(queries)
                 for q_feature in q_features:
                     cur_query_index += 1
                     cur_gallery_index = 0
-                    for galleries in galleryloader:
-                        g_features, _, _ = self._parse_data(galleries)
+                    for galleries in galleries_all:
+                        g_features = galleries.cuda()
                         e = cur_gallery_index + g_features.size(0)
                         features_of_a_query = q_feature.expand_as(g_features)
                         scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
@@ -380,13 +382,16 @@ class BraidNetEvaluator(ResNetEvaluator):
                     for q_feature in q_features:
                         cur_query_index += 1
                         cur_gallery_index = 0
-                        for galleries in galleryloader:
-                            g_features, _, _ = self._parse_data(galleries)
+                        for galleries in galleries_all:
+                            g_features = galleries.cuda()
                             e = cur_gallery_index + g_features.size(0)
                             features_of_a_query = q_feature.expand_as(g_features)
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
                             q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
                             cur_gallery_index = e
+
+                del galleries_all
+                flip_galleries_all = [galleries for galleries, _, _ in galleryFliploader]
 
                 cur_query_index = -1
                 for queries in queryFliploader:
@@ -394,8 +399,8 @@ class BraidNetEvaluator(ResNetEvaluator):
                     for q_feature in q_features:
                         cur_query_index += 1
                         cur_gallery_index = 0
-                        for galleries in galleryFliploader:
-                            g_features, _, _ = self._parse_data(galleries)
+                        for galleries in flip_galleries_all:
+                            g_features = galleries.cuda()
                             e = cur_gallery_index + g_features.size(0)
                             features_of_a_query = q_feature.expand_as(g_features)
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
@@ -408,8 +413,8 @@ class BraidNetEvaluator(ResNetEvaluator):
                     for q_feature in q_features:
                         cur_query_index += 1
                         cur_gallery_index = 0
-                        for galleries in galleryFliploader:
-                            g_features, _, _ = self._parse_data(galleries)
+                        for galleries in flip_galleries_all:
+                            g_features = galleries.cuda()
                             e = cur_gallery_index + g_features.size(0)
                             features_of_a_query = q_feature.expand_as(g_features)
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()

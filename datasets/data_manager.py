@@ -50,11 +50,14 @@ class __Dataset(object):
         dataset_remove = []
         for pid in pids_keep:
             indices_keep = pid2index[pid]
-            dataset_keep.extend(dataset[indices_keep])
+            for i in indices_keep:
+                dataset_keep.append(dataset[i])
 
         for pid in pids_remove:
             indices_remove = pid2index[pid]
-            dataset_keep.extend(dataset[indices_remove])
+
+            for i in indices_remove:
+                dataset_remove.append(dataset[i])
 
         return dataset_keep, dataset_remove, pids_keep
 

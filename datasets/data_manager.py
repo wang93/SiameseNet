@@ -120,8 +120,10 @@ class __Dataset(object):
         self.query, query_remove, pids_keep = self._get_subpids_dataset(self.query, kept_num)
         self.gallery, gallery_remove = self._get_dataset_of_pids(self.gallery, pids_keep)
 
-        self.num_query_pids = len(pids_keep)
-        self.num_gallery_pids = len(pids_keep)
+        #self.num_query_pids = len(pids_keep)
+        #self.num_gallery_pids = len(pids_keep)
+        self._re_parse('query')
+        self._re_parse('gallery')
 
         removed_testset = query_remove + gallery_remove
         return removed_testset

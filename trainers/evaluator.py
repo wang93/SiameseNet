@@ -13,6 +13,8 @@ from sklearn.metrics import roc_curve
 
 from collections import defaultdict
 from random import choice as randchoice
+from time import time as curtime
+
 
 class ResNetEvaluator:
     def __init__(self, model, minors_num=0, ranks=[1, 2, 4, 5, 8, 10, 16, 20]):
@@ -353,6 +355,7 @@ class BraidNetEvaluator(ResNetEvaluator):
         g_pids = torch.Tensor(g_pids)
         g_camids = torch.Tensor(g_camids)
 
+        start = curtime()
         num_q, num_g = len(q_pids), len(g_pids)
         q_g_similarity = torch.zeros((num_q, num_g))
         with torch.no_grad():
@@ -413,6 +416,10 @@ class BraidNetEvaluator(ResNetEvaluator):
                             q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
                             cur_gallery_index = e
                 q_g_similarity /= 4.0
+
+        end = curtime()
+        print('it costs {:.3f} s to compute similarity matrix'
+              .format(end-start))
 
         if re_ranking:
             raise NotImplementedError('Not recommended, as it costs too much time.')

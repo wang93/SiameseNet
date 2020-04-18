@@ -14,7 +14,7 @@ class cls_tripletTrainer:
     def __init__(self, opt, model, optimzier, criterion, summary_writer):
         self.opt = opt
         self.model = model
-        self.optimizer= optimzier
+        self.optimizer = optimzier
         self.criterion = criterion
         self.summary_writer = summary_writer
 
@@ -36,15 +36,13 @@ class cls_tripletTrainer:
             self._backward()
             self.optimizer.step()
 
-            batch_time.update(time.time() - start)
             losses.update(self.loss.item())
 
             # tensorboard
-            global_step = epoch * len(data_loader) + i
-            self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
-            self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
+            #global_step = epoch * len(data_loader) + i
+            #self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
+            #self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
-            start = time.time()
 
             if (i + 1) % self.opt.print_freq == 0:
                 print('Epoch: [{}][{}/{}]\t'
@@ -55,6 +53,10 @@ class cls_tripletTrainer:
                               batch_time.val, batch_time.mean,
                               data_time.val, data_time.mean,
                               losses.val, losses.mean))
+
+            batch_time.update(time.time() - start)
+            start = time.time()
+
         param_group = self.optimizer.param_groups
         print('Epoch: [{}]\tEpoch Time {:.3f} s\tLoss {:.3f}\t'
               'Lr {:.2e}'

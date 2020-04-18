@@ -11,6 +11,9 @@ class DefaultConfig(object):
     datatype = 'person'
     mode = 'retrieval'
     test_pids_num = 100 # = <0 when don't change test set
+    pos_rate = 0.5
+    num_instances = 4
+
     # optimization options
     loss = 'bce'
     optim = 'sgd'
@@ -25,13 +28,15 @@ class DefaultConfig(object):
     weight_decay = 5e-4
     momentum = 0.9
     #random_crop = False
-    pos_rate = 0.5
     margin = None
-    num_instances = 4
     num_gpu = 1
+
+    #evaluation options
     evaluate = False
     savefig = None 
     re_ranking = False
+    eval_step = 50
+    eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
 
     # model options
     model_name = 'braidnet'  # triplet, softmax_triplet, bfe, ide, braidnet
@@ -40,8 +45,6 @@ class DefaultConfig(object):
     
     # miscs
     print_freq = 30
-    eval_step = 50
-    eval_minors_num = 100 #<=0 when evaluation on the whole test set one time
     save_dir = './pytorch-ckpt/market'
     workers = 10
     start_epoch = 0

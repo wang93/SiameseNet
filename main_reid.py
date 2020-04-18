@@ -35,14 +35,12 @@ def random_seed(seed):
     torch.backends.cudnn.deterministic = True  #cudnn
 
 
-random_seed(0)
-
 
 def train(**kwargs):
     opt._parse(kwargs)
 
     # set random seed and cudnn benchmark
-    torch.manual_seed(opt.seed)
+    random_seed(opt.seed)
     os.makedirs(opt.save_dir, exist_ok=True)
     use_gpu = torch.cuda.is_available()
     sys.stdout = Logger(osp.join(opt.save_dir, 'log_train.txt'))

@@ -128,33 +128,28 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
     def forward(self, input):
         self._check_input_dim(input)
 
-        if self.training:
-            input = torch.cat(torch.chunk(input, 2, dim=1), dim=0)
-            exponential_average_factor = 0.0
-            if self.training and self.track_running_stats:
-                if self.num_batches_tracked is not None:
-                    self.num_batches_tracked += 1
-                    if self.momentum is None:  # use cumulative moving average
-                        exponential_average_factor = 1.0 / float(self.num_batches_tracked)
-                    else:  # use exponential moving average
-                        exponential_average_factor = self.momentum
+        # if self.training:
+        input = torch.cat(torch.chunk(input, 2, dim=1), dim=0)
+        exponential_average_factor = 0.0
+        if self.training and self.track_running_stats:
+            if self.num_batches_tracked is not None:
+                self.num_batches_tracked += 1
+                if self.momentum is None:  # use cumulative moving average
+                    exponential_average_factor = 1.0 / float(self.num_batches_tracked)
+                else:  # use exponential moving average
+                    exponential_average_factor = self.momentum
 
-            output = F.batch_norm(
-                input, self.running_mean, self.running_var, self.weight, self.bias,
-                self.training or not self.track_running_stats,
-                exponential_average_factor, self.eps)
-            output = torch.cat(torch.chunk(output, 2, dim=0), dim=1)
-        else:
-
-            output = F.batch_norm(
-                input, self.running_mean.repeat(2), self.running_var.repeat(2), self.weight.repeat(2), self.bias.repeat(2),
-                not self.track_running_stats,
-                0.0, self.eps)
-            # exponential_average_factor = 0.0
-            # output = F.batch_norm(
-            #     input, self.eval_running_mean, self.eval_running_var, self.eval_weight, self.eval_bias,
-            #     not self.track_running_stats,
-            #     exponential_average_factor, self.eps)
+        output = F.batch_norm(
+            input, self.running_mean, self.running_var, self.weight, self.bias,
+            self.training or not self.track_running_stats,
+            exponential_average_factor, self.eps)
+        output = torch.cat(torch.chunk(output, 2, dim=0), dim=1)
+        # else:
+        #
+        #     output = F.batch_norm(
+        #         input, self.running_mean.repeat(2), self.running_var.repeat(2), self.weight.repeat(2), self.bias.repeat(2),
+        #         not self.track_running_stats,
+        #         0.0, self.eps)
 
         return output
 

@@ -105,11 +105,14 @@ class __Dataset(object):
 
             pid_maps.append(pid_map)
 
-        for dataset, pid_map in zip([oriset, addset], pid_maps):
-            for record in dataset:
-                record[1] = pid_map[record[1]]
 
-        oriset += addset
+        dataset_new = []
+        for dataset, pid_map in zip([oriset, addset], pid_maps):
+            for im_path, pid, pcamid in dataset:
+                pid = pid_map[pid]
+                dataset_new.append((im_path, pid, pcamid))
+
+        self.__setattr__(name, dataset_new)
 
         self._re_parse(name)
 

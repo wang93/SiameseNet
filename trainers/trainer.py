@@ -116,7 +116,6 @@ class binary_logisticTrainer(cls_tripletTrainer):
             self._forward()
             self.optimizer.zero_grad()
             self._backward()
-            self.model.module.correct_grads()
             self.optimizer.step()
 
             batch_time.update(time.time() - start)
@@ -158,3 +157,7 @@ class binary_logisticTrainer(cls_tripletTrainer):
     def _forward(self):
         score = self.model(*self.data)
         self.loss = self.criterion(score, self.target)
+
+    def _backward(self):
+        self.loss.backward()
+        self.model.module.correct_grads()

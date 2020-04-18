@@ -43,7 +43,6 @@ class cls_tripletTrainer:
             #self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
             #self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
-
             if (i + 1) % self.opt.print_freq == 0:
                 print('Epoch: [{}][{}/{}]\t'
                       'Batch Time {:.3f} ({:.3f})\t'

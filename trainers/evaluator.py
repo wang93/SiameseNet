@@ -14,6 +14,7 @@ from sklearn.metrics import roc_curve
 class ResNetEvaluator:
     def __init__(self, model):
         self.model = model
+        self.ranks = [1, 2, 4, 5, 8, 10, 16, 20]
 
     def save_incorrect_pairs(self, distmat, queryloader, galleryloader, 
         g_pids, q_pids, g_camids, q_camids, savefig):
@@ -47,8 +48,11 @@ class ResNetEvaluator:
             plt.close(fig)
 
     def evaluate(self, queryloader, galleryloader, queryFliploader, galleryFliploader, 
-        ranks=[1, 2, 4, 5, 8, 10, 16, 20], eval_flip=False, re_ranking=False, savefig=False):
+         eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
+        if eval_flip:
+            print('****evaluate based on flip-fused features****')
+
         qf, q_pids, q_camids = [], [], []
         for inputs0, inputs1 in zip(queryloader, queryFliploader):
             inputs, pids, camids = self._parse_data(inputs0)
@@ -95,6 +99,7 @@ class ResNetEvaluator:
         q_g_dist.addmm_(1, -2, qf, gf.t())
 
         if re_ranking:
+            print('****evaluate with re-ranked distance matrix****')
             q_q_dist = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, m) + \
                 torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, m).t()
             q_q_dist.addmm_(1, -2, qf, qf.t())
@@ -124,21 +129,23 @@ class ResNetEvaluator:
             self.save_incorrect_pairs(distmat.numpy(), queryloader, galleryloader, 
                 g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
 
-        print("Computing CMC and mAP")
+        rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
+        return rank1
+
+    def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids):
+        #print("Computing CMC and mAP")
         cmc, mAP = self.eval_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
 
-        print("Computing EER and corresponding threshold")
+        #print("Computing EER and corresponding threshold")
         threshold, eer = self.eer_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
 
-        print("Results ----------")
-        if eval_flip:
-            print('eval with flip-fused features')
+        print("---------- Performance Report ----------")
         print("mAP: {:.1%}".format(mAP))
         print("CMC curve")
-        for r in ranks:
+        for r in self.ranks:
             print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
         print("EER: {:.1%}, corresponding threshold: {:.3f}".format(eer, threshold))
-        print("------------------")
+        print("----------------------------------------")
 
         return cmc[0]
 
@@ -262,8 +269,10 @@ class ResNetEvaluator:
 
 class BraidNetEvaluator(ResNetEvaluator):
     def evaluate(self, queryloader, galleryloader, queryFliploader, galleryFliploader,
-                 ranks=[1, 2, 4, 5, 8, 10, 16, 20], eval_flip=False, re_ranking=False, savefig=False):
+                 eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
+        if eval_flip:
+            print('****evaluate based on flip-fused features****')
 
         q_pids, q_camids = [], []
         g_pids, g_camids = [], []
@@ -284,7 +293,7 @@ class BraidNetEvaluator(ResNetEvaluator):
         g_camids = torch.Tensor(g_camids)
 
         num_q, num_g = len(q_pids), len(g_pids)
-        q_g_dist = torch.zeros((num_q, num_g))
+        q_g_similarity = torch.zeros((num_q, num_g))
         with torch.no_grad():
             cur_query_index = -1
             for queries in queryloader:
@@ -297,7 +306,7 @@ class BraidNetEvaluator(ResNetEvaluator):
                         e = cur_gallery_index + g_features.size(0)
                         features_of_a_query = q_feature.expand_as(g_features)
                         scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
-                        q_g_dist[cur_query_index, cur_gallery_index:e] = scores
+                        q_g_similarity[cur_query_index, cur_gallery_index:e] = scores
                         cur_gallery_index = e
 
             if eval_flip:
@@ -312,7 +321,7 @@ class BraidNetEvaluator(ResNetEvaluator):
                             e = cur_gallery_index + g_features.size(0)
                             features_of_a_query = q_feature.expand_as(g_features)
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
-                            q_g_dist[cur_query_index, cur_gallery_index:e] += scores
+                            q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
                             cur_gallery_index = e
 
                 cur_query_index = -1
@@ -326,7 +335,7 @@ class BraidNetEvaluator(ResNetEvaluator):
                             e = cur_gallery_index + g_features.size(0)
                             features_of_a_query = q_feature.expand_as(g_features)
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
-                            q_g_dist[cur_query_index, cur_gallery_index:e] += scores
+                            q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
                             cur_gallery_index = e
 
                 cur_query_index = -1
@@ -340,37 +349,22 @@ class BraidNetEvaluator(ResNetEvaluator):
                             e = cur_gallery_index + g_features.size(0)
                             features_of_a_query = q_feature.expand_as(g_features)
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
-                            q_g_dist[cur_query_index, cur_gallery_index:e] += scores
+                            q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
                             cur_gallery_index = e
-                q_g_dist /= 4.0
+                q_g_similarity /= 4.0
 
         if re_ranking:
             raise NotImplementedError('Not recommended, as it costs too much time.')
         else:
-            distmat = q_g_dist
+            distmat = -q_g_similarity
 
         if savefig:
             print("Saving fingure")
             self.save_incorrect_pairs(distmat.numpy(), queryloader, galleryloader,
                                       g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
 
-        print("Computing CMC and mAP")
-        cmc, mAP = self.eval_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
-
-        print("Computing EER and corresponding threshold")
-        threshold, eer = self.eer_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
-
-        print("Results ----------")
-        if eval_flip:
-            print('(eval with flip-fused features)')
-        print("mAP: {:.1%}".format(mAP))
-        print("CMC curve")
-        for r in ranks:
-            print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
-        print("EER: {:.1%}, corresponding threshold: {:.3f}".format(eer, threshold))
-        print("------------------")
-
-        return cmc[0]
+        rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
+        return rank1
 
     def _forward(self, *inputs):
         with torch.no_grad():

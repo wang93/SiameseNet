@@ -375,7 +375,9 @@ class BraidNetEvaluator(ResNetEvaluator):
                         q_g_similarity[cur_query_index, cur_gallery_index:e] = scores
                         cur_gallery_index = e
 
-            if eval_flip:
+            if not eval_flip:
+                del galleries_all
+            else:
                 cur_query_index = -1
                 for queries in queryFliploader:
                     q_features, _, _ = self._parse_data(queries)
@@ -420,6 +422,8 @@ class BraidNetEvaluator(ResNetEvaluator):
                             scores = self._forward(features_of_a_query, g_features).view(-1).cpu()
                             q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
                             cur_gallery_index = e
+
+                del flip_galleries_all
                 q_g_similarity /= 4.0
 
         end = curtime()

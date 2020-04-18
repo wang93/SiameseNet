@@ -160,7 +160,7 @@ class ResNetEvaluator:
             return mAP, cmc, eer, threshold
 
     def measure_scores_on_minors(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
-        print('****measure performance by averaging the performance scores on {0} testset minors****'.format(times))
+        print('****measure performance by averaging the performance scores on {0} testset minors****'.format(self.minors_num))
         qpid2index = defaultdict(list)
         gpid2index = defaultdict(list)
         for i, qpid in enumerate(q_pids_all):

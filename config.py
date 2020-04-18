@@ -30,6 +30,7 @@ class DefaultConfig(object):
     #random_crop = False
     margin = None
     num_gpu = 1
+    correct_grads = True
 
     #evaluation options
     evaluate = False

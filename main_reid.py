@@ -165,7 +165,7 @@ def train(**kwargs):
     start_epoch = opt.start_epoch
     # get trainer and evaluator
     if opt.model_name == 'braidnet':
-        reid_trainer = binary_logisticTrainer(opt, model, optimizer, criterion, summary_writer)
+        reid_trainer = binary_logisticTrainer(opt, model, optimizer, criterion, summary_writer, opt.correct_grads)
     else:
         reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
 

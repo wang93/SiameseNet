@@ -6,6 +6,31 @@ import abc
 from torch.nn import functional as F
 from torch.nn.parameter import Parameter
 
+
+def get_leaf_layers(model):
+    """
+    unfold each layer
+    :param model: the given model or a single layer
+    :param root: root name
+    :return:
+    """
+    layers = []
+
+    # get all layers of the model
+    layer_list = list(model.named_children())
+    for item in layer_list:
+        module = item[1]
+        sublayer = list(module.named_children())
+        sublayer_num = len(sublayer)
+
+        # if current layer contains sublayers, add current layer name on its sublayers
+        if sublayer_num == 0:
+            layers.append(module)
+        # if current layer contains sublayers, unfold them
+        elif isinstance(module, torch.nn.Module):
+            layers.extend(get_leaf_layers(module))
+    return layers
+
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
     if classname.find('Linear') != -1:
@@ -364,9 +389,22 @@ class BraidNet(nn.Module):
             if isinstance(m, _BraidModule):
                 m.correct_grads()
 
-    @staticmethod
-    def hook_correct_grads(module, *args, **kwargs):
-        module.correct_grads()
+    # @staticmethod
+    # def hook_correct_grads(module, *args, **kwargs):
+    #     module.correct_grads()
 
     def get_optim_policy(self):
-        return self.parameters()
+        weight_decay_parameters = []
+        non_weight_decay_parameters = []
+        for model in self.modules():
+            if isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
+                for k, v in model._parameters.items():
+                    if k == 'weight':
+                        non_weight_decay_parameters.append(v)
+                    else:
+                        weight_decay_parameters.append(v)
+            else:
+                for _, v in model._parameters.items():
+                    weight_decay_parameters.append(v)
+
+        return weight_decay_parameters, non_weight_decay_parameters

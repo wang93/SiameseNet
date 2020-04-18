@@ -26,14 +26,12 @@ from utils.serialization import Logger, save_checkpoint
 from utils.transforms import TestTransform, TrainTransform
 import random
 
-
 def random_seed(seed):
     torch.manual_seed(seed)  # cpu
     torch.cuda.manual_seed(seed)  # gpu
     np.random.seed(seed)  # numpy
     random.seed(seed)  # random and transforms
     torch.backends.cudnn.deterministic = True  #cudnn
-
 
 
 def train(**kwargs):
@@ -62,7 +60,10 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 
-    optim_policy = model.get_optim_policy()
+    # if opt.model_name == 'braidnet':
+    params_reg, params_noreg = model.get_optim_policy()
+    # else:
+    #     raise NotImplementedError
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -158,9 +159,13 @@ def train(**kwargs):
 
     # get optimizer
     if opt.optim == "sgd":
-        optimizer = torch.optim.SGD(optim_policy, lr=opt.lr, momentum=0.9, weight_decay=opt.weight_decay)
+        optimizer = torch.optim.SGD([{'params': params_reg, 'weight_decay': opt.weight_decay},
+                                     {'params': params_noreg, 'weight_decay': 0.}],
+                                    lr=opt.lr, momentum=0.9)
     else:
-        optimizer = torch.optim.Adam(optim_policy, lr=opt.lr, weight_decay=opt.weight_decay)
+        optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': opt.weight_decay},
+                                     {'params': params_noreg, 'weight_decay': 0.}],
+                                    lr=opt.lr, momentum=0.9)
 
     start_epoch = opt.start_epoch
     # get trainer and evaluator

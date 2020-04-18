@@ -274,10 +274,16 @@ class BraidNetEvaluator(ResNetEvaluator):
             q_pids.extend(pids)
             q_camids.extend(camids)
 
+        q_pids = torch.Tensor(q_pids)
+        q_camids = torch.Tensor(q_camids)
+
         for galleries in galleryloader:
             _, pids, camids = self._parse_data(galleries)
             g_pids.extend(pids)
             g_camids.extend(camids)
+
+        g_pids = torch.Tensor(g_pids)
+        g_camids = torch.Tensor(g_camids)
 
         num_q, num_g = len(q_pids), len(g_pids)
         q_g_dist = torch.zeros((num_q, num_g))

@@ -190,12 +190,12 @@ class ResNetEvaluator:
             thresholds.append(threshold_)
             eers.append(eer_)
 
-        mAPs = torch.cat(mAPs, dim=0)
+        #mAPs = torch.cat(mAPs, dim=0)
         cmcs = torch.cat(cmcs, dim=0)
         thresholds = torch.cat(thresholds, dim=0)
         eers = torch.cat(eers, dim=0)
 
-        mAP = torch.mean(mAPs, dim=0)
+        mAP = np.mean(mAPs)
         cmc = torch.mean(cmcs, dim=0)
         threshold = torch.mean(thresholds, dim=0)
         eer = torch.mean(eers, dim=0)

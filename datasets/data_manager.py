@@ -125,7 +125,7 @@ class __Dataset(object):
 
     def subtest2train(self, subpids_keptnum):
         removed_test = self.subsample_testset(subpids_keptnum)
-        self._add_compatible_set('train', removed_test)
+        self._add_pid_incompatible_set('train', removed_test)
 
     def _re_parse(self, name):
         if name not in ('train', 'query', 'gallery'):

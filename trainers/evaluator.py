@@ -177,8 +177,8 @@ class ResNetEvaluator:
 
         cmcs, mAPs, thresholds, eers = [], [], [], []
         for _ in range(self.minors_num):
-            q_indices = torch.Tensor([randchoice(qpid2index[pid]) for pid in pids])
-            g_indices = torch.Tensor([randchoice(gpid2index[pid]) for pid in pids])
+            q_indices = torch.LongTensor([randchoice(qpid2index[pid]) for pid in pids])
+            g_indices = torch.LongTensor([randchoice(gpid2index[pid]) for pid in pids])
             q_camids = q_camids_all[q_indices]
             g_camids = g_camids_all[g_indices]
             distmat = distmat_all[q_indices, :][:, g_indices]

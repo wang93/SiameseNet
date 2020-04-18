@@ -399,12 +399,16 @@ class BraidNet(nn.Module):
         for model in self.modules():
             if isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
                 for k, v in model._parameters.items():
+                    if v is None:
+                        continue
                     if k == 'weight':
                         non_weight_decay_parameters.append(v)
                     else:
                         weight_decay_parameters.append(v)
             else:
                 for _, v in model._parameters.items():
+                    if v is None:
+                        continue
                     weight_decay_parameters.append(v)
 
         return weight_decay_parameters, non_weight_decay_parameters

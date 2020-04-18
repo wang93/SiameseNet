@@ -39,9 +39,9 @@ class cls_tripletTrainer:
             losses.update(self.loss.item())
 
             # tensorboard
-            #global_step = epoch * len(data_loader) + i
-            #self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
-            #self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
+            global_step = epoch * len(data_loader) + i
+            self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
+            self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
             if (i + 1) % self.opt.print_freq == 0:
                 print('Epoch: [{}][{}/{}]\t'

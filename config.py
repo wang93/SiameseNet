@@ -41,6 +41,7 @@ class DefaultConfig(object):
     # miscs
     print_freq = 30
     eval_step = 50
+    eval_minors_num = 100 #<=0 when evaluation on the whole test set one time
     save_dir = './pytorch-ckpt/market'
     workers = 10
     start_epoch = 0

@@ -133,9 +133,9 @@ def train(**kwargs):
     )
 
     if opt.model_name == 'braidnet':
-        reid_evaluator = BraidNetEvaluator(model)
+        reid_evaluator = BraidNetEvaluator(model, minors_num=opt.eval_minors_num)
     else:
-        reid_evaluator = ResNetEvaluator(model)
+        reid_evaluator = ResNetEvaluator(model, minors_num=opt.eval_minors_num)
 
     if opt.evaluate:
         reid_evaluator.evaluate(queryloader,

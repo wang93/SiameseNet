@@ -11,10 +11,14 @@ from scipy.optimize import brentq
 from scipy.interpolate import interp1d
 from sklearn.metrics import roc_curve
 
+from collections import defaultdict
+from random import choice as randchoice
+
 class ResNetEvaluator:
-    def __init__(self, model):
+    def __init__(self, model, minors_num=0, ranks=[1, 2, 4, 5, 8, 10, 16, 20]):
         self.model = model
-        self.ranks = [1, 2, 4, 5, 8, 10, 16, 20]
+        self.ranks = ranks
+        self.minors_num = minors_num
 
     def save_incorrect_pairs(self, distmat, queryloader, galleryloader, 
         g_pids, q_pids, g_camids, q_camids, savefig):
@@ -129,15 +133,70 @@ class ResNetEvaluator:
             self.save_incorrect_pairs(distmat.numpy(), queryloader, galleryloader, 
                 g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
 
-        rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
+        if self.minors_num <= 0:
+            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
+        else:
+            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
+
         return rank1
 
-    def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids):
+    def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True):
         #print("Computing CMC and mAP")
         cmc, mAP = self.eval_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
 
         #print("Computing EER and corresponding threshold")
         threshold, eer = self.eer_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
+
+        if immidiate:
+            print("---------- Performance Report ----------")
+            print("mAP: {:.1%}".format(mAP))
+            print("CMC curve")
+            for r in self.ranks:
+                print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
+            print("EER: {:.1%}, corresponding threshold: {:.3f}".format(eer, threshold))
+            print("----------------------------------------")
+            return cmc[0]
+        else:
+            return mAP, cmc, eer, threshold
+
+    def measure_scores_on_minors(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
+        print('****measure performance by averaging the performance scores on {0} testset minors****'.format(times))
+        qpid2index = defaultdict(list)
+        gpid2index = defaultdict(list)
+        for i, qpid in enumerate(q_pids_all):
+            qpid2index[qpid].append(i)
+        for i, gpid in enumerate(g_pids_all):
+            gpid2index[gpid].append(i)
+
+        pids = torch.Tensor(list(set(q_pids_all)))
+
+        q_pids = pids
+        g_pids = pids
+
+        cmcs, mAPs, thresholds, eers = [], [], [], []
+        for _ in range(self.minors_num):
+            q_indices = torch.Tensor([randchoice(qpid2index[pid]) for pid in pids])
+            g_indices = torch.Tensor([randchoice(gpid2index[pid]) for pid in pids])
+            q_camids = q_camids_all[q_indices]
+            g_camids = g_camids_all[g_indices]
+            distmat = distmat_all[q_indices, :][:, g_indices]
+
+            mAP_, cmc_, eer_, threshold_ = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=False)
+
+            mAPs.append(mAP_)
+            cmcs.append(cmc_)
+            thresholds.append(threshold_)
+            eers.append(eer_)
+
+        mAPs = torch.cat(mAPs, dim=0)
+        cmcs = torch.cat(cmcs, dim=0)
+        thresholds = torch.cat(thresholds, dim=0)
+        eers = torch.cat(eers, dim=0)
+
+        mAP = torch.mean(mAPs, dim=0)
+        cmc = torch.mean(cmcs, dim=0)
+        threshold = torch.mean(thresholds, dim=0)
+        eer = torch.mean(eers, dim=0)
 
         print("---------- Performance Report ----------")
         print("mAP: {:.1%}".format(mAP))
@@ -272,7 +331,7 @@ class BraidNetEvaluator(ResNetEvaluator):
                  eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
         if eval_flip:
-            print('****evaluate based on flip-fused features****')
+            print('****evaluate with flip images****')
 
         q_pids, q_camids = [], []
         g_pids, g_camids = [], []
@@ -363,7 +422,10 @@ class BraidNetEvaluator(ResNetEvaluator):
             self.save_incorrect_pairs(distmat.numpy(), queryloader, galleryloader,
                                       g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
 
-        rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
+        if self.minors_num <= 0:
+            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
+        else:
+            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
         return rank1
 
     def _forward(self, *inputs):

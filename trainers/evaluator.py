@@ -191,14 +191,14 @@ class ResNetEvaluator:
             eers.append(eer_)
 
         #mAPs = torch.cat(mAPs, dim=0)
-        cmcs = torch.cat(cmcs, dim=0)
-        thresholds = torch.cat(thresholds, dim=0)
-        eers = torch.cat(eers, dim=0)
+        #cmcs = torch.cat(cmcs, dim=0)
+        #thresholds = torch.cat(thresholds, dim=0)
+        #eers = torch.cat(eers, dim=0)
 
         mAP = np.mean(mAPs)
-        cmc = torch.mean(cmcs, dim=0)
-        threshold = torch.mean(thresholds, dim=0)
-        eer = torch.mean(eers, dim=0)
+        cmc = np.mean(cmcs, 0)
+        threshold = np.mean(thresholds)
+        eer = np.mean(eers)
 
         print("---------- Performance Report ----------")
         print("mAP: {:.1%}".format(mAP))

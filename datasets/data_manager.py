@@ -55,7 +55,6 @@ class __Dataset(object):
 
         for pid in pids_remove:
             indices_remove = pid2index[pid]
-
             for i in indices_remove:
                 dataset_remove.append(dataset[i])
 
@@ -78,6 +77,38 @@ class __Dataset(object):
             raise ValueError
 
         oriset = self.__getattribute__(name)
+        oriset += addset
+
+        self._re_parse(name)
+
+    def _add_pid_incompatible_set(self, name, addset):
+        if name not in ('train', 'query', 'gallery'):
+            raise ValueError
+
+        oriset = self.__getattribute__(name)
+
+        pid_containers = []
+
+        for dataset in (oriset, addset):
+            pid_container = set()
+            for _, pid, _ in dataset:
+                pid_container.add(pid)
+            pid_containers.append(pid_container)
+
+        pid_maps = []
+        new_id_cur = -1
+        for pid_container in pid_containers:
+            pid_map = dict()
+            for pid in pid_container:
+                new_id_cur += 1
+                pid_map[pid] = new_id_cur
+
+            pid_maps.append(pid_map)
+
+        for dataset, pid_map in zip([oriset, addset], pid_maps):
+            for record in dataset:
+                record[1] = pid_map[record[1]]
+
         oriset += addset
 
         self._re_parse(name)
@@ -395,21 +426,6 @@ def init_united_datasets(names, mode):
     dataset_keep.num_train_pids = num_train_pids
     dataset_keep.num_query_pids = num_query_pids
     dataset_keep.num_gallery_pids = num_gallery_pids
-
-    #num_total_pids = num_train_pids + num_query_pids
-    #num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
-    #
-    # print("=> United datasets of {} loaded".format(', '.join(names)))
-    # print("Dataset statistics:")
-    # print("  ------------------------------")
-    # print("  subset   | # ids | # images")
-    # print("  ------------------------------")
-    # print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
-    # print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
-    # print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
-    # print("  ------------------------------")
-    # print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
-    # print("  ------------------------------")
 
     return dataset_keep
 

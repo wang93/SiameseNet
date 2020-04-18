@@ -10,6 +10,7 @@ class DefaultConfig(object):
     dataset = 'market1501'
     datatype = 'person'
     mode = 'retrieval'
+    test_pids_num = 100 # = <0 when don't change test set
     # optimization options
     loss = 'bce'
     optim = 'sgd'

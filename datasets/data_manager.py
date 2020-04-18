@@ -6,27 +6,134 @@ from os import path as osp
 import os
 import random
 from abc import abstractmethod
-random.seed(0)
+from collections import defaultdict
 
 
 """Dataset classes"""
+'''Note: relabel is not necessary, so retruned non-combined dataset may have not been relabeled'''
 
 
 class __Dataset(object):
+    dataset_dir = ''
+    train_dir = ''
+    query_dir = ''
+    gallery_dir = ''
+    num_train_pids = 0
+    num_query_pids = 0
+    num_gallery_pids = 0
+    train = []
+    query = []
+    gallery = []
+
     @abstractmethod
     def __init__(self):
         pass
 
     @abstractmethod
+    def _process_dir(self, dir_path, list_path, relabel=False):
+        pass
+
+    @staticmethod
+    def _get_subpids_dataset(dataset, subpids_num):
+        pid_container = set()
+        pid2index = defaultdict(list)
+        for i, (_, pid, _) in enumerate(dataset):
+            pid_container.add(pid)
+            pid2index[pid].append(i)
+
+        if subpids_num > len(pid_container):
+            raise ValueError
+
+        pids_keep = set(random.sample(pid_container, subpids_num))
+        pids_remove = pid_container - pids_keep
+        dataset_keep = []
+        dataset_remove = []
+        for pid in pids_keep:
+            indices_keep = pid2index[pid]
+            dataset_keep.extend(dataset[indices_keep])
+
+        for pid in pids_remove:
+            indices_remove = pid2index[pid]
+            dataset_keep.extend(dataset[indices_remove])
+
+        return dataset_keep, dataset_remove, pids_keep
+
+    @staticmethod
+    def _get_dataset_of_pids(dataset, pids):
+        dataset_keep = []
+        dataset_remove = []
+        for record in dataset:
+            if record[1] in pids:
+                dataset_keep.append(record)
+            else:
+                dataset_remove.append(record)
+
+        return dataset_keep, dataset_remove
+
+    def _add_compatible_set(self, name, addset):
+        if name not in ('train', 'query', 'gallery'):
+            raise ValueError
+
+        oriset = self.__getattribute__(name)
+        oriset += addset
+
+        self._re_parse(name)
+
+    def subsample_testset(self, kept_num):
+        self.query, query_remove, pids_keep = self._get_subpids_dataset(self.query, kept_num)
+        self.gallery, gallery_remove = self._get_dataset_of_pids(self.gallery, pids_keep)
+
+        self.num_query_pids = len(pids_keep)
+        self.num_gallery_pids = len(pids_keep)
+
+        removed_testset = query_remove + gallery_remove
+        return removed_testset
+
+    def subtest2train(self, subpids_keptnum):
+        removed_test = self.subsample_testset(subpids_keptnum)
+        self._add_compatible_set('train', removed_test)
+
+    def _re_parse(self, name):
+        if name not in ('train', 'query', 'gallery'):
+            raise ValueError
+
+        dataset = self.__getattribute__(name)
+        pid_container = set()
+        for _, pid, _ in dataset:
+            pid_container.add(pid)
+
+        num_pids = len(pid_container)
+
+        self.__setattr__('num_{0}_pids'.format(name), num_pids)
+
     def _check_before_run(self):
-        pass
+        """Check if all files are available before going deeper"""
+        # if not osp.exists(self.dataset_dir):
+        #     raise RuntimeError("'{}' is not available".format(self.dataset_dir))
+        if not osp.exists(self.train_dir):
+            raise RuntimeError("'{}' is not available".format(self.train_dir))
+        if not osp.exists(self.query_dir):
+            raise RuntimeError("'{}' is not available".format(self.query_dir))
+        if not osp.exists(self.gallery_dir):
+            raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
-    @abstractmethod
-    def _process_dir(self, dir_path, relabel=False):
-        pass
+    def print_summary(self):
+        num_total_pids = self.num_train_pids+self.num_query_pids
+        num_total_imgs = len(self.train)+len(self.query)+len(self.gallery)
+        print("=> {} loaded".format(self.dataset_dir))
+        print("Dataset statistics:")
+        print("  ------------------------------")
+        print("  subset   | # ids | # images")
+        print("  ------------------------------")
+        print("  train    | {:5d} | {:8d}".format(self.num_train_pids, len(self.train)))
+        print("  query    | {:5d} | {:8d}".format(self.num_query_pids, len(self.query)))
+        print("  gallery  | {:5d} | {:8d}".format(self.num_gallery_pids, len(self.gallery)))
+        print("  ------------------------------")
+        print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
+        print("  ------------------------------")
 
 
-class Market1501(__Dataset):
+class CommonData(__Dataset):
     """
     Market1501
     Reference:
@@ -39,30 +146,18 @@ class Market1501(__Dataset):
     """
     def __init__(self, dataset_dir, mode, root='/data/usersdata/wyc_datasets/Person'):
         self.dataset_dir = dataset_dir
-        self.dataset_dir = osp.join(root, self.dataset_dir)
-        self.train_dir = osp.join(self.dataset_dir, 'bounding_box_train')
-        self.query_dir = osp.join(self.dataset_dir, 'query')
-        self.gallery_dir = osp.join(self.dataset_dir, 'bounding_box_test')
+        dataset_dir = osp.join(root, dataset_dir)
+        self.train_dir = osp.join(dataset_dir, 'bounding_box_train')
+        self.query_dir = osp.join(dataset_dir, 'query')
+        self.gallery_dir = osp.join(dataset_dir, 'bounding_box_test')
 
         self._check_before_run()
         train_relabel = (mode == 'retrieval')
         train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, relabel=train_relabel)
         query, num_query_pids, num_query_imgs = self._process_dir(self.query_dir, relabel=False)
         gallery, num_gallery_pids, num_gallery_imgs = self._process_dir(self.gallery_dir, relabel=False)
-        num_total_pids = num_train_pids + num_query_pids
-        num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
-
-        print("=> {} loaded".format(dataset_dir))
-        print("Dataset statistics:")
-        print("  ------------------------------")
-        print("  subset   | # ids | # images")
-        print("  ------------------------------")
-        print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
-        print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
-        print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
-        print("  ------------------------------")
-        print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
-        print("  ------------------------------")
+        #num_total_pids = num_train_pids + num_query_pids
+        #num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
 
         self.train = train
         self.query = query
@@ -71,17 +166,6 @@ class Market1501(__Dataset):
         self.num_train_pids = num_train_pids
         self.num_query_pids = num_query_pids
         self.num_gallery_pids = num_gallery_pids
-
-    def _check_before_run(self):
-        """Check if all files are available before going deeper"""
-        if not osp.exists(self.dataset_dir):
-            raise RuntimeError("'{}' is not available".format(self.dataset_dir))
-        if not osp.exists(self.train_dir):
-            raise RuntimeError("'{}' is not available".format(self.train_dir))
-        if not osp.exists(self.query_dir):
-            raise RuntimeError("'{}' is not available".format(self.query_dir))
-        if not osp.exists(self.gallery_dir):
-            raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
     def _process_dir(self, dir_path, relabel=False):
         img_names = os.listdir(dir_path)
@@ -125,15 +209,16 @@ class MSMT17(__Dataset):
     # cameras: 15
     """
     def __init__(self, dataset_dir, mode, root='/data/usersdata/wyc_datasets/Person'):
-        self.dataset_dir = osp.join(root, dataset_dir)
-        self.train_dir = osp.join(self.dataset_dir, 'train')
+        self.dataset_dir = dataset_dir
+        dataset_dir = osp.join(root, dataset_dir)
+        self.train_dir = osp.join(dataset_dir, 'train')
         #self.test_dir = osp.join(self.dataset_dir, 'test')
-        self.query_dir = osp.join(self.dataset_dir, 'test')
-        self.gallery_dir = osp.join(self.dataset_dir, 'test')
-        self.list_train_path = osp.join(self.dataset_dir, 'list_train.txt')
-        self.list_val_path = osp.join(self.dataset_dir, 'list_val.txt')
-        self.list_query_path = osp.join(self.dataset_dir, 'list_query.txt')
-        self.list_gallery_path = osp.join(self.dataset_dir, 'list_gallery.txt')
+        self.query_dir = osp.join(dataset_dir, 'test')
+        self.gallery_dir = osp.join(dataset_dir, 'test')
+        self.list_train_path = osp.join(dataset_dir, 'list_train.txt')
+        self.list_val_path = osp.join(dataset_dir, 'list_val.txt')
+        self.list_query_path = osp.join(dataset_dir, 'list_query.txt')
+        self.list_gallery_path = osp.join(dataset_dir, 'list_gallery.txt')
 
         self._check_before_run()
         train_relabel = (mode == 'retrieval')
@@ -148,17 +233,17 @@ class MSMT17(__Dataset):
         num_total_pids = num_train_pids + num_query_pids
         num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
 
-        print("=> MSMT17 loaded")
-        print("Dataset statistics:")
-        print("  ------------------------------")
-        print("  subset   | # ids | # images")
-        print("  ------------------------------")
-        print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
-        print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
-        print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
-        print("  ------------------------------")
-        print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
-        print("  ------------------------------")
+        # print("=> MSMT17 loaded")
+        # print("Dataset statistics:")
+        # print("  ------------------------------")
+        # print("  subset   | # ids | # images")
+        # print("  ------------------------------")
+        # print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
+        # print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
+        # print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
+        # print("  ------------------------------")
+        # print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
+        # print("  ------------------------------")
 
         self.train = train
         #self.trainval = train
@@ -174,18 +259,6 @@ class MSMT17(__Dataset):
         #self.images_dir = ''
         #self.num_cams = 15
 
-    def _check_before_run(self):
-        """Check if all files are available before going deeper"""
-        if not osp.exists(self.dataset_dir):
-            raise RuntimeError("'{}' is not available".format(self.dataset_dir))
-        if not osp.exists(self.train_dir):
-            raise RuntimeError("'{}' is not available".format(self.train_dir))
-        if not osp.exists(self.query_dir):
-            raise RuntimeError("'{}' is not available".format(self.query_dir))
-        if not osp.exists(self.gallery_dir):
-            raise RuntimeError("'{}' is not available".format(self.gallery_dir))
-        # if not osp.exists(self.test_dir):
-        #     raise RuntimeError("'{}' is not available".format(self.test_dir))
 
     def _process_dir(self, dir_path, list_path, relabel=False):
         with open(list_path, 'r') as txt:
@@ -210,14 +283,20 @@ class MSMT17(__Dataset):
         return dataset, num_pids, num_imgs
 
 
-def init_dataset(name, mode):
+def init_dataset(name, mode, subpids_num=-1):
     root = '/data/usersdata/wyc-datasets/Person'
     if 'MSMT17' in name:
-        return MSMT17(name, mode, root)
-    return Market1501(name, mode, root)
+         dataset = MSMT17(name, mode, root)
+    else:
+        dataset = CommonData(name, mode, root)
+
+    if subpids_num>0:
+        dataset.subsample_test_set(subpids_num)
+
+    return dataset
 
 
-def combine_train_sets(subsets):
+def combine_incompatible_trainsets(subsets):
     camid_maps = []
     camid_map_cur = 0
     for subset in subsets:
@@ -253,7 +332,7 @@ def __resampe_subsets(subsets):
     return subsets
 
 
-def combine_test_sets(query_sets, gallery_sets, resample=True):
+def combine_incompatibe_testsets(query_sets, gallery_sets, resample=True):
     if resample:
         query_sets = __resampe_subsets(query_sets)
         gallery_sets = __resampe_subsets(gallery_sets)
@@ -296,14 +375,14 @@ def combine_test_sets(query_sets, gallery_sets, resample=True):
 def init_united_datasets(names, mode):
     datasets = [init_dataset(name, mode) for name in names]
     dataset_keep = datasets[0]
-    train, num_train_pids, num_train_imgs = combine_train_sets([d.train for d in datasets])
+    train, num_train_pids, num_train_imgs = combine_incompatible_trainsets([d.train for d in datasets])
 
     query_sets = [d.query for d in datasets]
     gallery_sets = [d.gallery for d in datasets]
 
     (query, num_query_pids, num_query_imgs),\
     (gallery, num_gallery_pids, num_gallery_imgs)\
-        = combine_test_sets(query_sets, gallery_sets)
+        = combine_incompatibe_testsets(query_sets, gallery_sets)
 
     del query_sets, gallery_sets, datasets
 
@@ -314,20 +393,20 @@ def init_united_datasets(names, mode):
     dataset_keep.num_query_pids = num_query_pids
     dataset_keep.num_gallery_pids = num_gallery_pids
 
-    num_total_pids = num_train_pids + num_query_pids
-    num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
-
-    print("=> United datasets of {} loaded".format(', '.join(names)))
-    print("Dataset statistics:")
-    print("  ------------------------------")
-    print("  subset   | # ids | # images")
-    print("  ------------------------------")
-    print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
-    print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
-    print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
-    print("  ------------------------------")
-    print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
-    print("  ------------------------------")
+    #num_total_pids = num_train_pids + num_query_pids
+    #num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
+    #
+    # print("=> United datasets of {} loaded".format(', '.join(names)))
+    # print("Dataset statistics:")
+    # print("  ------------------------------")
+    # print("  subset   | # ids | # images")
+    # print("  ------------------------------")
+    # print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
+    # print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
+    # print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
+    # print("  ------------------------------")
+    # print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
+    # print("  ------------------------------")
 
     return dataset_keep
 

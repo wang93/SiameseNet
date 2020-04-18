@@ -24,6 +24,18 @@ from utils.LiftedStructure import LiftedStructureLoss
 from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
 from utils.serialization import Logger, save_checkpoint
 from utils.transforms import TestTransform, TrainTransform
+import random
+
+
+def random_seed(seed):
+    torch.manual_seed(seed)  # cpu
+    torch.cuda.manual_seed(seed)  # gpu
+    np.random.seed(seed)  # numpy
+    random.seed(seed)  # random and transforms
+    torch.backends.cudnn.deterministic = True  #cudnn
+
+
+random_seed(0)
 
 
 def train(**kwargs):
@@ -69,6 +81,11 @@ def train(**kwargs):
         dataset = data_manager.init_united_datasets(names=opt.dataset, mode=opt.mode)
     else:
         dataset = data_manager.init_dataset(name=opt.dataset, mode=opt.mode)
+
+    if opt.test_pids_num >= 0:
+        dataset.subtest2train(opt.test_pids_num)
+
+    dataset.print_summary()
 
     pin_memory = True if use_gpu else False
 

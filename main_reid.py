@@ -60,10 +60,6 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 
-    # if opt.model_name == 'braidnet':
-    params_reg, params_noreg = model.get_optim_policy()
-    # else:
-    #     raise NotImplementedError
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -158,14 +154,24 @@ def train(**kwargs):
         raise NotImplementedError
 
     # get optimizer
-    if opt.optim == "sgd":
-        optimizer = torch.optim.SGD([{'params': params_reg, 'weight_decay': opt.weight_decay},
-                                     {'params': params_noreg, 'weight_decay': 0.}],
-                                    lr=opt.lr, momentum=0.9)
-    else:
-        optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': opt.weight_decay},
-                                     {'params': params_noreg, 'weight_decay': 0.}],
-                                    lr=opt.lr, momentum=0.9)
+
+    # if opt.model_name == 'braidnet':
+    #params_reg, params_noreg = model.get_optim_policy()
+    # else:
+    #     raise NotImplementedError
+    #
+    # if opt.optim == "sgd":
+    #     optimizer = torch.optim.SGD([{'params': params_reg, 'weight_decay': opt.weight_decay},
+    #                                  {'params': params_noreg, 'weight_decay': 0.}],
+    #                                 lr=opt.lr, momentum=0.9)
+    # else:
+    #     optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': opt.weight_decay},
+    #                                   {'params': params_noreg, 'weight_decay': 0.}],
+    #                                  lr=opt.lr, momentum=0.9)
+    optimizer = model.get_optimizer(optim=opt.optim,
+                                    lr=opt.lr,
+                                    momentum=opt.momentum,
+                                    weight_decay=opt.weight_decay)
 
     start_epoch = opt.start_epoch
     # get trainer and evaluator

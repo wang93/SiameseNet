@@ -276,6 +276,7 @@ class BraidBlock(nn.Module):
         x = self.wconv(x)
         x = self.wbn(x)
         x = self.relu(x)
+
         x = self.pool(x)
         return x
 
@@ -393,22 +394,31 @@ class BraidNet(nn.Module):
     # def hook_correct_grads(module, *args, **kwargs):
     #     module.correct_grads()
 
-    def get_optim_policy(self):
-        weight_decay_parameters = []
-        non_weight_decay_parameters = []
+    def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
+        params_reg = []
+        params_noreg = []
         for model in self.modules():
             if isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
                 for k, v in model._parameters.items():
                     if v is None:
                         continue
                     if k == 'weight':
-                        non_weight_decay_parameters.append(v)
+                        params_noreg.append(v)
                     else:
-                        weight_decay_parameters.append(v)
+                        params_reg.append(v)
             else:
                 for _, v in model._parameters.items():
                     if v is None:
                         continue
-                    weight_decay_parameters.append(v)
+                    params_reg.append(v)
 
-        return weight_decay_parameters, non_weight_decay_parameters
+        if optim == "sgd":
+            optimizer = torch.optim.SGD([{'params': params_reg, 'weight_decay': weight_decay},
+                                         {'params': params_noreg, 'weight_decay': 0.}],
+                                        lr=lr, momentum=momentum)
+        else:
+            optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': weight_decay},
+                                          {'params': params_noreg, 'weight_decay': 0.}],
+                                         lr=lr, momentum=momentum)
+
+        return optimizer

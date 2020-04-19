@@ -62,7 +62,7 @@ def train(**kwargs):
         cudnn.benchmark = True
         torch.cuda.manual_seed_all(opt.seed)
     else:
-        print('currently using cpu')
+        raise NotImplementedError
 ########################################################################
     print('initializing model ...')
 
@@ -217,7 +217,7 @@ def train(**kwargs):
     for epoch in range(start_epoch, opt.max_epoch):
         if opt.adjust_lr:
             adjust_lr(optimizer, epoch + 1)
-        reid_trainer.train(epoch, trainloader, opt.iter_num_per_epoch)
+        reid_trainer.train(epoch + 1, trainloader, opt.iter_num_per_epoch)
         # skip if not save model
         if opt.eval_step > 0 and (epoch + 1) % opt.eval_step == 0 or (epoch + 1) == opt.max_epoch:
             if opt.mode == 'class':

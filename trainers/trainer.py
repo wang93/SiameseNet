@@ -19,6 +19,7 @@ class cls_tripletTrainer:
         self.summary_writer = summary_writer
 
     def train(self, epoch, data_loader):
+        '''Note: epoch should start with 1'''
         self.model.train()
 
         batch_time = AverageMeter()
@@ -39,7 +40,7 @@ class cls_tripletTrainer:
             losses.update(self.loss.item())
 
             # tensorboard
-            global_step = epoch * len(data_loader) + i
+            global_step = (epoch - 1) * len(data_loader) + i
             self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
             self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
@@ -102,6 +103,7 @@ class binary_logisticTrainer(cls_tripletTrainer):
         self.correct_grads = correct_grads
 
     def train(self, epoch, data_loader, iter_num_per_epoch=500):
+        '''Note: epoch should start with 1'''
         self.model.train()
 
         batch_time = AverageMeter()
@@ -122,7 +124,7 @@ class binary_logisticTrainer(cls_tripletTrainer):
             losses.update(self.loss.item())
 
             # tensorboard
-            global_step = epoch * len(data_loader) + i
+            global_step = (epoch - 1) * len(data_loader) + i
             self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
             self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 

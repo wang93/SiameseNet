@@ -1,35 +1,11 @@
 # coding=utf-8
 import torch.nn as nn
 import torch
-import abc
+#import abc
 #from torch._jit_internal import weak_module, weak_script_method
 from torch.nn import functional as F
-from torch.nn.parameter import Parameter
+#from torch.nn.parameter import Parameter
 
-
-def get_leaf_layers(model):
-    """
-    unfold each layer
-    :param model: the given model or a single layer
-    :param root: root name
-    :return:
-    """
-    layers = []
-
-    # get all layers of the model
-    layer_list = list(model.named_children())
-    for item in layer_list:
-        module = item[1]
-        sublayer = list(module.named_children())
-        sublayer_num = len(sublayer)
-
-        # if current layer contains sublayers, add current layer name on its sublayers
-        if sublayer_num == 0:
-            layers.append(module)
-        # if current layer contains sublayers, unfold them
-        elif isinstance(module, torch.nn.Module):
-            layers.extend(get_leaf_layers(module))
-    return layers
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
@@ -46,25 +22,18 @@ def weights_init_kaiming(m):
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)
 
-# def weights_init_classifier(m):
-#     classname = m.__class__.__name__
-#     if classname.find('Linear') != -1:
-#         nn.init.normal_(m.weight, std=0.001)
-#         if m.bias:
-#             nn.init.constant_(m.bias, 0.0)
+
+# class _BraidModule(metaclass=abc.ABCMeta):
+#     @abc.abstractmethod
+#     def correct_params(self):
+#         pass
+#
+#     @abc.abstractmethod
+#     def correct_grads(self):
+#         pass
 
 
-class _BraidModule(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def correct_params(self):
-        pass
-
-    @abc.abstractmethod
-    def correct_grads(self):
-        pass
-
-
-class WConv2d(nn.Conv2d, _BraidModule):
+class WConv2d(nn.Conv2d):
     def __init__(self, in_channels=10, out_channels=10, kernel_size=3, stride=(1, 1),
                  padding=(1, 1), dilation=1, groups=1, bias=True):
         if groups != 1:
@@ -73,6 +42,8 @@ class WConv2d(nn.Conv2d, _BraidModule):
         nn.Conv2d.__init__(
             self, 2 * in_channels, 2 * out_channels, kernel_size, stride, padding, dilation,
             groups, bias)
+
+        self.correct_params()
 
     def correct_params(self):
         weight_a = self.weight.data[:self.out_channels//2, :, :, :]
@@ -105,51 +76,26 @@ class WConv2d(nn.Conv2d, _BraidModule):
             grad_corrected = torch.cat((grad_a, grad_b), dim=0)
             self.bias.grad.data = grad_corrected.data
 
-    # def extra_repr(self):
-    #     s = 'in_channels={0}, out_channels={1}'.format(int(self.__dict__['in_channels']/2), int(self.__dict__['out_channels']/2))
-    #     s += ', kernel_size={kernel_size}, stride={stride}'
-    #     if self.padding != (0,) * len(self.padding):
-    #         s += ', padding={padding}'
-    #     if self.dilation != (1,) * len(self.dilation):
-    #         s += ', dilation={dilation}'
-    #     if self.output_padding != (0,) * len(self.output_padding):
-    #         s += ', output_padding={output_padding}'
-    #     if self.groups != 1:
-    #         s += ', groups={groups}'
-    #     if self.bias is None:
-    #         s += ', bias=False'
-    #     return s.format(**self.__dict__)
+    def extra_repr(self):
+        s = 'in_channels={0}, out_channels={1}'.format(int(self.__dict__['in_channels']/2), int(self.__dict__['out_channels']/2))
+        s += ', kernel_size={kernel_size}, stride={stride}'
+        if self.padding != (0,) * len(self.padding):
+            s += ', padding={padding}'
+        if self.dilation != (1,) * len(self.dilation):
+            s += ', dilation={dilation}'
+        if self.output_padding != (0,) * len(self.output_padding):
+            s += ', output_padding={output_padding}'
+        if self.groups != 1:
+            s += ', groups={groups}'
+        if self.bias is None:
+            s += ', bias=False'
+        return s.format(**self.__dict__)
 
 
-#@weak_module
-class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
+class WBatchNorm2d(nn.BatchNorm2d):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
-        #nn.BatchNorm2d.__init__(self, num_features=2*num_channels, eps=eps, **kwargs)
         nn.BatchNorm2d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
-        #self._set_eval_params()
 
-    # def _set_eval_params(self):
-    #     self.eval_running_mean = Parameter(torch.cat((self.running_mean.detach(), self.running_mean.detach()), dim=0))
-    #     self.eval_running_var = Parameter(torch.cat((self.running_var.detach(), self.running_var.detach()), dim=0))
-    #     self.eval_weight = Parameter(torch.cat((self.weight.detach(), self.weight.detach()), dim=0))
-    #     self.eval_bias = Parameter(torch.cat((self.bias.detach(), self.bias.detach()), dim=0))
-
-    # def train(self, mode=True):
-    #     r"""Sets the module in training mode.
-    #
-    #     Returns:
-    #         Module: self
-    #     """
-    #     self.training = mode
-    #     for module in self.children():
-    #         module.train(mode)
-    #
-    #     if not mode:
-    #         self._set_eval_params()
-    #
-    #     return self
-
-#    @weak_script_method
     def forward(self, input):
         self._check_input_dim(input)
 
@@ -178,22 +124,13 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
 
         return output
 
-    def correct_params(self):
-        pass
-
-    def correct_grads(self):
-        pass
-        # if self.affine:
-        #     self.weight.grad.mul_(2.)
-        #     self.bias.grad.mul_(2.)
-
-    # def extra_repr(self):
-    #     return 'num_channels={num_features}, eps={eps}, momentum={momentum}, affine={affine}, ' \
-    #            'track_running_stats={track_running_stats}'.format(num_features=int(self.__dict__['num_features']/2),
-    #                                                               eps=self.__dict__['eps'],
-    #                                                               momentum=self.__dict__['momentum'],
-    #                                                               affine=self.__dict__['affine'],
-    #                                                               track_running_stats=self.__dict__['track_running_stats'])
+    def extra_repr(self):
+        return 'num_channels={num_features}, eps={eps}, momentum={momentum}, affine={affine}, ' \
+               'track_running_stats={track_running_stats}'.format(num_features=int(self.num_features/2),
+                                                                  eps=self.eps,
+                                                                  momentum=self.momentum,
+                                                                  affine=self.affine,
+                                                                  track_running_stats=self.track_running_stats)
 
 
 class Pair2Bi(nn.Module):
@@ -204,7 +141,7 @@ class Pair2Bi(nn.Module):
         return torch.cat((im_a, im_b), dim=0)
 
 
-class BiBlock(nn.Module, _BraidModule):
+class BiBlock(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size=(3, 3)):
         super(BiBlock, self).__init__()
         padding = tuple([(i-1)//2 for i in kernel_size])
@@ -232,11 +169,11 @@ class BiBlock(nn.Module, _BraidModule):
         x = self.pool(x)
         return x
 
-    def correct_params(self):
-        pass
-
-    def correct_grads(self):
-        pass
+    # def correct_params(self):
+    #     pass
+    #
+    # def correct_grads(self):
+    #     pass
         # for p in self.parameters():
         #     p.grad.mul_(2.)
 
@@ -357,6 +294,7 @@ class BraidNet(nn.Module):
         #initialize parameters
         for m in self.modules():
             weights_init_kaiming(m)
+
         self.correct_params()
 
         # self.register_backward_hook(self.hook_correct_grads)
@@ -384,12 +322,12 @@ class BraidNet(nn.Module):
 
     def correct_params(self):
         for m in self.modules():
-            if isinstance(m, _BraidModule):
+            if isinstance(m, WConv2d):
                 m.correct_params()
 
     def correct_grads(self):
         for m in self.modules():
-            if isinstance(m, _BraidModule):
+            if isinstance(m, WConv2d):
                 m.correct_grads()
 
     # @staticmethod

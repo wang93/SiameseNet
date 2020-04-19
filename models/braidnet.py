@@ -182,9 +182,10 @@ class WBatchNorm2d(nn.BatchNorm2d, _BraidModule):
         pass
 
     def correct_grads(self):
-        if self.affine:
-            self.weight.grad.mul_(2.)
-            self.bias.grad.mul_(2.)
+        pass
+        # if self.affine:
+        #     self.weight.grad.mul_(2.)
+        #     self.bias.grad.mul_(2.)
 
     # def extra_repr(self):
     #     return 'num_channels={num_features}, eps={eps}, momentum={momentum}, affine={affine}, ' \
@@ -235,8 +236,9 @@ class BiBlock(nn.Module, _BraidModule):
         pass
 
     def correct_grads(self):
-        for p in self.parameters():
-            p.grad.mul_(2.)
+        pass
+        # for p in self.parameters():
+        #     p.grad.mul_(2.)
 
 
 class Bi2Braid(nn.Module):

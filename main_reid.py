@@ -77,7 +77,6 @@ def train(**kwargs):
         print('load pretrained model ' + opt.pretrained_model)
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
-
     start_epoch = 0
     best_rank1 = opt.best_rank1
     best_epoch = 0

@@ -69,8 +69,9 @@ def save_checkpoint(state, is_best, save_dir, filename):
 def parse_checkpoints(load_dir):
     files = os.listdir(load_dir)
     files = [f for f in files if '.pth.tar' in f]
-    files.remove('model_best.pth.tar')
-    pattern = re.compile(r'\d+') # look for numbers
+    if 'model_best.pth.tar' in files:
+        files.remove('model_best.pth.tar')
+    pattern = re.compile(r'\d+')  # look for numbers
     epochs = [pattern.findall(f) for f in files]
     epochs = [int(e[0]) for e in epochs]
     if len(epochs) > 0:

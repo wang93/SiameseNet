@@ -83,7 +83,8 @@ def train(**kwargs):
     if not opt.disable_resume:
         start_epoch, state_dict, best_epoch, best_rank1 = parse_checkpoints(opt.save_dir)
         if start_epoch > 0:
-            print('resuming from epoch {0}'.format(start_epoch))
+            print('resume from epoch {0}'.format(start_epoch))
+            print('the currently highest rank-1 score is {0}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
             model.load_state_dict(state_dict, True)
 
     model_meta = model.meta

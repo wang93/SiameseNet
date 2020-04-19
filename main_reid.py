@@ -25,6 +25,16 @@ from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
 from utils.serialization import Logger, save_checkpoint
 from utils.transforms import TestTransform, TrainTransform
 import random
+import subprocess
+
+
+def get_git_revision_hash():
+    return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+
+
+def get_git_revision_short_hash():
+    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+
 
 def random_seed(seed):
     torch.manual_seed(seed)  # cpu
@@ -42,7 +52,8 @@ def train(**kwargs):
     os.makedirs(opt.save_dir, exist_ok=True)
     use_gpu = torch.cuda.is_available()
     sys.stdout = Logger(osp.join(opt.save_dir, 'log_train.txt'))
-
+    
+    print('working on commit {}'.format(get_git_revision_short_hash()))
     print('=========user config==========')
     pprint(opt._state_dict())
     print('============end===============')

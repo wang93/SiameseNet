@@ -82,10 +82,9 @@ def train(**kwargs):
     else:
         start_epoch, params_file_path = find_latest_checkpoint(opt.save_dir)
         if start_epoch > 0:
-            print('resume from epoch {0}'.format(start_epoch))
+            print('resuming from epoch {0}'.format(start_epoch))
             state_dict = torch.load(params_file_path)['state_dict']
             model.load_state_dict(state_dict, True)
-
 
     model_meta = model.meta
     if use_gpu:
@@ -187,9 +186,9 @@ def train(**kwargs):
     #                                   {'params': params_noreg, 'weight_decay': 0.}],
     #                                  lr=opt.lr, momentum=0.9)
     optimizer = model.module.get_optimizer(optim=opt.optim,
-                                    lr=opt.lr,
-                                    momentum=opt.momentum,
-                                    weight_decay=opt.weight_decay)
+                                           lr=opt.lr,
+                                           momentum=opt.momentum,
+                                           weight_decay=opt.weight_decay)
 
 
     # get trainer and evaluator

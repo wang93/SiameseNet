@@ -22,7 +22,7 @@ from trainers.trainer import binary_logisticTrainer, cls_tripletTrainer
 from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
 from utils.LiftedStructure import LiftedStructureLoss
 from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
-from utils.serialization import Logger, save_checkpoint
+from utils.serialization import Logger, save_checkpoint, find_latest_checkpoint
 from utils.transforms import TestTransform, TrainTransform
 import random
 import subprocess
@@ -46,7 +46,6 @@ def random_seed(seed):
 
 def train(**kwargs):
     opt._parse(kwargs)
-
     # set random seed and cudnn benchmark
     random_seed(opt.seed)
     os.makedirs(opt.save_dir, exist_ok=True)
@@ -66,17 +65,27 @@ def train(**kwargs):
         print('currently using cpu')
 ########################################################################
     print('initializing model ...')
+
     if opt.model_name == 'braidnet':
         model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=(1,))
     else:
         raise NotImplementedError
-
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
         model.load_state_dict(state_dict, False)
         print('load pretrained model ' + opt.pretrained_model)
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
+
+    if opt.disable_resume:
+        start_epoch = 0
+    else:
+        start_epoch, params_file_path = find_latest_checkpoint(opt.save_dir)
+        if start_epoch > 0:
+            print('resume from epoch {0}'.format(start_epoch))
+            state_dict = torch.load(params_file_path)['state_dict']
+            model.load_state_dict(state_dict, True)
+
 
     model_meta = model.meta
     if use_gpu:
@@ -98,18 +107,16 @@ def train(**kwargs):
     summary_writer = SummaryWriter(osp.join(opt.save_dir, 'tensorboard_log'))
 
     if opt.model_name == 'braidnet':
-        train_sampler = PosNegPairSampler(dataset.train, opt.pos_rate)
         trainloader = PairLoader(
             ImagePairData(dataset.train, TrainTransform(opt.datatype, model_meta)),
-            sampler=train_sampler,
+            sampler=PosNegPairSampler(dataset.train, opt.pos_rate),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
         )
     else:
-        train_sampler = RandomIdentitySampler(dataset.train, opt.num_instances)
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
-            sampler=train_sampler,
+            sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
         )
@@ -184,7 +191,7 @@ def train(**kwargs):
                                     momentum=opt.momentum,
                                     weight_decay=opt.weight_decay)
 
-    start_epoch = opt.start_epoch
+
     # get trainer and evaluator
     if opt.model_name == 'braidnet':
         reid_trainer = binary_logisticTrainer(opt, model, optimizer, criterion, summary_writer, opt.correct_grads)

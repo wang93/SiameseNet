@@ -7,6 +7,8 @@ import sys
 import os.path as osp
 import torch
 
+import re
+
 
 class Logger(object):
     """
@@ -61,3 +63,24 @@ def save_checkpoint(state, is_best, save_dir, filename):
     torch.save(state, fpath)
     if is_best:
         shutil.copy(fpath, osp.join(save_dir, 'model_best.pth.tar'))
+
+
+def find_latest_checkpoint(load_dir):
+    files = os.listdir(load_dir)
+    files = [f for f in files if '.pth.tar' in f]
+    files.remove('model_best.pth.tar')
+    pattern = re.compile(r'\d+') # look for numbers
+    epochs = [pattern.findall(f) for f in files]
+    epochs = [int(e[0]) for e in epochs]
+    if len(epochs) > 0:
+        start_epoch = max(epochs)
+        start_epoch_index = epochs.index(start_epoch)
+        params_file_name = files[start_epoch_index]
+        params_file_path = osp.join(load_dir, params_file_name)
+    else:
+        start_epoch = 0
+        params_file_path = None
+
+    return start_epoch, params_file_path
+
+

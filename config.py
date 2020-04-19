@@ -43,12 +43,12 @@ class DefaultConfig(object):
     model_name = 'braidnet'  # triplet, softmax_triplet, bfe, ide, braidnet
     last_stride = 1
     pretrained_model = None
+    disable_resume = False
     
     # miscs
     print_freq = 30
     save_dir = './pytorch-ckpt/market'
     workers = 10
-    start_epoch = 0
     best_rank = -np.inf
 
 

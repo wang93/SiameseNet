@@ -8,6 +8,7 @@ import os.path as osp
 import torch
 
 import re
+import numpy as np
 
 
 class Logger(object):
@@ -65,7 +66,7 @@ def save_checkpoint(state, is_best, save_dir, filename):
         shutil.copy(fpath, osp.join(save_dir, 'model_best.pth.tar'))
 
 
-def find_latest_checkpoint(load_dir):
+def parse_checkpoints(load_dir):
     files = os.listdir(load_dir)
     files = [f for f in files if '.pth.tar' in f]
     files.remove('model_best.pth.tar')
@@ -77,10 +78,18 @@ def find_latest_checkpoint(load_dir):
         start_epoch_index = epochs.index(start_epoch)
         params_file_name = files[start_epoch_index]
         params_file_path = osp.join(load_dir, params_file_name)
+        state_dict = torch.load(params_file_path)['state_dict']
+
+        best_params_file_path = osp.join(load_dir, 'model_best.pth.tar')
+        best_params = torch.load(best_params_file_path)
+        best_rank1 = best_params['rank1']
+        best_epoch = best_params['epoch']
     else:
         start_epoch = 0
-        params_file_path = None
+        state_dict = None
+        best_rank1 = -np.inf
+        best_epoch = 0
 
-    return start_epoch, params_file_path
+    return start_epoch, state_dict, best_epoch, best_rank1
 
 

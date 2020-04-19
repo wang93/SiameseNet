@@ -49,8 +49,6 @@ class DefaultConfig(object):
     print_freq = 30
     save_dir = './pytorch-ckpt/market'
     workers = 10
-    best_rank = -np.inf
-
 
     def _parse(self, kwargs):
         for k, v in kwargs.items():

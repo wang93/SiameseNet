@@ -22,7 +22,7 @@ from trainers.trainer import binary_logisticTrainer, cls_tripletTrainer
 from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
 from utils.LiftedStructure import LiftedStructureLoss
 from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
-from utils.serialization import Logger, save_checkpoint, find_latest_checkpoint
+from utils.serialization import Logger, save_checkpoint, parse_checkpoints
 from utils.transforms import TestTransform, TrainTransform
 import random
 import subprocess
@@ -77,13 +77,14 @@ def train(**kwargs):
         print('load pretrained model ' + opt.pretrained_model)
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
-    if opt.disable_resume:
-        start_epoch = 0
-    else:
-        start_epoch, params_file_path = find_latest_checkpoint(opt.save_dir)
+
+    start_epoch = 0
+    best_rank1 = opt.best_rank1
+    best_epoch = 0
+    if not opt.disable_resume:
+        start_epoch, state_dict, best_epoch, best_rank1 = parse_checkpoints(opt.save_dir)
         if start_epoch > 0:
             print('resuming from epoch {0}'.format(start_epoch))
-            state_dict = torch.load(params_file_path)['state_dict']
             model.load_state_dict(state_dict, True)
 
     model_meta = model.meta
@@ -211,8 +212,6 @@ def train(**kwargs):
             p['lr'] = lr
 
     # start training
-    best_rank1 = opt.best_rank
-    best_epoch = 0
     for epoch in range(start_epoch, opt.max_epoch):
         if opt.adjust_lr:
             adjust_lr(optimizer, epoch + 1)
@@ -232,7 +231,7 @@ def train(**kwargs):
                 state_dict = model.module.state_dict()
             else:
                 state_dict = model.state_dict()
-            save_checkpoint({'state_dict': state_dict, 'epoch': epoch + 1}, 
+            save_checkpoint({'state_dict': state_dict, 'epoch': epoch + 1, 'rank1': rank1},
                 is_best=is_best, save_dir=opt.save_dir, 
                 filename='checkpoint_ep' + str(epoch + 1) + '.pth.tar')
 

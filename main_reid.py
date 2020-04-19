@@ -78,7 +78,7 @@ def train(**kwargs):
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
     start_epoch = 0
-    best_rank1 = opt.best_rank1
+    best_rank1 = -np.inf
     best_epoch = 0
     if not opt.disable_resume:
         start_epoch, state_dict, best_epoch, best_rank1 = parse_checkpoints(opt.save_dir)

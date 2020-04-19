@@ -186,7 +186,7 @@ def train(**kwargs):
     #     optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': opt.weight_decay},
     #                                   {'params': params_noreg, 'weight_decay': 0.}],
     #                                  lr=opt.lr, momentum=0.9)
-    optimizer = model.get_optimizer(optim=opt.optim,
+    optimizer = model.module.get_optimizer(optim=opt.optim,
                                     lr=opt.lr,
                                     momentum=opt.momentum,
                                     weight_decay=opt.weight_decay)

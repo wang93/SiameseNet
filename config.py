@@ -55,12 +55,11 @@ class DefaultConfig(object):
             if not hasattr(self, k):
                 warnings.warn("Warning: opt has not attribut %s" % k)
             setattr(self, k, v)
-
-        print(self.dataset)
+        #print(self.dataset)
 
         if self.dataset[0] == '[':
             self.dataset = eval(self.dataset)
-            print(self.dataset)
+            #print(self.dataset)
 
         self.datatype = 'person'
 

@@ -15,17 +15,18 @@ from config import opt
 from datasets import data_manager
 from datasets.data_loader import ImageData, ImagePairData, PairLoader
 from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
-from models.networks import ResNetBuilder, IDE, Resnet, BFE
+#from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet
 from trainers.evaluator import ResNetEvaluator, BraidNetEvaluator
 from trainers.trainer import binary_logisticTrainer, cls_tripletTrainer
-from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
-from utils.LiftedStructure import LiftedStructureLoss
-from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
+#from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
+#from utils.LiftedStructure import LiftedStructureLoss
+#from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
 from utils.serialization import Logger, save_checkpoint, parse_checkpoints
 from utils.transforms import TestTransform, TrainTransform
 import random
 import subprocess
+import time
 
 
 def get_git_revision_hash():
@@ -45,6 +46,7 @@ def random_seed(seed):
 
 
 def train(**kwargs):
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     opt._parse(kwargs)
     # set random seed and cudnn benchmark
     random_seed(opt.seed)
@@ -237,6 +239,8 @@ def train(**kwargs):
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
     reid_evaluator.evaluate(queryloader, galleryloader, queryFliploader, galleryFliploader, eval_flip=True)
+
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
 
 def test(model, queryloader):

@@ -111,7 +111,7 @@ def train(**kwargs):
     if opt.model_name == 'braidnet':
         trainloader = PairLoader(
             ImagePairData(dataset.train, TrainTransform(opt.datatype, model_meta)),
-            sampler=PosNegPairSampler(dataset.train, opt.pos_rate),
+            sampler=PosNegPairSampler(data_source=dataset.train, pos_rate=opt.pos_rate, iter_num_per_epoch=opt.iter_num_per_epoch),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
         )
@@ -214,7 +214,7 @@ def train(**kwargs):
     for epoch in range(start_epoch, opt.max_epoch):
         if opt.adjust_lr:
             adjust_lr(optimizer, epoch)
-        reid_trainer.train(epoch + 1, trainloader, opt.iter_num_per_epoch)
+        reid_trainer.train(epoch + 1, trainloader)
         # skip if not save model
         if opt.eval_step > 0 and (epoch + 1) % opt.eval_step == 0 or (epoch + 1) == opt.max_epoch:
             if opt.mode == 'class':

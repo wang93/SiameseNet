@@ -10,7 +10,7 @@ from torch.utils.data.sampler import Sampler
 
 
 class PosNegPairSampler(Sampler):
-    def __init__(self, data_source, pos_rate=0.5):
+    def __init__(self, data_source, pos_rate=0.5, iter_num_per_epoch=500):
         super(PosNegPairSampler, self).__init__(data_source)
         self.data_source = data_source
         self.pos_rate = pos_rate
@@ -18,6 +18,7 @@ class PosNegPairSampler(Sampler):
         for index, (_, pid, _) in enumerate(data_source):
             self.index_dic[pid].append(index)
         self.pids = list(self.index_dic.keys())
+        self.length = iter_num_per_epoch
         #self.num_identities = len(self.pids)
 
     def __iter__(self):
@@ -36,12 +37,12 @@ class PosNegPairSampler(Sampler):
             chosen = tuple([randchoice(self.index_dic[pid]) for pid in pid_pair])
             #label = 0.
 
-        return chosen#, label
+        return chosen #, label
 
     next = __next__  # Python 2 compatibility
 
     def __len__(self):
-        return len(self.data_source) ** 2
+        return self.length# len(self.data_source) ** 2
 
 
 class RandomIdentitySampler(Sampler):

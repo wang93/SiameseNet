@@ -101,53 +101,6 @@ class braidnetTrainer(cls_tripletTrainer):
     def __init__(self, opt, model, optimzier, criterion, summary_writer):
         super(braidnetTrainer, self).__init__(opt, model, optimzier, criterion, summary_writer)
 
-    def train(self, epoch, data_loader, iter_num_per_epoch=500):
-        '''Note: epoch should start with 1'''
-        self.model.train()
-
-        batch_time = AverageMeter()
-        data_time = AverageMeter()
-        losses = AverageMeter()
-
-        start = time.time()
-        for i, inputs in enumerate(data_loader):
-            data_time.update(time.time() - start)
-
-            # model optimizer
-            self._parse_data(inputs)
-            self._forward()
-            self.optimizer.zero_grad()
-            self._backward()
-            self.optimizer.step()
-
-            losses.update(self.loss.item())
-
-            # tensorboard
-            global_step = (epoch - 1) * len(data_loader) + i
-            self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
-            self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
-
-            if (i + 1) % self.opt.print_freq == 0:
-                print('Epoch: [{}][{}/{}]\t'
-                      'Batch Time {:.3f} ({:.3f})\t'
-                      'Data Time {:.3f} ({:.3f})\t'
-                      'Loss {:.3f} ({:.3f})\t'
-                      .format(epoch, i + 1, iter_num_per_epoch,
-                              batch_time.val, batch_time.mean,
-                              data_time.val, data_time.mean,
-                              losses.val, losses.mean))
-
-            batch_time.update(time.time() - start)
-            start = time.time()
-            if i + 1 >= iter_num_per_epoch:
-                break
-
-        param_group = self.optimizer.param_groups
-        print('Epoch: [{}]\tEpoch Time {:.3f} s\tLoss {:.3f}\t'
-              'Lr {:.2e}'
-              .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
-        print()
-
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs
 

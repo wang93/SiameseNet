@@ -22,11 +22,13 @@ class PosNegPairSampler(Sampler):
         #self.num_identities = len(self.pids)
 
     def __iter__(self):
+        print('the length of the sampler is {0}'.format(self.length))
         self.cur_idx = -1
         return self
 
     def __next__(self):
         self.cur_idx += 1
+        print(self.cur_idx)
         if self.cur_idx >= self.length:
             raise StopIteration
 

@@ -184,13 +184,13 @@ class Bi2Braid(nn.Module):
 
 
 class BraidBlock(nn.Module):
-    def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1), gap=False):
+    def __init__(self, channel_in, channel_out, kernel_size=(3, 3), gap=False):
         super(BraidBlock, self).__init__()
         padding = tuple([(i-1)//2 for i in kernel_size])
         self.wconv = WConv2d(channel_in, channel_out,
                              kernel_size=kernel_size,
                              padding=padding,
-                             stride=stride,
+                             stride=1,
                              bias=False)
         self.wbn = WBatchNorm2d(channel_out,
                                 eps=1e-05,
@@ -203,12 +203,12 @@ class BraidBlock(nn.Module):
             self.pool = nn.AdaptiveAvgPool2d(1)
 
         else:
-            self.pool = lambda x: x
-            # self.pool = nn.MaxPool2d(kernel_size=[2, 2],
-            #                          stride=[2, 2],
-            #                          padding=0,
-            #                          dilation=1,
-            #                          ceil_mode=False)
+            # self.pool = lambda x: x
+            self.pool = nn.MaxPool2d(kernel_size=[2, 2],
+                                     stride=[2, 2],
+                                     padding=0,
+                                     dilation=1,
+                                     ceil_mode=False)
 
     def forward(self, x):
         x = self.wconv(x)
@@ -277,8 +277,9 @@ class BraidNet(nn.Module):
         braid_blocks = []
         for i, sub_braid in enumerate(braid):
             gap = (i+1 == len(braid))
-            stride = (1, 1) if gap else (2, 2)
-            braid_blocks.append(BraidBlock(channel_in, sub_braid, stride=stride, gap=gap))
+            #stride = (1, 1) if gap else (2, 2)
+            #braid_blocks.append(BraidBlock(channel_in, sub_braid, stride=stride, gap=gap))
+            braid_blocks.append(BraidBlock(channel_in, sub_braid, gap=gap))
             channel_in = sub_braid
         self.braid = nn.Sequential(*braid_blocks)
 

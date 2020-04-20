@@ -169,14 +169,6 @@ class BiBlock(nn.Module):
         x = self.pool(x)
         return x
 
-    # def correct_params(self):
-    #     pass
-    #
-    # def correct_grads(self):
-    #     pass
-        # for p in self.parameters():
-        #     p.grad.mul_(2.)
-
 
 class Bi2Braid(nn.Module):
     def __init__(self):
@@ -268,18 +260,20 @@ class BraidNet(nn.Module):
 
         self.pair2bi = Pair2Bi()
 
-        self.bi_blocks = nn.ModuleList()
+        bi_blocks = []
         for sub_bi in bi:
-            self.bi_blocks.append(BiBlock(channel_in, sub_bi))
+            bi_blocks.append(BiBlock(channel_in, sub_bi))
             channel_in = sub_bi
+        self.bi = nn.Sequential(*bi_blocks)
 
         self.bi2braid = Bi2Braid()
 
-        self.braid_blocks = nn.ModuleList()
+        braid_blocks = []
         for i, sub_braid in enumerate(braid):
             gap = (i+1 == len(braid))
-            self.braid_blocks.append(BraidBlock(channel_in, sub_braid, gap=gap))
+            braid_blocks.append(BraidBlock(channel_in, sub_braid, gap=gap))
             channel_in = sub_braid
+        self.braid = nn.Sequential(*braid_blocks)
 
         self.sumy = SumY(channel_in)
 
@@ -297,18 +291,18 @@ class BraidNet(nn.Module):
 
         self.correct_params()
 
-        # self.register_backward_hook(self.hook_correct_grads)
-
     def forward(self, ims_a, ims_b):
         x = self.pair2bi(ims_a, ims_b)
 
-        for bi in self.bi_blocks:
-            x = bi(x)
+        # for bi in self.bi_blocks:
+        #     x = bi(x)
+        x = self.bi(x)
 
         x = self.bi2braid(x)
 
-        for braid in self.braid_blocks:
-            x = braid(x)
+        # for braid in self.braid_blocks:
+        #     x = braid(x)
+        x = self.braid(x)
 
         x = self.sumy(x)
 

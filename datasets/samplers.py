@@ -25,7 +25,7 @@ class PosNegPairSampler(Sampler):
         # print('the length of the sampler is {0}'.format(self.length))
         # self.cur_idx = -1
         # return self
-        return [self.get_index() for _ in range(self.length)]
+        return iter([self.get_index() for _ in range(self.length)])
 
     #def __next__(self):
     def get_index(self):

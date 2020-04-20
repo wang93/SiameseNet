@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 from config import opt
 from datasets import data_manager
-from datasets.data_loader import ImageData, ImagePairData, PairLoader
+from datasets.data_loader import ImageData, ImagePairData#, PairLoader
 from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
 #from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet

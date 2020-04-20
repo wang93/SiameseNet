@@ -5,7 +5,6 @@ from collections import defaultdict
 from numpy.random import choice as randchoice
 from numpy.random import uniform as randuniform
 import torch
-import random
 from torch.utils.data.sampler import Sampler
 
 
@@ -19,17 +18,13 @@ class PosNegPairSampler(Sampler):
             self.index_dic[pid].append(index)
         self.pids = list(self.index_dic.keys())
         self.length = sample_num_per_epoch
-        print('length of sampler is {0}'.format(self.length))
-        #self.num_identities = len(self.pids)
 
     def __iter__(self):
-        #print('the length of the sampler is {0}'.format(self.length))
         self.cur_idx = -1
         return self
 
     def __next__(self):
         self.cur_idx += 1
-        #print(self.cur_idx)
         if self.cur_idx >= self.length:
             raise StopIteration
 
@@ -38,21 +33,20 @@ class PosNegPairSampler(Sampler):
             pid = randchoice(self.pids)
             candidates = self.index_dic[pid]
             chosen = tuple(randchoice(candidates, size=2, replace=True))
-            #label = 1.
+
         else:
             '''negative pair'''
             pid_pair = tuple(randchoice(self.pids, size=2, replace=False))
             chosen = tuple([randchoice(self.index_dic[pid]) for pid in pid_pair])
-            #label = 0.
 
-        return chosen #, label
+
+        return chosen
 
     next = __next__  # Python 2 compatibility
 
     def __len__(self):
-        #print('call __len__ of sampler')
-        #print(self.length)
-        return self.length# len(self.data_source) ** 2
+        return self.length
+
 
 class RandomIdentitySampler(Sampler):
     def __init__(self, data_source, num_instances=4):

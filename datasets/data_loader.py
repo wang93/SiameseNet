@@ -19,44 +19,44 @@ def read_image(img_path):
     return img
 
 
-class _PairLoaderIter(_DataLoaderIter):
-    def __init__(self, loader):
-        super(_PairLoaderIter, self).__init__(loader)
-
-    def __next__(self):
-        if self.num_workers == 0:  # same-process loading
-            indices = next(self.sample_iter)  # may raise StopIteration
-            batch = self.collate_fn([(self.dataset[i], self.dataset[j])for i, j in indices])
-            if self.pin_memory:
-                batch = pin_memory_batch(batch)
-            return batch
-
-        # check if the next sample has already been generated
-        if self.rcvd_idx in self.reorder_dict:
-            batch = self.reorder_dict.pop(self.rcvd_idx)
-            return self._process_next_batch(batch)
-
-        if self.batches_outstanding == 0:
-            self._shutdown_workers()
-            raise StopIteration
-
-        while True:
-            assert (not self.shutdown and self.batches_outstanding > 0)
-            idx, batch = self._get_batch()
-            self.batches_outstanding -= 1
-            if idx != self.rcvd_idx:
-                # store out-of-order samples
-                self.reorder_dict[idx] = batch
-                continue
-            return self._process_next_batch(batch)
-
-
-class PairLoader(DataLoader):
-    def __init__(self, *args, **kwargs):
-        super(PairLoader, self).__init__(*args, **kwargs)
-
-    def __iter__(self):
-        return _PairLoaderIter(self)
+# class _PairLoaderIter(_DataLoaderIter):
+#     def __init__(self, loader):
+#         super(_PairLoaderIter, self).__init__(loader)
+#
+#     def __next__(self):
+#         if self.num_workers == 0:  # same-process loading
+#             indices = next(self.sample_iter)  # may raise StopIteration
+#             batch = self.collate_fn([(self.dataset[i], self.dataset[j])for i, j in indices])
+#             if self.pin_memory:
+#                 batch = pin_memory_batch(batch)
+#             return batch
+#
+#         # check if the next sample has already been generated
+#         if self.rcvd_idx in self.reorder_dict:
+#             batch = self.reorder_dict.pop(self.rcvd_idx)
+#             return self._process_next_batch(batch)
+#
+#         if self.batches_outstanding == 0:
+#             self._shutdown_workers()
+#             raise StopIteration
+#
+#         while True:
+#             assert (not self.shutdown and self.batches_outstanding > 0)
+#             idx, batch = self._get_batch()
+#             self.batches_outstanding -= 1
+#             if idx != self.rcvd_idx:
+#                 # store out-of-order samples
+#                 self.reorder_dict[idx] = batch
+#                 continue
+#             return self._process_next_batch(batch)
+#
+#
+# class PairLoader(DataLoader):
+#     def __init__(self, *args, **kwargs):
+#         super(PairLoader, self).__init__(*args, **kwargs)
+#
+#     def __iter__(self):
+#         return _PairLoaderIter(self)
 
 
 class ImageData(Dataset):

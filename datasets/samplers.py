@@ -22,17 +22,15 @@ class PosNegPairSampler(Sampler):
         #self.num_identities = len(self.pids)
 
     def __iter__(self):
-        # print('the length of the sampler is {0}'.format(self.length))
-        # self.cur_idx = -1
-        # return self
-        return iter([self.get_index() for _ in range(self.length)])
+        print('the length of the sampler is {0}'.format(self.length))
+        self.cur_idx = -1
+        return self
 
-    #def __next__(self):
-    def get_index(self):
-        # self.cur_idx += 1
-        # print(self.cur_idx)
-        # if self.cur_idx >= self.length:
-        #     return None
+    def __next__(self):
+        self.cur_idx += 1
+        print(self.cur_idx)
+        if self.cur_idx >= self.length:
+            raise StopIteration
 
         if randuniform() < self.pos_rate:
             '''positive pair'''
@@ -48,7 +46,7 @@ class PosNegPairSampler(Sampler):
 
         return chosen #, label
 
-    #next = __next__  # Python 2 compatibility
+    next = __next__  # Python 2 compatibility
 
     def __len__(self):
         return self.length# len(self.data_source) ** 2

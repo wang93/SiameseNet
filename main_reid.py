@@ -109,7 +109,7 @@ def train(**kwargs):
     summary_writer = SummaryWriter(osp.join(opt.save_dir, 'tensorboard_log'))
 
     if opt.model_name == 'braidnet':
-        trainloader = PairLoader(
+        trainloader = DataLoader(
             ImagePairData(dataset.train, TrainTransform(opt.datatype, model_meta)),
             sampler=PosNegPairSampler(data_source=dataset.train,
                                       pos_rate=opt.pos_rate,

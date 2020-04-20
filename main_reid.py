@@ -113,9 +113,9 @@ def train(**kwargs):
             ImagePairData(dataset.train, TrainTransform(opt.datatype, model_meta)),
             sampler=PosNegPairSampler(data_source=dataset.train,
                                       pos_rate=opt.pos_rate,
-                                      iter_num_per_epoch=opt.iter_num_per_epoch),
+                                      sample_num_per_epoch=opt.iter_num_per_epoch*opt.train_batch),
             batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=True
+            pin_memory=pin_memory, drop_last=False
         )
         print('the length of trainloader is {0}'.format(len(trainloader)))
     else:
@@ -123,7 +123,7 @@ def train(**kwargs):
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
             sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
             batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=True
+            pin_memory=pin_memory, drop_last=False
         )
 
     queryloader = DataLoader(

@@ -30,7 +30,7 @@ class PosNegPairSampler(Sampler):
         self.cur_idx += 1
         print(self.cur_idx)
         if self.cur_idx >= self.length:
-            raise StopIteration
+            return StopIteration
 
         if randuniform() < self.pos_rate:
             '''positive pair'''

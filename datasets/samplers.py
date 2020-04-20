@@ -51,8 +51,8 @@ class PosNegPairSampler(Sampler):
 
     def __len__(self):
         print('call __len__ of sampler')
+        print(self.length)
         return self.length# len(self.data_source) ** 2
-
 
 class RandomIdentitySampler(Sampler):
     def __init__(self, data_source, num_instances=4):

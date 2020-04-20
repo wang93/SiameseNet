@@ -19,6 +19,7 @@ class PosNegPairSampler(Sampler):
             self.index_dic[pid].append(index)
         self.pids = list(self.index_dic.keys())
         self.length = iter_num_per_epoch
+        print('length of sampler is {0}'.format(self.length))
         #self.num_identities = len(self.pids)
 
     def __iter__(self):

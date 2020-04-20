@@ -117,7 +117,7 @@ def train(**kwargs):
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=False
         )
-        print('the length of trainloader is {0}'.format(len(trainloader)))
+        #print('the length of trainloader is {0}'.format(len(trainloader)))
     else:
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),

@@ -10,7 +10,7 @@ from torch.utils.data.sampler import Sampler
 
 
 class PosNegPairSampler(Sampler):
-    def __init__(self, data_source, pos_rate=0.5, iter_num_per_epoch=500):
+    def __init__(self, data_source, pos_rate=0.5, sample_num_per_epoch=500*256):
         super(PosNegPairSampler, self).__init__(data_source)
         self.data_source = data_source
         self.pos_rate = pos_rate
@@ -18,7 +18,7 @@ class PosNegPairSampler(Sampler):
         for index, (_, pid, _) in enumerate(data_source):
             self.index_dic[pid].append(index)
         self.pids = list(self.index_dic.keys())
-        self.length = iter_num_per_epoch
+        self.length = sample_num_per_epoch
         print('length of sampler is {0}'.format(self.length))
         #self.num_identities = len(self.pids)
 

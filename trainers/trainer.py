@@ -26,8 +26,10 @@ class cls_tripletTrainer:
         data_time = AverageMeter()
         losses = AverageMeter()
 
+        data_loader = iter(data_loader)
         start = time.time()
-        for i, inputs in enumerate(data_loader):
+        for i in range(len(data_loader)):
+            inputs = next(data_loader)
             data_time.update(time.time() - start)
 
             # model optimizer

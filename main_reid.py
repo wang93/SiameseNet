@@ -18,7 +18,7 @@ from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
 #from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet
 from trainers.evaluator import ResNetEvaluator, BraidNetEvaluator
-from trainers.trainer import binary_logisticTrainer, cls_tripletTrainer
+from trainers.trainer import braidnetTrainer, cls_tripletTrainer
 #from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
 #from utils.LiftedStructure import LiftedStructureLoss
 #from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
@@ -196,7 +196,7 @@ def train(**kwargs):
 
     # get trainer and evaluator
     if opt.model_name == 'braidnet':
-        reid_trainer = binary_logisticTrainer(opt, model, optimizer, criterion, summary_writer, opt.correct_grads)
+        reid_trainer = braidnetTrainer(opt, model, optimizer, criterion, summary_writer)
     else:
         reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
 
@@ -221,6 +221,7 @@ def train(**kwargs):
                 rank1 = test(model, queryloader)
             else:
                 rank1 = reid_evaluator.evaluate(queryloader, galleryloader, queryFliploader, galleryFliploader)
+
             is_best = rank1 > best_rank1
             if is_best:
                 best_rank1 = rank1

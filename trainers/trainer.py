@@ -97,10 +97,9 @@ class cls_tripletTrainer:
         self.loss.backward()
 
 
-class binary_logisticTrainer(cls_tripletTrainer):
-    def __init__(self, opt, model, optimzier, criterion, summary_writer, correct_grads=True):
-        super(binary_logisticTrainer, self).__init__(opt, model, optimzier, criterion, summary_writer)
-        self.correct_grads = correct_grads
+class braidnetTrainer(cls_tripletTrainer):
+    def __init__(self, opt, model, optimzier, criterion, summary_writer):
+        super(braidnetTrainer, self).__init__(opt, model, optimzier, criterion, summary_writer)
 
     def train(self, epoch, data_loader, iter_num_per_epoch=500):
         '''Note: epoch should start with 1'''
@@ -162,5 +161,4 @@ class binary_logisticTrainer(cls_tripletTrainer):
 
     def _backward(self):
         self.loss.backward()
-        if self.correct_grads:
-            self.model.module.correct_grads()
+        self.model.module.correct_grads()

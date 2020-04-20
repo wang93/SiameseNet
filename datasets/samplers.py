@@ -22,9 +22,14 @@ class PosNegPairSampler(Sampler):
         #self.num_identities = len(self.pids)
 
     def __iter__(self):
+        self.cur_idx = -1
         return self
 
     def __next__(self):
+        self.cur_idx += 1
+        if self.cur_idx >= self.length:
+            raise StopIteration
+
         if randuniform() < self.pos_rate:
             '''positive pair'''
             pid = randchoice(self.pids)

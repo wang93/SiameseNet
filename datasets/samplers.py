@@ -49,6 +49,7 @@ class PosNegPairSampler(Sampler):
     next = __next__  # Python 2 compatibility
 
     def __len__(self):
+        print('call __len__ of sampler')
         return self.length# len(self.data_source) ** 2
 
 

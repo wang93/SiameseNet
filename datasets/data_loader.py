@@ -24,6 +24,8 @@ class ImageData(Dataset):
         self.transform = transform
 
     def __getitem__(self, item):
+        if isinstance(item, (list, tuple)):
+            return [self[i] for i in item]
         img, pid, camid = self.dataset[item]
         img = read_image(img)
         if self.transform is not None:
@@ -34,9 +36,9 @@ class ImageData(Dataset):
         return len(self.dataset)
 
 
-class ImagePairData(ImageData):
-    def __getitem__(self, items):
-        sample1 = ImageData.__getitem__(self, items[0])
-        sample2 = ImageData.__getitem__(self, items[1])
-
-        return sample1, sample2
+# class ImagePairData(ImageData):
+#     def __getitem__(self, items):
+#         sample1 = ImageData.__getitem__(self, items[0])
+#         sample2 = ImageData.__getitem__(self, items[1])
+#
+#         return sample1, sample2

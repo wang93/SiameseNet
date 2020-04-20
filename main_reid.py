@@ -201,10 +201,7 @@ def train(**kwargs):
         reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
 
     def adjust_lr(optimizer, ep):
-        # if ep < 50:
-        #     lr = 1e-4*(ep//5+1)
-        # else:
-        #     lr = 1e-3 * (0.1 ** ((ep - 50) // 200))
+        #ep starts with 0
         if ep < 100:
             lr = opt.lr
         else:
@@ -216,7 +213,7 @@ def train(**kwargs):
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
         if opt.adjust_lr:
-            adjust_lr(optimizer, epoch + 1)
+            adjust_lr(optimizer, epoch)
         reid_trainer.train(epoch + 1, trainloader, opt.iter_num_per_epoch)
         # skip if not save model
         if opt.eval_step > 0 and (epoch + 1) % opt.eval_step == 0 or (epoch + 1) == opt.max_epoch:

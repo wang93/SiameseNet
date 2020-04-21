@@ -32,7 +32,7 @@ def weights_init_kaiming(m):
 #     def correct_grads(self):
 #         pass
 def int2tuple(n):
-    if isinstance(n, (list, tuple)):
+    if isinstance(n, int):
         n = (n, n)
 
     return n

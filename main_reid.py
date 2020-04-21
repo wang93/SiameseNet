@@ -28,6 +28,15 @@ import random
 import subprocess
 import time
 
+import torch.utils.model_zoo as model_zoo
+model_urls = {
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+}
+
 
 def get_git_revision_hash():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
@@ -72,7 +81,10 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 
-
+    if opt.resnet_stem:
+        print('use resnet stem')
+        resnet_state_dict = model_zoo.load_url(model_urls['resnet18'])
+        model.load_resnet_stem(resnet_state_dict)
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -88,7 +100,7 @@ def train(**kwargs):
         start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.save_dir)
         if start_epoch > 0:
             print('resume from epoch {0}'.format(start_epoch))
-            print('the currently highest rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
+            print('the highest current rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
             model.load_state_dict(state_dict, True)
 
     model_meta = model.meta
@@ -201,17 +213,26 @@ def train(**kwargs):
     def adjust_lr(optimizer, ep):
         #ep starts with 0
         if ep < 100:
-            lr = opt.lr
+            mul = 1.
         else:
-            lr = opt.lr * (opt.gamma ** ((ep-100)//20+1))
+            mul = opt.gamma ** ((ep-100)//20+1)
 
         for p in optimizer.param_groups:
-            p['lr'] = lr
+            p['lr'] = p['base_lr'] * mul
 
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
+        if epoch + 1 == opt.freeze_pretrained_untill:
+            model.module.unlable_resnet_stem()
+            optimizer = model.module.get_optimizer(optim=opt.optim,
+                                                   lr=opt.lr,
+                                                   momentum=opt.momentum,
+                                                   weight_decay=opt.weight_decay)
+            reid_trainer.optimizer = optimizer
+
         if opt.adjust_lr:
             adjust_lr(optimizer, epoch)
+
         reid_trainer.train(epoch + 1, trainloader)
         # skip if not save model
         if opt.eval_step > 0 and (epoch + 1) % opt.eval_step == 0 or (epoch + 1) == opt.max_epoch:

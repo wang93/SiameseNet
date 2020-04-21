@@ -4,7 +4,7 @@ import torch
 #import abc
 #from torch._jit_internal import weak_module, weak_script_method
 from torch.nn import functional as F
-#from torch.nn.parameter import Parameter
+from torch.nn.parameter import Parameter
 
 
 def weights_init_kaiming(m):
@@ -264,6 +264,13 @@ class FCBlock(nn.Module):
 
 
 class BraidNet(nn.Module):
+    resnet2in = {
+        'conv1.weight': 'bi.0.conv.weight',
+        'conv1.bias': 'bi.0.bn.bias',
+        'bn1.running_mean': 'bi.0.bn.running_mean',
+        'bn1.running_var': 'bi.0.bn.running_var',
+        'bn1.num_batches_tracked': 'bi.0.bn.num_batches_tracked'
+    }
     def __init__(self, bi, braid, fc):
         super(BraidNet, self).__init__()
         # self.meta = {'mean': [0.3578, 0.3544, 0.3471],
@@ -313,6 +320,10 @@ class BraidNet(nn.Module):
             weights_init_kaiming(m)
 
         self.correct_params()
+        self.pretrained_params = []
+        self.has_resnet_stem = Parameter(torch.tensor(False), requires_grad=False)
+
+
 
     def forward(self, ims_a, ims_b):
         x = self.pair2bi(ims_a, ims_b)
@@ -347,35 +358,54 @@ class BraidNet(nn.Module):
             if isinstance(m, WConv2d):
                 m.correct_grads()
 
-    # @staticmethod
-    # def hook_correct_grads(module, *args, **kwargs):
-    #     module.correct_grads()
+    def load_resnet_stem(self, resnet_state_dict):
+        in_state_dict = dict()
+        for out_, in_ in self.resnet2in.items():
+            in_state_dict[in_] = resnet_state_dict[out_]
+
+        self.load_state_dict(in_state_dict, strict=False)
+        self.has_resnet_stem.data = torch.tensor(True)
+
+    def unlable_resnet_stem(self):
+        self.has_resnet_stem.data = torch.tensor(False)
+
+    def check_pretrained_params(self):
+        self.pretrained_params = []
+        if self.has_resnet_stem:
+            for _, in_ in self.resnet2in.items():
+                self.pretrained_params.append(self.get_indirect_attr(in_))
+
+    def get_indirect_attr(self, name: str):
+        attr = self
+        for n in name.split('.'):
+            attr = getattr(attr, n)
+
+        return attr
+
+    def divide_params(self):
+        self.params_reg = []
+        self.params_noreg = []
+        for model in self.modules():
+            for k, v in model._parameters.items():
+                if v is None or v in self.pretrained_params:
+                    continue
+                if k in ('weight', ) and isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
+                    self.params_noreg.append(v)
+                else:
+                    self.params_reg.append(v)
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
-        params_reg = []
-        params_noreg = []
-        for model in self.modules():
-            if isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
-                for k, v in model._parameters.items():
-                    if v is None:
-                        continue
-                    if k == 'weight':
-                        params_noreg.append(v)
-                    else:
-                        params_reg.append(v)
-            else:
-                for _, v in model._parameters.items():
-                    if v is None:
-                        continue
-                    params_reg.append(v)
+        self.check_pretrained_params()
+        self.divide_params()
+
+        param_groups = [{'params': self.params_reg, 'weight_decay': weight_decay},
+                        {'params': self.params_noreg, 'weight_decay': 0.},
+                        {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
+        default = {'base_lr': lr, 'lr': lr, 'momentum': momentum}
 
         if optim == "sgd":
-            optimizer = torch.optim.SGD([{'params': params_reg, 'weight_decay': weight_decay},
-                                         {'params': params_noreg, 'weight_decay': 0.}],
-                                        lr=lr, momentum=momentum)
+            optimizer = torch.optim.SGD(param_groups, **default)
         else:
-            optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': weight_decay},
-                                          {'params': params_noreg, 'weight_decay': 0.}],
-                                         lr=lr, momentum=momentum)
+            optimizer = torch.optim.Adam(param_groups, **default)
 
         return optimizer

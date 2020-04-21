@@ -22,6 +22,7 @@ class DefaultConfig(object):
     train_batch = 256
     test_batch = 256
     adjust_lr = False
+    freeze_pretrained_untill = -1 #=0, 1, 2... =0 when always freeze pretrained
     lr = 0.4
     adjust_lr = False
     gamma = 0.5
@@ -41,6 +42,7 @@ class DefaultConfig(object):
     # model options
     model_name = 'braidnet'  # triplet, softmax_triplet, bfe, ide, braidnet
     last_stride = 1
+    resnet_stem = False
     pretrained_model = None
     disable_resume = False
     

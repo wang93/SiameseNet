@@ -71,9 +71,9 @@ def parse_checkpoints(load_dir):
     files = [f for f in files if '.pth.tar' in f]
     if 'model_best.pth.tar' in files:
         files.remove('model_best.pth.tar')
-    pattern = re.compile(r'\d+')  # look for numbers
+    pattern = re.compile(r'\A[checkpoint_ep]\d+[.pth.tar]')  # look for numbers
     epochs = [pattern.findall(f) for f in files]
-    epochs = [int(e[0]) for e in epochs]
+    epochs = [int(e[0]) for e in epochs if len(e) > 0]
     if len(epochs) > 0:
         start_epoch = max(epochs)
         start_epoch_index = epochs.index(start_epoch)
@@ -91,6 +91,16 @@ def parse_checkpoints(load_dir):
         best_rank1 = -np.inf
         best_epoch = 0
 
-    return start_epoch, state_dict, best_epoch, best_rank1
+    optimizer_state_dict = None
+    if start_epoch > 0:
+        optimizer_state_dict_path = os.path.join(load_dir,
+                                                 'optimizer_checkpoint_ep'
+                                                 + str(start_epoch)
+                                                 + '.pth.tar')
+
+        if os.path.exists(optimizer_state_dict_path):
+            optimizer_state_dict = torch.load(optimizer_state_dict_path)['state_dict']
+
+    return start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict
 
 

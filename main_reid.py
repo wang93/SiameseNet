@@ -66,12 +66,17 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 ########################################################################
-    print('initializing model ...')
-
+    print('initializing model and optimizer...')
     if opt.model_name == 'braidnet':
         model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=(1,))
     else:
         raise NotImplementedError
+
+    # get optimizer
+    optimizer = model.get_optimizer(optim=opt.optim,
+                                    lr=opt.lr,
+                                    momentum=opt.momentum,
+                                    weight_decay=opt.weight_decay)
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -83,15 +88,19 @@ def train(**kwargs):
     best_rank1 = -np.inf
     best_epoch = 0
     if not opt.disable_resume:
-        start_epoch, state_dict, best_epoch, best_rank1 = parse_checkpoints(opt.save_dir)
+        start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.save_dir)
         if start_epoch > 0:
             print('resume from epoch {0}'.format(start_epoch))
             print('the currently highest rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
             model.load_state_dict(state_dict, True)
+            
+        if optimizer_state_dict is not None:
+            optimizer.load_state_dict(optimizer_state_dict)
 
     model_meta = model.meta
     if use_gpu:
         model = nn.DataParallel(model).cuda()
+
 #########################################################
     print('initializing dataset {}'.format(opt.dataset))
     if isinstance(opt.dataset, list):
@@ -176,28 +185,8 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 
-    # get optimizer
 
-    # if opt.model_name == 'braidnet':
-    #params_reg, params_noreg = model.get_optim_policy()
-    # else:
-    #     raise NotImplementedError
-    #
-    # if opt.optim == "sgd":
-    #     optimizer = torch.optim.SGD([{'params': params_reg, 'weight_decay': opt.weight_decay},
-    #                                  {'params': params_noreg, 'weight_decay': 0.}],
-    #                                 lr=opt.lr, momentum=0.9)
-    # else:
-    #     optimizer = torch.optim.Adam([{'params': params_reg, 'weight_decay': opt.weight_decay},
-    #                                   {'params': params_noreg, 'weight_decay': 0.}],
-    #                                  lr=opt.lr, momentum=0.9)
-    optimizer = model.module.get_optimizer(optim=opt.optim,
-                                           lr=opt.lr,
-                                           momentum=opt.momentum,
-                                           weight_decay=opt.weight_decay)
-
-
-    # get trainer and evaluator
+    # get trainer
     if opt.model_name == 'braidnet':
         reid_trainer = braidnetTrainer(opt, model, optimizer, criterion, summary_writer)
     else:
@@ -234,9 +223,15 @@ def train(**kwargs):
                 state_dict = model.module.state_dict()
             else:
                 state_dict = model.state_dict()
+            optimizer_state_dict = optimizer.state_dict()
+
             save_checkpoint({'state_dict': state_dict, 'epoch': epoch + 1, 'rank1': rank1},
                 is_best=is_best, save_dir=opt.save_dir, 
                 filename='checkpoint_ep' + str(epoch + 1) + '.pth.tar')
+
+            save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch + 1},
+                            is_best=False, save_dir=opt.save_dir,
+                            filename='optimizer_checkpoint_ep' + str(epoch + 1) + '.pth.tar')
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
     reid_evaluator.evaluate(queryloader, galleryloader, queryFliploader, galleryFliploader, eval_flip=True)

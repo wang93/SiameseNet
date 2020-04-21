@@ -54,7 +54,7 @@ def train(**kwargs):
     use_gpu = torch.cuda.is_available()
     sys.stdout = Logger(osp.join(opt.save_dir, 'log_train.txt'))
 
-    print('current commit hash: {}'.format(get_git_revision_short_hash()))
+    print('current commit hash: {}'.format(get_git_revision_hash()))
     print('=========user config==========')
     pprint(opt._state_dict())
     print('============end===============')

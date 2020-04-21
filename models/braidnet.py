@@ -268,8 +268,12 @@ class BraidNet(nn.Module):
         super(BraidNet, self).__init__()
         self.meta = {'mean': [0.3578, 0.3544, 0.3471],
                      'std': [1, 1, 1],
-                     'imageSize': [128, 64]
+                     'imageSize': [256, 128]
                      }
+        # self.meta = {'mean': [0.485, 0.456, 0.406],
+        #              'std': [0.229, 0.224, 0.225],
+        #              'imageSize': [128, 64]
+        #              }
 
         channel_in = 3
 

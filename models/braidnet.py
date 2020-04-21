@@ -149,6 +149,8 @@ class Pair2Bi(nn.Module):
 class BiBlock(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1)):
         super(BiBlock, self).__init__()
+        kernel_size = int2tuple(kernel_size)
+        stride = int2tuple(stride)
         padding = tuple([(i-1)//2 for i in kernel_size])
         self.conv = nn.Conv2d(channel_in, channel_out,
                               kernel_size=kernel_size,

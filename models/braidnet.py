@@ -4,7 +4,16 @@ import torch
 #import abc
 #from torch._jit_internal import weak_module, weak_script_method
 from torch.nn import functional as F
-from torch.nn.parameter import Parameter
+#from torch.nn.parameter import Parameter
+
+import torch.utils.model_zoo as model_zoo
+model_urls = {
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+}
 
 
 def weights_init_kaiming(m):
@@ -271,6 +280,7 @@ class BraidNet(nn.Module):
         'bn1.running_var': 'bi.0.bn.running_var',
         'bn1.num_batches_tracked': 'bi.0.bn.num_batches_tracked'
     }
+
     def __init__(self, bi, braid, fc):
         super(BraidNet, self).__init__()
         # self.meta = {'mean': [0.3578, 0.3544, 0.3471],
@@ -321,7 +331,7 @@ class BraidNet(nn.Module):
 
         self.correct_params()
         self.pretrained_params = []
-        self.has_resnet_stem = Parameter(torch.tensor(False), requires_grad=False)
+        self.has_resnet_stem = False#Parameter(torch.tensor(False), requires_grad=False)
 
 
 
@@ -358,16 +368,18 @@ class BraidNet(nn.Module):
             if isinstance(m, WConv2d):
                 m.correct_grads()
 
-    def load_resnet_stem(self, resnet_state_dict):
+    def load_resnet_stem(self, resnet_name='resnet18'):
+        resnet_state_dict = model_zoo.load_url(model_urls[resnet_name])
+
         in_state_dict = dict()
         for out_, in_ in self.resnet2in.items():
             in_state_dict[in_] = resnet_state_dict[out_]
 
         self.load_state_dict(in_state_dict, strict=False)
-        self.has_resnet_stem.data = torch.tensor(True)
+        self.has_resnet_stem = True #torch.tensor(True)
 
     def unlable_resnet_stem(self):
-        self.has_resnet_stem.data = torch.tensor(False)
+        self.has_resnet_stem = False #torch.tensor(False)
 
     def check_pretrained_params(self):
         self.pretrained_params = []
@@ -383,6 +395,7 @@ class BraidNet(nn.Module):
         return attr
 
     def divide_params(self):
+        self.check_pretrained_params()
         self.params_reg = []
         self.params_noreg = []
         for model in self.modules():
@@ -395,7 +408,6 @@ class BraidNet(nn.Module):
                     self.params_reg.append(v)
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
-        self.check_pretrained_params()
         self.divide_params()
 
         param_groups = [{'params': self.params_reg, 'weight_decay': weight_decay},

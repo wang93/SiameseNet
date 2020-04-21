@@ -28,15 +28,6 @@ import random
 import subprocess
 import time
 
-import torch.utils.model_zoo as model_zoo
-model_urls = {
-    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
-    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
-    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
-    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
-}
-
 
 def get_git_revision_hash():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
@@ -83,8 +74,7 @@ def train(**kwargs):
 
     if opt.resnet_stem:
         print('use resnet stem')
-        resnet_state_dict = model_zoo.load_url(model_urls['resnet18'])
-        model.load_resnet_stem(resnet_state_dict)
+        model.load_resnet_stem('resnet18')
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -102,6 +92,9 @@ def train(**kwargs):
             print('resume from epoch {0}'.format(start_epoch))
             print('the highest current rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
             model.load_state_dict(state_dict, True)
+
+    if opt.resnet_stem and start_epoch + 1 >= opt.freeze_pretrained_untill:
+        model.unlable_resnet_stem()
 
     model_meta = model.meta
     if use_gpu:

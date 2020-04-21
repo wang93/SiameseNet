@@ -72,11 +72,7 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 
-    # get optimizer
-    optimizer = model.get_optimizer(optim=opt.optim,
-                                    lr=opt.lr,
-                                    momentum=opt.momentum,
-                                    weight_decay=opt.weight_decay)
+
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -87,19 +83,29 @@ def train(**kwargs):
     start_epoch = 0
     best_rank1 = -np.inf
     best_epoch = 0
+    optimizer_state_dict = None
     if not opt.disable_resume:
         start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.save_dir)
         if start_epoch > 0:
             print('resume from epoch {0}'.format(start_epoch))
             print('the currently highest rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
             model.load_state_dict(state_dict, True)
-            
-        if optimizer_state_dict is not None:
-            optimizer.load_state_dict(optimizer_state_dict)
 
     model_meta = model.meta
     if use_gpu:
         model = nn.DataParallel(model).cuda()
+    else:
+        raise NotImplementedError
+
+    # get optimizer
+    optimizer = model.module.get_optimizer(optim=opt.optim,
+                                    lr=opt.lr,
+                                    momentum=opt.momentum,
+                                    weight_decay=opt.weight_decay)
+
+    if optimizer_state_dict is not None:
+        print('start from previous optimizer state')
+        optimizer.load_state_dict(optimizer_state_dict)
 
 #########################################################
     print('initializing dataset {}'.format(opt.dataset))

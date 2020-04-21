@@ -153,7 +153,7 @@ class BiBlock(nn.Module):
         self.conv = nn.Conv2d(channel_in, channel_out,
                               kernel_size=kernel_size,
                               padding=padding,
-                              stride=(1, 1),
+                              stride=stride,
                               bias=False)
         self.bn = nn.BatchNorm2d(channel_out,
                                  eps=1e-05,

@@ -71,13 +71,14 @@ def parse_checkpoints(load_dir):
     files = [f for f in files if '.pth.tar' in f]
     if 'model_best.pth.tar' in files:
         files.remove('model_best.pth.tar')
-    pattern = re.compile(r'\A[checkpoint_ep]\d+[.pth.tar]')  # look for numbers
+    pattern = re.compile(r'(?<=^checkpoint_ep)\d+')  # look for numbers
     epochs = [pattern.findall(f) for f in files]
     epochs = [int(e[0]) for e in epochs if len(e) > 0]
     if len(epochs) > 0:
         start_epoch = max(epochs)
-        start_epoch_index = epochs.index(start_epoch)
-        params_file_name = files[start_epoch_index]
+        #start_epoch_index = epochs.index(start_epoch)
+        #params_file_name = files[start_epoch_index]
+        params_file_name = 'checkpoint_ep{0}.pth.tar'.format(start_epoch)
         params_file_path = osp.join(load_dir, params_file_name)
         state_dict = torch.load(params_file_path)['state_dict']
 

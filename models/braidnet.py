@@ -31,6 +31,11 @@ def weights_init_kaiming(m):
 #     @abc.abstractmethod
 #     def correct_grads(self):
 #         pass
+def int2tuple(n):
+    if isinstance(n, (list, tuple)):
+        n = (n, n)
+
+    return n
 
 
 class WConv2d(nn.Conv2d):
@@ -142,7 +147,7 @@ class Pair2Bi(nn.Module):
 
 
 class BiBlock(nn.Module):
-    def __init__(self, channel_in, channel_out, kernel_size=(3, 3)):
+    def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1)):
         super(BiBlock, self).__init__()
         padding = tuple([(i-1)//2 for i in kernel_size])
         self.conv = nn.Conv2d(channel_in, channel_out,
@@ -184,13 +189,15 @@ class Bi2Braid(nn.Module):
 
 
 class BraidBlock(nn.Module):
-    def __init__(self, channel_in, channel_out, kernel_size=(3, 3), gap=False):
+    def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1), gap=False):
         super(BraidBlock, self).__init__()
+        kernel_size = int2tuple(kernel_size)
+        stride = int2tuple(stride)
         padding = tuple([(i-1)//2 for i in kernel_size])
         self.wconv = WConv2d(channel_in, channel_out,
                              kernel_size=kernel_size,
                              padding=padding,
-                             stride=1,
+                             stride=stride,
                              bias=False)
         self.wbn = WBatchNorm2d(channel_out,
                                 eps=1e-05,
@@ -267,8 +274,10 @@ class BraidNet(nn.Module):
         self.pair2bi = Pair2Bi()
 
         bi_blocks = []
-        for sub_bi in bi:
-            bi_blocks.append(BiBlock(channel_in, sub_bi))
+        for i, sub_bi in enumerate(bi):
+            kernel_size = 3 if i > 0 else 7
+            stride = 1 if i > 0 else 2
+            bi_blocks.append(BiBlock(channel_in, sub_bi, kernel_size=kernel_size, stride=stride))
             channel_in = sub_bi
         self.bi = nn.Sequential(*bi_blocks)
 

@@ -104,7 +104,7 @@ def train(**kwargs):
                                            weight_decay=opt.weight_decay)
 
     if optimizer_state_dict is not None:
-        print('optimizer comes to saved state')
+        print('optimizer comes to the state after epoch {0}'.format(start_epoch))
         optimizer.load_state_dict(optimizer_state_dict)
 
 #########################################################

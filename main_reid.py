@@ -99,12 +99,12 @@ def train(**kwargs):
 
     # get optimizer
     optimizer = model.module.get_optimizer(optim=opt.optim,
-                                    lr=opt.lr,
-                                    momentum=opt.momentum,
-                                    weight_decay=opt.weight_decay)
+                                           lr=opt.lr,
+                                           momentum=opt.momentum,
+                                           weight_decay=opt.weight_decay)
 
     if optimizer_state_dict is not None:
-        print('start from previous optimizer state')
+        print('optimizer comes to saved state')
         optimizer.load_state_dict(optimizer_state_dict)
 
 #########################################################

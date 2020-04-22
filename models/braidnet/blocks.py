@@ -34,11 +34,6 @@ class BiBlock(nn.Module):
                                  affine=True,
                                  track_running_stats=True)
         self.relu = nn.ReLU(inplace=True)
-        # self.pool = nn.MaxPool2d(kernel_size=[2, 2],
-        #                          stride=[2, 2],
-        #                          padding=0,
-        #                          dilation=1,
-        #                          ceil_mode=False)
         self.pool = nn.MaxPool2d(kernel_size=[3, 3],
                                  stride=[2, 2],
                                  padding=1,

@@ -409,6 +409,7 @@ class BraidNet(nn.Module):
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()
+        print('braidnet has {0} params'.format(len(self.parameters())))
         print('braidnet has {0} reg_params'.format(len(self.reg_params)))
         print('braidnet has {0} noreg_params'.format(len(self.noreg_params)))
         print('braidnet has {0} pretrained_params'.format(len(self.pretrained_params)))

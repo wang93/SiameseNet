@@ -275,10 +275,10 @@ class FCBlock(nn.Module):
 class BraidNet(nn.Module):
     resnet2in = {
         'conv1.weight': 'bi.0.conv.weight',
-        'conv1.bias': 'bi.0.bn.bias',
+        'bn1.weight': 'bi.0.bn.weight',
+        'bn1.bias': 'bi.0.bn.bias',
         'bn1.running_mean': 'bi.0.bn.running_mean',
         'bn1.running_var': 'bi.0.bn.running_var',
-        'bn1.num_batches_tracked': 'bi.0.bn.num_batches_tracked'
     }
 
     def __init__(self, bi, braid, fc):

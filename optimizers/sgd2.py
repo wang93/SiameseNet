@@ -1,6 +1,7 @@
 from torch.optim.sgd import SGD
 from torch.optim.optimizer import required
 
+
 class SGD2(SGD):
     def __init__(self, params, base_lr=required, lr=required, momentum=0, dampening=0,
                  weight_decay=0, nesterov=False):

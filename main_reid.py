@@ -218,7 +218,7 @@ def train(**kwargs):
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
         if epoch + 1 == opt.freeze_pretrained_untill:
-            print('no longer freeze pretrained params...')
+            print('no longer freeze pretrained params!')
             model.module.unlable_resnet_stem()
             optimizer = model.module.get_optimizer(optim=opt.optim,
                                                    lr=opt.lr,

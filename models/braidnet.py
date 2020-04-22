@@ -380,11 +380,11 @@ class BraidNet(nn.Module):
         self.has_resnet_stem = False #torch.tensor(False)
 
     def check_pretrained_params(self):
-        self.pretrained_params = set()
+        self.pretrained_params = []
         if self.has_resnet_stem:
             for _, in_ in self.resnet2in.items():
                 if '.running_' not in in_:
-                    self.pretrained_params.add(self.get_indirect_attr(in_))
+                    self.pretrained_params.append(self.get_indirect_attr(in_))
 
     def get_indirect_attr(self, name: str):
         attr = self
@@ -395,16 +395,17 @@ class BraidNet(nn.Module):
 
     def divide_params(self):
         self.check_pretrained_params()
-        self.reg_params = set()
-        self.noreg_params = set()
+        self.reg_params = []
+        self.noreg_params = []
+        classified_params = set(self.pretrained_params)
         for model in self.modules():
             for k, v in model._parameters.items():
-                if v is None or v in self.pretrained_params:
+                if v is None or v in classified_params:
                     continue
                 if k in ('weight', ) and isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
-                    self.noreg_params.add(v)
+                    self.noreg_params.append(v)
                 else:
-                    self.reg_params.add(v)
+                    self.reg_params.append(v)
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()
@@ -413,9 +414,9 @@ class BraidNet(nn.Module):
         print('braidnet has {0} noreg_params'.format(len(self.noreg_params)))
         print('braidnet has {0} pretrained_params'.format(len(self.pretrained_params)))
 
-        param_groups = [{'params': list(self.reg_params)},
-                        {'params': list(self.noreg_params), 'weight_decay': 0.},
-                        {'params': list(self.pretrained_params), 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
+        param_groups = [{'params': self.reg_params},
+                        {'params': self.noreg_params, 'weight_decay': 0.},
+                        {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
         default = {'base_lr': lr, 'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
 
         if optim == "sgd":

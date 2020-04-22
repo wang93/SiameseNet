@@ -12,7 +12,7 @@ from collections import defaultdict
 """Dataset classes"""
 '''Note: relabel is not necessary, so retruned non-combined dataset may have not been relabeled'''
 
-ROOT = '/data/home/wyc/wyc_datasets/Person'
+ROOT = '/data/home/wyc/wyc-datasets/Person'
 
 class __Dataset(object):
     dataset_dir = ''

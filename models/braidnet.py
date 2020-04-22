@@ -409,10 +409,10 @@ class BraidNet(nn.Module):
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()
-        print('braidnet has {0} params'.format(len(list(self.parameters()))))
-        print('braidnet has {0} reg_params'.format(len(self.reg_params)))
-        print('braidnet has {0} noreg_params'.format(len(self.noreg_params)))
-        print('braidnet has {0} pretrained_params'.format(len(self.pretrained_params)))
+        # print('braidnet has {0} params'.format(len(list(self.parameters()))))
+        # print('braidnet has {0} reg_params'.format(len(self.reg_params)))
+        # print('braidnet has {0} noreg_params'.format(len(self.noreg_params)))
+        # print('braidnet has {0} pretrained_params'.format(len(self.pretrained_params)))
 
         param_groups = [{'params': self.reg_params},
                         {'params': self.noreg_params, 'weight_decay': 0.},
@@ -443,7 +443,7 @@ class BraidNet(nn.Module):
             module.train(mode)
 
         stem_training = mode and (not self.has_resnet_stem)
-        print('stem.training is {0}'.format(stem_training))
+        #print('stem.training is {0}'.format(stem_training))
         self.bi[0].train(stem_training)
 
         return self

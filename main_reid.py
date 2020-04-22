@@ -213,7 +213,7 @@ def train(**kwargs):
 
         for p in optimizer.param_groups:
             p['lr'] = p['base_lr'] * mul
-            print('in this param group, the base_lr is {0}, the lr is {1}'.format(p['base_lr'],p['lr'] ))
+            #print('in this param group, the base_lr is {0}, the lr is {1}'.format(p['base_lr'],p['lr'] ))
 
     # start training
     for epoch in range(start_epoch, opt.max_epoch):

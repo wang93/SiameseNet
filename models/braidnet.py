@@ -424,3 +424,25 @@ class BraidNet(nn.Module):
             optimizer = Adam2(param_groups, **default)
 
         return optimizer
+
+    def train(self, mode=True):
+        r"""Sets the module in training mode.
+
+        This has any effect only on certain modules. See documentations of
+        particular modules for details of their behaviors in training/evaluation
+        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
+        etc.
+
+        Returns:
+            Module: self
+        """
+        self.training = mode
+
+        for name, module in self.named_children():
+            module.train(mode)
+
+        stem_training = mode and (not self.has_resnet_stem)
+        print('stem.training is {0}'.format(stem_training))
+        self.bi[0].train(stem_training)
+
+        return self

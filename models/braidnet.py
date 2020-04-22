@@ -382,10 +382,10 @@ class BraidNet(nn.Module):
         self.has_resnet_stem = False #torch.tensor(False)
 
     def check_pretrained_params(self):
-        self.pretrained_params = []
+        self.pretrained_params = set()
         if self.has_resnet_stem:
             for _, in_ in self.resnet2in.items():
-                self.pretrained_params.append(self.get_indirect_attr(in_))
+                self.pretrained_params.add(self.get_indirect_attr(in_))
 
     def get_indirect_attr(self, name: str):
         attr = self
@@ -396,16 +396,16 @@ class BraidNet(nn.Module):
 
     def divide_params(self):
         self.check_pretrained_params()
-        self.reg_params = []
-        self.noreg_params = []
+        self.reg_params = set()
+        self.noreg_params = set()
         for model in self.modules():
             for k, v in model._parameters.items():
                 if v is None or v in self.pretrained_params:
                     continue
                 if k in ('weight', ) and isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
-                    self.noreg_params.append(v)
+                    self.noreg_params.add(v)
                 else:
-                    self.reg_params.append(v)
+                    self.reg_params.add(v)
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()

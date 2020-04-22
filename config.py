@@ -54,7 +54,7 @@ class DefaultConfig(object):
     def _parse(self, kwargs):
         for k, v in kwargs.items():
             if not hasattr(self, k):
-                warnings.warn("Warning: opt has not attribut %s" % k)
+                warnings.warn("Warning: opt does not have attribute %s" % k)
             setattr(self, k, v)
         #print(self.dataset)
 

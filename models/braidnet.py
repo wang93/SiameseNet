@@ -5,7 +5,7 @@ import torch
 #from torch._jit_internal import weak_module, weak_script_method
 from torch.nn import functional as F
 #from torch.nn.parameter import Parameter
-
+from optimizers import SGD2, Adam2
 import torch.utils.model_zoo as model_zoo
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -410,14 +410,14 @@ class BraidNet(nn.Module):
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()
 
-        param_groups = [{'params': self.params_reg, 'weight_decay': weight_decay},
+        param_groups = [{'params': self.params_reg},
                         {'params': self.params_noreg, 'weight_decay': 0.},
                         {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
-        default = {'base_lr': lr, 'lr': lr, 'momentum': momentum}
+        default = {'base_lr': lr, 'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
 
         if optim == "sgd":
-            optimizer = torch.optim.SGD(param_groups, default)
+            optimizer = SGD2(param_groups, **default)
         else:
-            optimizer = torch.optim.Adam(param_groups, default)
+            optimizer = Adam2(param_groups, **default)
 
         return optimizer

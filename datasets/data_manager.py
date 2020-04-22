@@ -12,6 +12,7 @@ from collections import defaultdict
 """Dataset classes"""
 '''Note: relabel is not necessary, so retruned non-combined dataset may have not been relabeled'''
 
+root = '/data/home/wyc/wyc_datasets/Person'
 
 class __Dataset(object):
     dataset_dir = ''
@@ -183,7 +184,7 @@ class CommonData(__Dataset):
     # identities: 1501 (+1 for background)
     # images: 12936 (train) + 3368 (query) + 15913 (gallery)
     """
-    def __init__(self, dataset_dir, mode, root='/data/usersdata/wyc_datasets/Person'):
+    def __init__(self, dataset_dir, mode):
         self.dataset_dir = dataset_dir
         dataset_dir = osp.join(root, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'bounding_box_train')
@@ -247,7 +248,7 @@ class MSMT17(__Dataset):
     # images: 32621 (train) + 11659 (query) + 82161 (gallery)
     # cameras: 15
     """
-    def __init__(self, dataset_dir, mode, root='/data/usersdata/wyc_datasets/Person'):
+    def __init__(self, dataset_dir, mode):
         self.dataset_dir = dataset_dir
         dataset_dir = osp.join(root, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'train')

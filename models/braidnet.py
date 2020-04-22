@@ -333,8 +333,6 @@ class BraidNet(nn.Module):
         self.pretrained_params = []
         self.has_resnet_stem = False#Parameter(torch.tensor(False), requires_grad=False)
 
-
-
     def forward(self, ims_a, ims_b):
         x = self.pair2bi(ims_a, ims_b)
 
@@ -385,7 +383,8 @@ class BraidNet(nn.Module):
         self.pretrained_params = set()
         if self.has_resnet_stem:
             for _, in_ in self.resnet2in.items():
-                self.pretrained_params.add(self.get_indirect_attr(in_))
+                if '.running_' not in in_:
+                    self.pretrained_params.add(self.get_indirect_attr(in_))
 
     def get_indirect_attr(self, name: str):
         attr = self

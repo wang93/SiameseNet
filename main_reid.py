@@ -94,6 +94,7 @@ def train(**kwargs):
             model.load_state_dict(state_dict, True)
 
     if opt.resnet_stem and start_epoch + 1 >= opt.freeze_pretrained_untill:
+        print('no longer freeze pretrained params!')
         model.unlable_resnet_stem()
 
     model_meta = model.meta
@@ -212,10 +213,12 @@ def train(**kwargs):
 
         for p in optimizer.param_groups:
             p['lr'] = p['base_lr'] * mul
+            print('in this param group, the base_lr is {0}, the lr is {1}'.format(p['base_lr'],p['lr'] ))
 
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
         if epoch + 1 == opt.freeze_pretrained_untill:
+            print('no longer freeze pretrained params...')
             model.module.unlable_resnet_stem()
             optimizer = model.module.get_optimizer(optim=opt.optim,
                                                    lr=opt.lr,
@@ -246,8 +249,8 @@ def train(**kwargs):
             optimizer_state_dict = optimizer.state_dict()
 
             save_checkpoint({'state_dict': state_dict, 'epoch': epoch + 1, 'rank1': rank1},
-                is_best=is_best, save_dir=opt.save_dir, 
-                filename='checkpoint_ep' + str(epoch + 1) + '.pth.tar')
+                            is_best=is_best, save_dir=opt.save_dir,
+                            filename='checkpoint_ep' + str(epoch + 1) + '.pth.tar')
 
             save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch + 1},
                             is_best=False, save_dir=opt.save_dir,

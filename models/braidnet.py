@@ -396,22 +396,25 @@ class BraidNet(nn.Module):
 
     def divide_params(self):
         self.check_pretrained_params()
-        self.params_reg = []
-        self.params_noreg = []
+        self.reg_params = []
+        self.noreg_params = []
         for model in self.modules():
             for k, v in model._parameters.items():
                 if v is None or v in self.pretrained_params:
                     continue
                 if k in ('weight', ) and isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
-                    self.params_noreg.append(v)
+                    self.noreg_params.append(v)
                 else:
-                    self.params_reg.append(v)
+                    self.reg_params.append(v)
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()
+        print('braidnet has {0} reg_params'.format(len(self.reg_params)))
+        print('braidnet has {0} noreg_params'.format(len(self.noreg_params)))
+        print('braidnet has {0} pretrained_params'.format(len(self.pretrained_params)))
 
-        param_groups = [{'params': self.params_reg},
-                        {'params': self.params_noreg, 'weight_decay': 0.},
+        param_groups = [{'params': self.reg_params},
+                        {'params': self.noreg_params, 'weight_decay': 0.},
                         {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
         default = {'base_lr': lr, 'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
 

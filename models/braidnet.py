@@ -416,8 +416,8 @@ class BraidNet(nn.Module):
         default = {'base_lr': lr, 'lr': lr, 'momentum': momentum}
 
         if optim == "sgd":
-            optimizer = torch.optim.SGD(param_groups, **default)
+            optimizer = torch.optim.SGD(param_groups, default)
         else:
-            optimizer = torch.optim.Adam(param_groups, **default)
+            optimizer = torch.optim.Adam(param_groups, default)
 
         return optimizer

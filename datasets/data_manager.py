@@ -12,7 +12,7 @@ from collections import defaultdict
 """Dataset classes"""
 '''Note: relabel is not necessary, so retruned non-combined dataset may have not been relabeled'''
 
-root = '/data/home/wyc/wyc_datasets/Person'
+ROOT = '/data/home/wyc/wyc_datasets/Person'
 
 class __Dataset(object):
     dataset_dir = ''
@@ -186,7 +186,7 @@ class CommonData(__Dataset):
     """
     def __init__(self, dataset_dir, mode):
         self.dataset_dir = dataset_dir
-        dataset_dir = osp.join(root, dataset_dir)
+        dataset_dir = osp.join(ROOT, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'bounding_box_train')
         self.query_dir = osp.join(dataset_dir, 'query')
         self.gallery_dir = osp.join(dataset_dir, 'bounding_box_test')
@@ -250,7 +250,7 @@ class MSMT17(__Dataset):
     """
     def __init__(self, dataset_dir, mode):
         self.dataset_dir = dataset_dir
-        dataset_dir = osp.join(root, dataset_dir)
+        dataset_dir = osp.join(ROOT, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'train')
         #self.test_dir = osp.join(self.dataset_dir, 'test')
         self.query_dir = osp.join(dataset_dir, 'test')
@@ -324,11 +324,10 @@ class MSMT17(__Dataset):
 
 
 def init_dataset(name, mode, subpids_num=-1):
-    root = '/data/usersdata/wyc-datasets/Person'
     if 'MSMT17' in name:
-         dataset = MSMT17(name, mode, root)
+         dataset = MSMT17(name, mode)
     else:
-        dataset = CommonData(name, mode, root)
+        dataset = CommonData(name, mode)
 
     if subpids_num>0:
         dataset.subsample_test_set(subpids_num)

@@ -413,9 +413,9 @@ class BraidNet(nn.Module):
         print('braidnet has {0} noreg_params'.format(len(self.noreg_params)))
         print('braidnet has {0} pretrained_params'.format(len(self.pretrained_params)))
 
-        param_groups = [{'params': self.reg_params},
-                        {'params': self.noreg_params, 'weight_decay': 0.},
-                        {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
+        param_groups = [{'params': list(self.reg_params)},
+                        {'params': list(self.noreg_params), 'weight_decay': 0.},
+                        {'params': list(self.pretrained_params), 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
         default = {'base_lr': lr, 'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
 
         if optim == "sgd":

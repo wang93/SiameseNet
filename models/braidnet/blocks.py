@@ -133,8 +133,9 @@ class SumMaxY(nn.Module):
                                  track_running_stats=True)
 
     def forward(self, x_from_braid):
-        y_sum = torch.add(*torch.chunk(x_from_braid, 2, dim=1))
-        y_max = torch.max(*torch.chunk(x_from_braid, 2, dim=1))
+        x = torch.chunk(x_from_braid, 2, dim=1)
+        y_sum = torch.add(*x)
+        y_max = torch.max(*x)
         y = torch.cat((y_sum, y_max), dim=1)
         y = self.bn(y)
         return y.view(y.size(0), -1)

@@ -2,7 +2,7 @@
 import torch.nn as nn
 from optimizers import SGD2, Adam2
 import torch.utils.model_zoo as model_zoo
-from .blocks import Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, FCBlock
+from .blocks import Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, FCBlock
 from .subblocks import WConv2d, WBatchNorm2d
 
 model_urls = {
@@ -72,7 +72,8 @@ class BraidNet(nn.Module):
             channel_in = sub_braid
         self.braid = nn.Sequential(*braid_blocks)
 
-        self.sumy = SumY(channel_in)
+        #self.sumy = SumY(channel_in)
+        self.maxy = MaxY(channel_in)
 
         self.fc_blocks = nn.ModuleList()
         for i, sub_fc in enumerate(fc):
@@ -93,7 +94,7 @@ class BraidNet(nn.Module):
         x = self.bi(x)
         x = self.bi2braid(x)
         x = self.braid(x)
-        x = self.sumy(x)
+        x = self.maxy(x)
 
         for fc in self.fc_blocks:
             x = fc(x)

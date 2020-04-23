@@ -81,12 +81,10 @@ def parse_checkpoints(load_dir):
     best_epoch = 0
     if len(epochs) > 0:
         start_epoch = max(epochs)
-        #start_epoch_index = epochs.index(start_epoch)
-        #params_file_name = files[start_epoch_index]
         params_file_name = 'checkpoint_ep{0}.pth.tar'.format(start_epoch)
         params_file_path = osp.join(load_dir, params_file_name)
         state_dict = torch.load(params_file_path)['state_dict']
-        
+
         best_params_file_path = osp.join(load_dir, 'model_best.pth.tar')
         if os.path.exists(best_params_file_path):
             best_params = torch.load(best_params_file_path)

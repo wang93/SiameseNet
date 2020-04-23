@@ -177,6 +177,24 @@ class SquareMaxY(nn.Module):
         return y.view(y.size(0), -1)
 
 
+class ResMaxY(nn.Module):
+    def __init__(self, channel_in):
+        super(ResMaxY, self).__init__()
+        self.bn = nn.BatchNorm2d(channel_in * 2,
+                                 eps=1e-05,
+                                 momentum=0.1,
+                                 affine=True,
+                                 track_running_stats=True)
+
+    def forward(self, x_from_braid):
+        x = torch.chunk(x_from_braid, 2, dim=1)
+        y_res = torch.abs(torch.sub(*x))
+        y_max = torch.max(*x)
+        y = torch.cat((y_res, y_max), dim=1)
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
+
+
 class FCBlock(nn.Module):
     def __init__(self, channel_in, channel_out, is_tail=False):
         super(FCBlock, self).__init__()

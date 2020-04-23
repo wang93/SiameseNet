@@ -1,8 +1,8 @@
 # coding=utf-8
-import torch.nn as nn
+#import torch.nn as nn
 from optimizers import SGD2, Adam2
 import torch.utils.model_zoo as model_zoo
-from .blocks import Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
+from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
 from .subblocks import WConv2d, WBatchNorm2d
 
 model_urls = {
@@ -74,7 +74,9 @@ class BraidNet(nn.Module):
 
         #self.y = SumY(channel_in)
         #self.y = MaxY(channel_in)
-        self.y = SumMaxY(channel_in)
+        # self.y = SumMaxY(channel_in)
+        # channel_in *= 2
+        self.y = MinMaxY(channel_in)
         channel_in *= 2
 
         self.fc_blocks = nn.ModuleList()

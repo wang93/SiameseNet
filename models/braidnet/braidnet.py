@@ -76,7 +76,9 @@ class BraidNet(nn.Module):
         #self.y = MaxY(channel_in)
         # self.y = SumMaxY(channel_in)
         # channel_in *= 2
-        self.y = MinMaxY(channel_in)
+        # self.y = MinMaxY(channel_in)
+        # channel_in *= 2
+        self.y = SquareMaxY(channel_in)
         channel_in *= 2
 
         self.fc_blocks = nn.ModuleList()

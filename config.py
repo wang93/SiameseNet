@@ -10,7 +10,6 @@ class DefaultConfig(object):
     dataset = 'market1501'
     datatype = 'person'
     mode = 'retrieval'
-    test_pids_num = 100 # = <0 when don't change test set
     pos_rate = 0.5
     num_instances = 4
 
@@ -37,6 +36,7 @@ class DefaultConfig(object):
     savefig = None 
     re_ranking = False
     eval_step = 50
+    test_pids_num = 100  # = <0 when don't change test set
     eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
 
     # model options
@@ -49,7 +49,7 @@ class DefaultConfig(object):
     # miscs
     print_freq = 30
     save_dir = './pytorch-ckpt/market'
-    workers = 10
+    workers = 8
 
     def _parse(self, kwargs):
         for k, v in kwargs.items():

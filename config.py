@@ -10,7 +10,7 @@ class DefaultConfig(object):
     # dataset options
     dataset = 'market1501'
     datatype = 'person'
-    augmentation = 'Cutout' # 'Cutout' or RandomErasing or None
+    augmentation = None # 'Cutout' or RandomErasing or None
     mode = 'retrieval'
     pos_rate = 0.5
     num_instances = 4

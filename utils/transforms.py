@@ -76,7 +76,6 @@ class TrainTransform(object):
             print('use RandomErasing to augment training data')
             self.augment = RandomErasing(probability=0.5, mean=[0.0, 0.0, 0.0])
         else:
-            print('use RandomErasing to augment training data')
             self.augment = lambda x: x
 
     def __call__(self, x):

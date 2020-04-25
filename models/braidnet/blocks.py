@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from .subblocks import WConv2d, WBatchNorm2d
+from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
 
 def int2tuple(n):
@@ -51,10 +51,26 @@ class BiBlock(nn.Module):
 class Bi2Braid(nn.Module):
     def __init__(self):
         super(Bi2Braid, self).__init__()
+        self.transform = lambda x: torch.cat(torch.chunk(x, 2, dim=0), dim=1)
 
     def forward(self, x_from_bi):
-        return torch.cat(torch.chunk(x_from_bi, 2, dim=0), dim=1)
+        if isinstance(x_from_bi, torch.Tensor):
+            return self.transform(x_from_bi)
+        elif isinstance(x_from_bi, (list, tuple)):
+            return [self.transform(x) for x in x_from_bi]
+        else:
+            raise NotImplementedError
 
+
+class CatBraids(nn.Module):
+    def __init__(self):
+        super(CatBraids, self).__init__()
+
+    def forward(self, braids):
+        pairs = [torch.chunk(b, 2, dim=1) for b in braids]
+        pairs = [*zip(*pairs)]
+        parts = list(pairs[0]) + list(pairs[1])
+        return torch.cat(parts, dim=1)
 
 class BraidBlock(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1), gap=False):
@@ -90,6 +106,24 @@ class BraidBlock(nn.Module):
         x = self.wbn(x)
         x = self.relu(x)
         x = self.pool(x)
+        return x
+
+
+class LinearBraidBlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(LinearBraidBlock, self).__init__()
+        self.wlinear = WLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.wlinear(x)
+        x = self.wbn(x)
+        x = self.relu(x)
         return x
 
 

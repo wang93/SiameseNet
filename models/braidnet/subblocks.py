@@ -154,6 +154,16 @@ class WBatchNorm1d(nn.BatchNorm1d):
         return output
 
 
+class PartPool(nn.Module):
+    def __init__(self, part_num=1, method='max'):
+        super(PartPool, self).__init__()
+        pools_dict = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
+        self.pool = pools_dict[method]((part_num, 1))
+
+    def forward(self, input_):
+        return self.pool(input_)
+
+
 class PartPools(nn.Module):
     def __init__(self, part_nums=(1, 2, 3), methods=('max', 'avg')):
         super(PartPools, self).__init__()
@@ -182,6 +192,7 @@ class PartPools(nn.Module):
 
 class CatPooledVectors(nn.Module):
     def forward(self, inputs):
+        raise NotImplementedError
         sizes_num = len(inputs[0])
 
 

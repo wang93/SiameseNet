@@ -235,7 +235,12 @@ def train(**kwargs):
             if opt.mode == 'class':
                 rank1 = test(model, queryloader)
             else:
-                rank1 = reid_evaluator.evaluate(queryloader, galleryloader, queryFliploader, galleryFliploader)
+                savefig = os.path.join(opt.savefig, 'origin') if (epoch + 1) == opt.max_epoch else None
+                rank1 = reid_evaluator.evaluate(queryloader,
+                                                galleryloader,
+                                                queryFliploader,
+                                                galleryFliploader,
+                                                savefig=savefig)
 
             is_best = rank1 > best_rank1
             if is_best:
@@ -257,7 +262,14 @@ def train(**kwargs):
                             filename='optimizer_checkpoint_ep' + str(epoch + 1) + '.pth.tar')
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
-    reid_evaluator.evaluate(queryloader, galleryloader, queryFliploader, galleryFliploader, eval_flip=True)
+
+    savefig = os.path.join(opt.savefig, 'fused')
+    reid_evaluator.evaluate(queryloader,
+                            galleryloader,
+                            queryFliploader,
+                            galleryFliploader,
+                            eval_flip=True,
+                            savefig=savefig)
 
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 

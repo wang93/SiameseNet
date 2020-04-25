@@ -2,7 +2,7 @@
 #import torch.nn as nn
 from optimizers import SGD2, Adam2
 import torch.utils.model_zoo as model_zoo
-from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
+from .classical_blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
 from .subblocks import WConv2d, WBatchNorm2d
 
 model_urls = {

@@ -1,5 +1,6 @@
 # encoding: utf-8
 import warnings
+from os.path import join
 import numpy as np
 
 
@@ -57,6 +58,7 @@ class DefaultConfig(object):
                 warnings.warn("Warning: opt does not have attribute %s" % k)
             setattr(self, k, v)
         #print(self.dataset)
+        self.savefig = join(self.save_dir, 'visualize')
 
         if self.dataset[0] == '[':
             self.dataset = eval(self.dataset)

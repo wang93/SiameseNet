@@ -3,6 +3,8 @@ import numpy as np
 import os
 import torch
 from PIL import Image
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from trainers.re_ranking import re_ranking as re_ranking_func
@@ -37,7 +39,7 @@ class ResNetEvaluator:
                     break
             if g_pids[index] == q_pids[i]:
                 continue
-            fig, axes =plt.subplots(1, 11, figsize=(12, 8))
+            fig, axes = plt.subplots(1, 11, figsize=(12, 8))
             img = queryloader.dataset.dataset[i][0]
             img = Image.open(img).convert('RGB')
             axes[0].set_title(q_pids[i])

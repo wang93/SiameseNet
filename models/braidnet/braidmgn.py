@@ -110,7 +110,7 @@ class MGN(nn.Module):
         return fg, f0_p2, f1_p2, f0_p3, f1_p3, f2_p3
 
 
-def weights_init_kaiming(m):
+def weights_init_kaiming(m: nn.Module):
     classname = m.__class__.__name__
     if classname.find('Linear') != -1:
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
@@ -123,6 +123,11 @@ def weights_init_kaiming(m):
         if m.affine:
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)
+    else:
+        for _, n in m._modules.items():
+            if n is None:
+                continue
+            weights_init_kaiming(n)
 
 
 class BraidMGN(nn.Module):
@@ -153,30 +158,23 @@ class BraidMGN(nn.Module):
 
         self.braids2braid = CatBraids()
         channel_in = sum(channel_ins)
+
         self.final_braid = LinearBraidBlock(channel_in, channel_in)
 
-        raise NotImplementedError
-
-        #self.y = SumY(channel_in)
-        #self.y = MaxY(channel_in)
-        # self.y = SumMaxY(channel_in)
-        # channel_in *= 2
         self.y = MinMaxY(channel_in)
         channel_in *= 2
-        # self.y = SquareMaxY(channel_in)
-        # self.y = ResMaxY(channel_in)
-        # channel_in *= 2
 
-        self.fc_blocks = nn.ModuleList()
+        fc_blocks = []
         for i, sub_fc in enumerate(fc):
             is_tail = (i+1 == len(fc))
-            self.fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
             channel_in = sub_fc
+        self.fc = nn.Sequential(*fc_blocks)
 
         self.score2prob = nn.Sigmoid()
 
         # initialize parameters
-        for m in self.modules():
+        for m in [self.part_braids, self.final_braid, self.fc]:
             weights_init_kaiming(m)
 
         self.correct_params()
@@ -185,11 +183,11 @@ class BraidMGN(nn.Module):
         x = self.pair2bi(ims_a, ims_b)
         x = self.bi(x)
         x = self.bi2braid(x)
-        x = self.braid(x)
+        x = [model(data) for model, data in zip(self.part_braids, x)]
+        x = self.braids2braid(x)
+        x = self.final_braid(x)
         x = self.y(x)
-
-        for fc in self.fc_blocks:
-            x = fc(x)
+        x = self.fc(x)
 
         if self.training:
             return self.score2prob(x)
@@ -198,25 +196,17 @@ class BraidMGN(nn.Module):
 
     def correct_params(self):
         for m in self.modules():
-            if isinstance(m, WConv2d):
+            if isinstance(m, (WConv2d, WLinear)):
                 m.correct_params()
 
     def correct_grads(self):
         for m in self.modules():
-            if isinstance(m, WConv2d):
+            if isinstance(m, (WConv2d, WLinear)):
                 m.correct_grads()
 
-    def load_resnet_stem(self, resnet_name='resnet18'):
-        resnet_state_dict = model_zoo.load_url(model_urls[resnet_name])
-
-        in_state_dict = dict()
-        for out_, in_ in self.resnet2in.items():
-            in_state_dict[in_] = resnet_state_dict[out_]
-
-        self.load_state_dict(in_state_dict, strict=False)
-        self.has_resnet_stem = True
 
     def unlable_resnet_stem(self):
+        raise NotImplementedError
         self.has_resnet_stem = False
 
     def check_pretrained_params(self):

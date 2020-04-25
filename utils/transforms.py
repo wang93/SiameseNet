@@ -63,11 +63,21 @@ def bbox_worse(x, imsize,  p):
 
 
 class TrainTransform(object):
-    def __init__(self, data, meta):
+    def __init__(self, data, meta, augmentaion=None):
         self.data = data
         self.imageSize = meta['imageSize']
         self.mean = meta['mean']
         self.std = meta['std']
+
+        if augmentaion == 'CutOut':
+            print('use CutOut to augment training data')
+            self.augment = Cutout(probability=0.5, size=self.imageSize[1]//2, mean=[0.0, 0.0, 0.0])
+        elif augmentaion == 'RandomErasing':
+            print('use RandomErasing to augment training data')
+            self.augment = RandomErasing(probability=0.5, mean=[0.0, 0.0, 0.0])
+        else:
+            print('use RandomErasing to augment training data')
+            self.augment = lambda x: x
 
     def __call__(self, x):
         if self.data == 'person':
@@ -75,32 +85,11 @@ class TrainTransform(object):
             #x = bbox_worse(x, (384, 128), 0.5)
         else:
             raise NotImplementedError
-        # elif self.data == 'car':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        #     x = T.RandomCrop((224, 224))(x)
-        # elif self.data == 'cub':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        #     x = T.RandomCrop((224, 224))(x)
-        # elif self.data == 'clothes':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        #     x = T.RandomCrop((224, 224))(x)
-        # elif self.data == 'product':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        #     x = T.RandomCrop((224, 224))(x)
-        # elif self.data == 'cifar':
-        #     x = T.Resize((40, 40))(x)
-        #     x = T.RandomCrop((32, 32))(x)
+
         x = T.RandomHorizontalFlip()(x)
         x = T.ToTensor()(x)
         x = T.Normalize(mean=self.mean, std=self.std)(x)
-        # if self.data == 'person':
-        #     x = Cutout(probability = 0.5, size=64, mean=[0.0, 0.0, 0.0])(x)
-        # else:
-        #     x = RandomErasing(probability = 0.5, mean=[0.0, 0.0, 0.0])(x)
+        x = self.augment(x)
         return x
 
 

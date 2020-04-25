@@ -131,7 +131,7 @@ def train(**kwargs):
 
     if opt.model_name == 'braidnet':
         trainloader = DataLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=PosNegPairSampler(data_source=dataset.train,
                                       pos_rate=opt.pos_rate,
                                       sample_num_per_epoch=opt.iter_num_per_epoch*opt.train_batch),

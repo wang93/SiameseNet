@@ -4,8 +4,8 @@ from torchvision.models.resnet import resnet50, Bottleneck
 
 from optimizers import SGD2, Adam2
 
-from blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
-from subblocks import *
+from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
+from .subblocks import *
 
 
 class MGN(nn.Module):

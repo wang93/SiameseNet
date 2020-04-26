@@ -1,11 +1,11 @@
 import copy
 
 from torchvision.models.resnet import resnet50, Bottleneck
-from .subblocks import *
 
 from optimizers import SGD2, Adam2
-from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
-from .subblocks import WConv2d, WBatchNorm2d
+
+from blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
+from subblocks import *
 
 
 class MGN(nn.Module):
@@ -37,7 +37,6 @@ class MGN(nn.Module):
         self.p1 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_g_conv5))
         self.p2 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_p_conv5))
         self.p3 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_p_conv5))
-
 
         self.pool_zg_p1 = PartPool(part_num=1, method='avg')
         self.pool_zg_p2 = PartPool(part_num=1, method='avg')
@@ -135,7 +134,7 @@ class BraidMGN(nn.Module):
     reg_params = []
     noreg_params = []
     pretrained_params = []
-    has_resnet_stem = False
+    has_resnet = False
 
     def __init__(self, feats=256, fc=(1,)):
         super(BraidMGN, self).__init__()
@@ -204,17 +203,15 @@ class BraidMGN(nn.Module):
             if isinstance(m, (WConv2d, WLinear)):
                 m.correct_grads()
 
-
-    def unlable_resnet_stem(self):
-        raise NotImplementedError
-        self.has_resnet_stem = False
+    def unlable_resnet(self):
+        self.has_resnet = False
 
     def check_pretrained_params(self):
         self.pretrained_params = []
-        if self.has_resnet_stem:
-            for _, in_ in self.resnet2in.items():
-                if '.running_' not in in_:
-                    self.pretrained_params.append(self.get_indirect_attr(in_))
+        # if self.has_resnet:
+        #     for _, in_ in self.resnet2in.items():
+        #         if '.running_' not in in_:
+        #             self.pretrained_params.append(self.get_indirect_attr(in_))
 
     def get_indirect_attr(self, name: str):
         attr = self
@@ -247,30 +244,39 @@ class BraidMGN(nn.Module):
 
         if optim == "sgd":
             optimizer = SGD2(param_groups, **default)
+        elif optim == 'adam':
+            optimizer = Adam2(param_groups, **default,
+                              betas=(0.9, 0.999),
+                              eps=1e-8,
+                              amsgrad=True)
         else:
-            optimizer = Adam2(param_groups, **default)
+            raise NotImplementedError
 
         return optimizer
 
-    def train(self, mode=True):
-        r"""Sets the module in training mode.
+    # def train(self, mode=True):
+    #     r"""Sets the module in training mode.
+    #
+    #     This has any effect only on certain modules. See documentations of
+    #     particular modules for details of their behaviors in training/evaluation
+    #     mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
+    #     etc.
+    #
+    #     Returns:
+    #         Module: self
+    #     """
+    #     self.training = mode
+    #
+    #     for name, module in self.named_children():
+    #         module.train(mode)
+    #
+    #     stem_training = mode and (not self.has_resnet)
+    #     self.bi[0].train(stem_training)
+    #
+    #     return self
 
-        This has any effect only on certain modules. See documentations of
-        particular modules for details of their behaviors in training/evaluation
-        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
-        etc.
 
-        Returns:
-            Module: self
-        """
-        self.training = mode
-
-        for name, module in self.named_children():
-            module.train(mode)
-
-        stem_training = mode and (not self.has_resnet_stem)
-        self.bi[0].train(stem_training)
-
-        return self
-
-
+if __name__ == '__main__':
+    mgn = MGN()
+    for name, param in mgn.named_parameters():
+        print('{0}.requires_grad = {1}'.format(name, param.requires_grad))

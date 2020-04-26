@@ -69,11 +69,11 @@ class TrainTransform(object):
         self.mean = meta['mean']
         self.std = meta['std']
 
-        if augmentaion == 'CutOut':
-            print('use CutOut to augment training data')
+        if augmentaion == 'Cutout':
+            print('incorporate Cutout to augment training data')
             self.augment = Cutout(probability=0.5, size=self.imageSize[1]//2, mean=[0.0, 0.0, 0.0])
         elif augmentaion == 'RandomErasing':
-            print('use RandomErasing to augment training data')
+            print('incorporate RandomErasing to augment training data')
             self.augment = RandomErasing(probability=0.5, mean=[0.0, 0.0, 0.0])
         else:
             self.augment = lambda x: x

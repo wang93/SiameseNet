@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
+from subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
 
 def int2tuple(n):

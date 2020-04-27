@@ -108,15 +108,15 @@ class MGN(nn.Module):
 
 
 def weights_init_kaiming(m: nn.Module):
-    classname = m.__class__.__name__
-    if classname.find('Linear') != -1:
+    #classname = m.__class__.__name__
+    if isinstance(m, (nn.Linear, WLinear)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         nn.init.constant_(m.bias, 0.0)
-    elif classname.find('Conv') != -1:
+    elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d, WConv2d)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
-    elif classname.find('BatchNorm') != -1:
+    elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
         if m.affine:
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)

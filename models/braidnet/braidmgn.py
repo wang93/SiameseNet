@@ -111,7 +111,8 @@ def weights_init_kaiming(m: nn.Module):
     #classname = m.__class__.__name__
     if isinstance(m, (nn.Linear, WLinear)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
-        nn.init.constant_(m.bias, 0.0)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0.0)
     elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d, WConv2d)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         if m.bias is not None:

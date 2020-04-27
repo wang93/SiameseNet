@@ -28,7 +28,6 @@ except ImportError:
     from .comm import SyncMaster
     from .replicate import DataParallelWithCallback
 
-from torch._jit_internal import weak_module, weak_script_method
 
 __all__ = [
     'SynchronizedBatchNorm1d', 'SynchronizedBatchNorm2d', 'SynchronizedBatchNorm3d',
@@ -50,7 +49,6 @@ _ChildMessage = collections.namedtuple('_ChildMessage', ['sum', 'ssum', 'sum_siz
 _MasterMessage = collections.namedtuple('_MasterMessage', ['sum', 'inv_std'])
 
 
-@weak_module
 class _SynchronizedBatchNorm(_BatchNorm):
     def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True):
         assert ReduceAddCoalesced is not None, 'Can not use Synchronized Batch Normalization without CUDA support.'
@@ -208,12 +206,10 @@ class SynchronizedBatchNorm1d(_SynchronizedBatchNorm):
         >>> output = m(input)
     """
 
-    @weak_script_method
     def _check_input_dim(self, input):
         if input.dim() != 2 and input.dim() != 3:
             raise ValueError('expected 2D or 3D input (got {}D input)'
                              .format(input.dim()))
-        super(SynchronizedBatchNorm1d, self)._check_input_dim(input)
 
 
 class SynchronizedBatchNorm2d(_SynchronizedBatchNorm):
@@ -272,12 +268,10 @@ class SynchronizedBatchNorm2d(_SynchronizedBatchNorm):
         >>> output = m(input)
     """
 
-    @weak_script_method
     def _check_input_dim(self, input):
         if input.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'
                              .format(input.dim()))
-        super(SynchronizedBatchNorm2d, self)._check_input_dim(input)
 
 
 class SynchronizedBatchNorm3d(_SynchronizedBatchNorm):
@@ -337,12 +331,10 @@ class SynchronizedBatchNorm3d(_SynchronizedBatchNorm):
         >>> output = m(input)
     """
 
-    @weak_script_method
     def _check_input_dim(self, input):
         if input.dim() != 5:
             raise ValueError('expected 5D input (got {}D input)'
                              .format(input.dim()))
-        super(SynchronizedBatchNorm3d, self)._check_input_dim(input)
 
 
 @contextlib.contextmanager

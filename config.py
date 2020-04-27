@@ -42,9 +42,9 @@ class DefaultConfig(object):
     eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
 
     # model options
-    model_name = 'braidnet'  # triplet, softmax_triplet, bfe, ide, braidnet
+    model_name = 'braidmgn'  #braidnet, braidmgn
     last_stride = 1
-    resnet_stem = False
+    pretrained_subparams = False
     pretrained_model = None
     disable_resume = False
     

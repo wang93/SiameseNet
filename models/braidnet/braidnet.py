@@ -1,6 +1,7 @@
 # coding=utf-8
 #import torch.nn as nn
-from optimizers import SGD2, Adam2
+#from optimizers import SGD2, Adam2
+from torch.optim import SGD, Adam
 import torch.utils.model_zoo as model_zoo
 from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
 from .subblocks import WConv2d, WBatchNorm2d
@@ -121,7 +122,7 @@ class BraidNet(nn.Module):
             if isinstance(m, WConv2d):
                 m.correct_grads()
 
-    def load_resnet_stem(self, resnet_name='resnet18'):
+    def load_pretrained(self, resnet_name='resnet18'):
         resnet_state_dict = model_zoo.load_url(model_urls[resnet_name])
 
         in_state_dict = dict()
@@ -131,7 +132,7 @@ class BraidNet(nn.Module):
         self.load_state_dict(in_state_dict, strict=False)
         self.has_resnet_stem = True
 
-    def unlable_resnet_stem(self):
+    def unlable_pretrained(self):
         self.has_resnet_stem = False
 
     def check_pretrained_params(self):
@@ -165,15 +166,27 @@ class BraidNet(nn.Module):
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()
 
-        param_groups = [{'params': self.reg_params},
-                        {'params': self.noreg_params, 'weight_decay': 0.},
-                        {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0., 'momentum': 0.}]
-        default = {'base_lr': lr, 'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
-
         if optim == "sgd":
-            optimizer = SGD2(param_groups, **default)
+            param_groups = [{'params': self.reg_params},
+                            {'params': self.noreg_params, 'weight_decay': 0.},
+                            {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0.,
+                             'momentum': 0.}]
+            default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
+            optimizer = SGD(param_groups, **default)
+        elif optim == 'adam':
+            param_groups = [{'params': self.reg_params},
+                            {'params': self.noreg_params, 'weight_decay': 0.},
+                            {'params': self.pretrained_params, 'weight_decay': 0., 'lr': 0.}]
+            default = {'lr': lr, 'weight_decay': weight_decay}
+            optimizer = Adam(param_groups, **default,
+                             betas=(0.9, 0.999),
+                             eps=1e-8,
+                             amsgrad=True)
         else:
-            optimizer = Adam2(param_groups, **default)
+            raise NotImplementedError
+
+        for group in optimizer.param_groups:
+            group.setdefault('initial_lr', group['lr'])
 
         return optimizer
 

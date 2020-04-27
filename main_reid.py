@@ -17,6 +17,7 @@ from datasets.data_loader import ImageData#, ImagePairData#, PairLoader
 from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
 #from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet
+from models.braidnet.braidmgn import BraidMGN
 from trainers.evaluator import ResNetEvaluator, BraidNetEvaluator
 from trainers.trainer import braidnetTrainer, cls_tripletTrainer
 #from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
@@ -69,12 +70,14 @@ def train(**kwargs):
     print('initializing model and optimizer...')
     if opt.model_name == 'braidnet':
         model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=(1,))
+    elif opt.model_name == 'braidmgn':
+        model = BraidMGN(feats=256, fc=(1,))
     else:
         raise NotImplementedError
 
-    if opt.resnet_stem:
-        print('use resnet stem')
-        model.load_resnet_stem('resnet18')
+    if opt.model_name == 'braidnet' and opt.pretrained_subparams:
+        print('use pretrained params')
+        model.load_pretrained()
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
@@ -95,7 +98,7 @@ def train(**kwargs):
 
     if opt.resnet_stem and start_epoch + 1 >= opt.freeze_pretrained_untill:
         print('no longer freeze pretrained params!')
-        model.unlable_resnet_stem()
+        model.unlable_pretrained()
 
     model_meta = model.meta
     if use_gpu:
@@ -212,7 +215,7 @@ def train(**kwargs):
             mul = opt.gamma ** ((ep-100)//20+1)
 
         for p in optimizer.param_groups:
-            p['lr'] = p['base_lr'] * mul
+            p['lr'] = p['initial_lr'] * mul
             #print('in this param group, the base_lr is {0}, the lr is {1}'.format(p['base_lr'],p['lr'] ))
 
     # start training

@@ -132,7 +132,7 @@ def train(**kwargs):
 
     summary_writer = SummaryWriter(osp.join(opt.save_dir, 'tensorboard_log'))
 
-    if opt.model_name == 'braidnet':
+    if opt.model_name in ('braidnet', 'braidmgn'):
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=PosNegPairSampler(data_source=dataset.train,
@@ -143,12 +143,13 @@ def train(**kwargs):
         )
         #print('the length of trainloader is {0}'.format(len(trainloader)))
     else:
-        trainloader = DataLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
-            sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
-            batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=False
-        )
+        raise NotImplementedError
+        # trainloader = DataLoader(
+        #     ImageData(dataset.train, TrainTransform(opt.datatype, model_meta)),
+        #     sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
+        #     batch_size=opt.train_batch, num_workers=opt.workers,
+        #     pin_memory=pin_memory, drop_last=False
+        # )
 
     queryloader = DataLoader(
         ImageData(dataset.query, TestTransform(opt.datatype, model_meta)),

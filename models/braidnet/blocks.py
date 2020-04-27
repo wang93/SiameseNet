@@ -174,7 +174,7 @@ class MaxY(SumY):
 
 class SumMaxY(SumY):
     def __init__(self, channel_in, linear=False):
-        super(SumMaxY, self).__init__(channel_in, linear)
+        super(SumMaxY, self).__init__(channel_in*2, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)
@@ -187,7 +187,7 @@ class SumMaxY(SumY):
 
 class MinMaxY(SumY):
     def __init__(self, channel_in, linear=False):
-        super(MinMaxY, self).__init__(channel_in, linear)
+        super(MinMaxY, self).__init__(channel_in*2, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)
@@ -200,7 +200,7 @@ class MinMaxY(SumY):
 
 class SquareMaxY(SumY):
     def __init__(self, channel_in, linear=False):
-        super(SquareMaxY, self).__init__(channel_in, linear)
+        super(SquareMaxY, self).__init__(channel_in*2, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)
@@ -213,7 +213,7 @@ class SquareMaxY(SumY):
 
 class ResMaxY(SumY):
     def __init__(self, channel_in, linear=False):
-        super(ResMaxY, self).__init__(channel_in, linear)
+        super(ResMaxY, self).__init__(channel_in*2, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)

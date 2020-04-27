@@ -71,4 +71,5 @@ class DefaultConfig(object):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
                 if not k.startswith('_')}
 
+
 opt = DefaultConfig()

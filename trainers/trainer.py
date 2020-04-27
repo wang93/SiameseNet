@@ -65,12 +65,12 @@ class cls_tripletTrainer:
 
     def _parse_data(self, inputs):
         imgs, pids, _ = inputs
-        if self.opt.random_crop and random.random() > 0.3:
-            h, w = imgs.size()[-2:]
-            start = int((h-2*w)*random.random())
-            mask = imgs.new_zeros(imgs.size())
-            mask[:, :, start:start+2*w, :] = 1
-            imgs = imgs * mask
+        # if self.opt.random_crop and random.random() > 0.3:
+        #     h, w = imgs.size()[-2:]
+        #     start = int((h-2*w)*random.random())
+        #     mask = imgs.new_zeros(imgs.size())
+        #     mask[:, :, start:start+2*w, :] = 1
+        #     imgs = imgs * mask
         '''
         if random.random() > 0.5:
             h, w = imgs.size()[-2:]
@@ -97,9 +97,9 @@ class cls_tripletTrainer:
         self.loss.backward()
 
 
-class braidnetTrainer(cls_tripletTrainer):
+class braidTrainer(cls_tripletTrainer):
     def __init__(self, opt, model, optimzier, criterion, summary_writer):
-        super(braidnetTrainer, self).__init__(opt, model, optimzier, criterion, summary_writer)
+        super(braidTrainer, self).__init__(opt, model, optimzier, criterion, summary_writer)
 
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs

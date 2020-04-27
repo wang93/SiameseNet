@@ -49,6 +49,7 @@ class BiBlock(nn.Module):
 
 
 class Bi2Braid(nn.Module):
+    """transform bi-form features (maps/vectors) to braid-form features (maps/vectors)"""
     def __init__(self):
         super(Bi2Braid, self).__init__()
         self.transform = lambda x: torch.cat(torch.chunk(x, 2, dim=0), dim=1)

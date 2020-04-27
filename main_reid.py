@@ -19,7 +19,7 @@ from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
 from models.braidnet import BraidNet
 from models.braidnet.braidmgn import BraidMGN
 from trainers.evaluator import ResNetEvaluator, BraidNetEvaluator
-from trainers.trainer import braidnetTrainer, cls_tripletTrainer
+from trainers.trainer import braidTrainer, cls_tripletTrainer
 #from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
 #from utils.LiftedStructure import LiftedStructureLoss
 #from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
@@ -96,7 +96,7 @@ def train(**kwargs):
             print('the highest current rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
             model.load_state_dict(state_dict, True)
 
-    if opt.resnet_stem and start_epoch + 1 >= opt.freeze_pretrained_untill:
+    if opt.pretrained_subparams and start_epoch + 1 >= opt.freeze_pretrained_untill:
         print('no longer freeze pretrained params!')
         model.unlable_pretrained()
 
@@ -195,24 +195,25 @@ def train(**kwargs):
                                 eval_flip=True)
         return
 
-    if opt.model_name == 'braidnet':
+    if opt.model_name in ('braidnet', 'braidmgn'):
         criterion = nn.BCELoss(reduction='mean')
     else:
         raise NotImplementedError
 
-
     # get trainer
-    if opt.model_name == 'braidnet':
-        reid_trainer = braidnetTrainer(opt, model, optimizer, criterion, summary_writer)
+    if opt.model_name in ('braidnet', 'braidmgn'):
+        reid_trainer = braidTrainer(opt, model, optimizer, criterion, summary_writer)
     else:
-        reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
+        raise NotImplementedError
+        #reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
 
-    def adjust_lr(optimizer, ep):
+    def adjust_lr(optimizer, ep_from_1):
         #ep starts with 0
-        if ep < 100:
+        ep_from_0 = ep_from_1 - 1
+        if ep_from_0 < 100:
             mul = 1.
         else:
-            mul = opt.gamma ** ((ep-100)//20+1)
+            mul = opt.gamma ** ((ep_from_0-100)//20+1)
 
         for p in optimizer.param_groups:
             p['lr'] = p['initial_lr'] * mul
@@ -220,9 +221,10 @@ def train(**kwargs):
 
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
-        if epoch + 1 == opt.freeze_pretrained_untill:
-            print('no longer freeze pretrained params!')
-            model.module.unlable_resnet_stem()
+        epoch_from_1 = epoch + 1
+        if epoch_from_1 == opt.freeze_pretrained_untill:
+            print('no longer freeze pretrained params (if there were any pretrained params)!')
+            model.module.unlable_pretrained()
             optimizer = model.module.get_optimizer(optim=opt.optim,
                                                    lr=opt.lr,
                                                    momentum=opt.momentum,
@@ -230,25 +232,25 @@ def train(**kwargs):
             reid_trainer.optimizer = optimizer
 
         if opt.adjust_lr:
-            adjust_lr(optimizer, epoch)
+            adjust_lr(optimizer, epoch_from_1)
 
-        reid_trainer.train(epoch + 1, trainloader)
+        reid_trainer.train(epoch_from_1, trainloader)
         # skip if not save model
-        if opt.eval_step > 0 and (epoch + 1) % opt.eval_step == 0 or (epoch + 1) == opt.max_epoch:
-            if opt.mode == 'class':
-                rank1 = test(model, queryloader)
-            else:
-                savefig = os.path.join(opt.savefig, 'origin') if (epoch + 1) == opt.max_epoch else None
-                rank1 = reid_evaluator.evaluate(queryloader,
-                                                galleryloader,
-                                                queryFliploader,
-                                                galleryFliploader,
-                                                savefig=savefig)
+        if opt.eval_step > 0 and epoch_from_1 % opt.eval_step == 0 or epoch_from_1 == opt.max_epoch:
+            # if opt.mode == 'class':
+            #     rank1 = test(model, queryloader)
+            # else:
+            savefig = os.path.join(opt.savefig, 'origin') if epoch_from_1 == opt.max_epoch else None
+            rank1 = reid_evaluator.evaluate(queryloader,
+                                            galleryloader,
+                                            queryFliploader,
+                                            galleryFliploader,
+                                            savefig=savefig)
 
             is_best = rank1 > best_rank1
             if is_best:
                 best_rank1 = rank1
-                best_epoch = epoch + 1
+                best_epoch = epoch_from_1
 
             if use_gpu:
                 state_dict = model.module.state_dict()
@@ -256,13 +258,13 @@ def train(**kwargs):
                 state_dict = model.state_dict()
             optimizer_state_dict = optimizer.state_dict()
 
-            save_checkpoint({'state_dict': state_dict, 'epoch': epoch + 1, 'rank1': rank1},
+            save_checkpoint({'state_dict': state_dict, 'epoch': epoch_from_1, 'rank1': rank1},
                             is_best=is_best, save_dir=opt.save_dir,
-                            filename='checkpoint_ep' + str(epoch + 1) + '.pth.tar')
+                            filename='checkpoint_ep' + str(epoch_from_1) + '.pth.tar')
 
-            save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch + 1},
+            save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch_from_1},
                             is_best=False, save_dir=opt.save_dir,
-                            filename='optimizer_checkpoint_ep' + str(epoch + 1) + '.pth.tar')
+                            filename='optimizer_checkpoint_ep' + str(epoch_from_1) + '.pth.tar')
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
 

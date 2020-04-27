@@ -29,6 +29,7 @@ import random
 import subprocess
 import time
 
+from sync_batchnorm import DataParallelWithCallback
 
 def get_git_revision_hash():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
@@ -102,7 +103,7 @@ def train(**kwargs):
 
     model_meta = model.meta
     if use_gpu:
-        model = nn.DataParallel(model).cuda()
+        model = DataParallelWithCallback(model).cuda()
     else:
         raise NotImplementedError
 

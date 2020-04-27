@@ -157,7 +157,7 @@ class BraidMGN(nn.Module):
 
         self.final_braid = LinearBraidBlock(channel_in, channel_in)
 
-        self.y = MinMaxY(channel_in)
+        self.y = MinMaxY(channel_in, linear=True)
         channel_in *= 2
 
         fc_blocks = []

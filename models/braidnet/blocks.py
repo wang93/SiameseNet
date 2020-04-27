@@ -63,6 +63,7 @@ class Bi2Braid(nn.Module):
 
 
 class CatBraids(nn.Module):
+    """cat the braid-form feature maps from multiple PartPool operations"""
     def __init__(self):
         super(CatBraids, self).__init__()
 
@@ -71,6 +72,17 @@ class CatBraids(nn.Module):
         pairs = [*zip(*pairs)]
         parts = list(pairs[0]) + list(pairs[1])
         return torch.cat(parts, dim=1)
+
+
+class CatBraidsGroups(nn.Module):
+    """cat the braid-form feature maps from multiple PartPools operations"""
+    def __init__(self):
+        super(CatBraidsGroups, self).__init__()
+        self.cat_braids = CatBraids()
+
+    def forward(self, braids_groups):
+        return [self.cat_braids(braids) for braids in zip(*braids_groups)]
+
 
 class BraidBlock(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1), gap=False):
@@ -128,13 +140,20 @@ class LinearBraidBlock(nn.Module):
 
 
 class SumY(nn.Module):
-    def __init__(self, channel_in):
+    def __init__(self, channel_in, linear=False):
         super(SumY, self).__init__()
-        self.bn = nn.BatchNorm2d(channel_in,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+        if linear:
+            self.bn = nn.BatchNorm1d(channel_in,
+                                     eps=1e-05,
+                                     momentum=0.1,
+                                     affine=True,
+                                     track_running_stats=True)
+        else:
+            self.bn = nn.BatchNorm2d(channel_in,
+                                     eps=1e-05,
+                                     momentum=0.1,
+                                     affine=True,
+                                     track_running_stats=True)
 
     def forward(self, x_from_braid):
         y = torch.add(*torch.chunk(x_from_braid, 2, dim=1))
@@ -142,14 +161,9 @@ class SumY(nn.Module):
         return y.view(y.size(0), -1)
 
 
-class MaxY(nn.Module):
-    def __init__(self, channel_in):
-        super(MaxY, self).__init__()
-        self.bn = nn.BatchNorm2d(channel_in,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+class MaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(MaxY, self).__init__(channel_in, linear)
 
     def forward(self, x_from_braid):
         y = torch.max(*torch.chunk(x_from_braid, 2, dim=1))
@@ -157,14 +171,9 @@ class MaxY(nn.Module):
         return y.view(y.size(0), -1)
 
 
-class SumMaxY(nn.Module):
-    def __init__(self, channel_in):
-        super(SumMaxY, self).__init__()
-        self.bn = nn.BatchNorm2d(channel_in * 2,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+class SumMaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(SumMaxY, self).__init__(channel_in, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)
@@ -175,14 +184,9 @@ class SumMaxY(nn.Module):
         return y.view(y.size(0), -1)
 
 
-class MinMaxY(nn.Module):
-    def __init__(self, channel_in):
-        super(MinMaxY, self).__init__()
-        self.bn = nn.BatchNorm2d(channel_in * 2,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+class MinMaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(MinMaxY, self).__init__(channel_in, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)
@@ -193,14 +197,9 @@ class MinMaxY(nn.Module):
         return y.view(y.size(0), -1)
 
 
-class SquareMaxY(nn.Module):
-    def __init__(self, channel_in):
-        super(SquareMaxY, self).__init__()
-        self.bn = nn.BatchNorm2d(channel_in * 2,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+class SquareMaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(SquareMaxY, self).__init__(channel_in, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)
@@ -211,14 +210,9 @@ class SquareMaxY(nn.Module):
         return y.view(y.size(0), -1)
 
 
-class ResMaxY(nn.Module):
-    def __init__(self, channel_in):
-        super(ResMaxY, self).__init__()
-        self.bn = nn.BatchNorm2d(channel_in * 2,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+class ResMaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(ResMaxY, self).__init__(channel_in, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)

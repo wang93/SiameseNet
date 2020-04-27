@@ -178,16 +178,16 @@ class PartPools(nn.Module):
 
             self.pools.append(n_pools)
 
-    def forward(self, input):
-        results = []
+    def forward(self, input_):
+        result = []
         for sub_pools in self.pools:
-            sub_results = []
+            sub_result = []
             for pool in sub_pools:
-                sub_results.append(pool(input))
+                sub_result.append(pool(input_))
 
-            results.append(torch.cat(sub_results, 1))
+            result.append(torch.cat(sub_result, 1))
 
-        return results
+        return result
 
 
 class CatPooledVectors(nn.Module):

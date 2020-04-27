@@ -68,14 +68,14 @@ class WLinear(nn.Linear):
         self.correct_params()
 
     def correct_params(self):
-        weight_a = self.weight.data[:self.out_channels//2, :]
+        weight_a = self.weight.data[:self.out_features//2, :]
         p, q = torch.chunk(weight_a, 2, dim=1)
         weight_b = torch.cat((q, p), dim=1)
         weight_corrected = torch.cat((weight_a, weight_b), dim=0)
         self.weight.data = weight_corrected.data
 
         if self.bias is not None:
-            bias_a = self.bias.data[:self.out_channels//2]
+            bias_a = self.bias.data[:self.out_features//2]
             bias_b = bias_a
             bias_corrected = torch.cat((bias_a, bias_b), dim=0)
             self.bias.data = bias_corrected.data

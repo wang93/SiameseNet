@@ -10,11 +10,13 @@ def int2tuple(n):
 
 
 class Pair2Bi(nn.Module):
-    def __init__(self):
-        super(Pair2Bi, self).__init__()
-
     def forward(self, im_a, im_b):
         return torch.cat((im_a, im_b), dim=0)
+
+
+class Pair2Braid(nn.Module):
+    def forward(self, feat_a, feat_b):
+        return torch.cat((feat_a, feat_b), dim=1)
 
 
 class BiBlock(nn.Module):

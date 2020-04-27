@@ -38,7 +38,7 @@ class DefaultConfig(object):
     savefig = None 
     re_ranking = False
     eval_step = 50
-    test_pids_num = 100  # = <0 when don't change test set
+    test_pids_num = -1  # = <0 when don't change test set
     eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
 
     # model options

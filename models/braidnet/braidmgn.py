@@ -145,6 +145,8 @@ class BraidMGN(nn.Module):
 
         self.pair2bi = Pair2Bi()
 
+        self.pair2braid = Pair2Braid()
+
         self.bi = MGN(feats=feats)
 
         self.bi2braid = Bi2Braid()
@@ -176,6 +178,23 @@ class BraidMGN(nn.Module):
             weights_init_kaiming(m)
 
         self.correct_params()
+
+    def extract(self, ims):
+        x = self.bi(ims)
+        return x
+
+    def metric(self, feat_a, feat_b):
+        x = self.pair2braid(feat_a, feat_b)
+        x = [model(data) for model, data in zip(self.part_braids, x)]
+        x = self.braids2braid(x)
+        x = self.final_braid(x)
+        x = self.y(x)
+        x = self.fc(x)
+
+        if self.training:
+            return self.score2prob(x)
+        else:
+            return x
 
     def forward(self, ims_a, ims_b):
         x = self.pair2bi(ims_a, ims_b)

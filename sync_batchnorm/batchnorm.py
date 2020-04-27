@@ -49,10 +49,14 @@ _MasterMessage = collections.namedtuple('_MasterMessage', ['sum', 'inv_std'])
 
 
 class _SynchronizedBatchNorm(_BatchNorm):
-    def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True):
+    def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True):
         assert ReduceAddCoalesced is not None, 'Can not use Synchronized Batch Normalization without CUDA support.'
 
-        super(_SynchronizedBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=affine)
+        super(_SynchronizedBatchNorm, self).__init__(num_features,
+                                                     eps=eps,
+                                                     momentum=momentum,
+                                                     affine=affine,
+                                                     track_running_stats=track_running_stats)
 
         self._sync_master = SyncMaster(self._data_parallel_master)
 

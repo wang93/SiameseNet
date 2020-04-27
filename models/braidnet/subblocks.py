@@ -2,6 +2,9 @@ import torch.nn as nn
 import torch
 from torch.nn import functional as F
 
+from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
+from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+
 
 class WConv2d(nn.Conv2d):
     def __init__(self, in_channels=10, out_channels=10, kernel_size=3, stride=(1, 1),
@@ -102,9 +105,9 @@ class WLinear(nn.Linear):
         raise NotImplementedError
 
 
-class WBatchNorm2d(nn.BatchNorm2d):
+class WBatchNorm2d(BatchNorm2d):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
-        nn.BatchNorm2d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
+        BatchNorm2d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
 
     def forward(self, input_):
         self._check_input_dim(input_)
@@ -128,9 +131,9 @@ class WBatchNorm2d(nn.BatchNorm2d):
         return output
 
 
-class WBatchNorm1d(nn.BatchNorm1d):
+class WBatchNorm1d(BatchNorm1d):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
-        nn.BatchNorm1d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
+        BatchNorm1d.__init__(self, num_features=num_channels, eps=eps, **kwargs)
 
     def forward(self, input_):
         self._check_input_dim(input_)

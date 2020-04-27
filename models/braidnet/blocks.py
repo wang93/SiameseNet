@@ -2,6 +2,8 @@ import torch.nn as nn
 import torch
 from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
+from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
+from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
 
 def int2tuple(n):
     if isinstance(n, int):
@@ -30,11 +32,11 @@ class BiBlock(nn.Module):
                               padding=padding,
                               stride=stride,
                               bias=False)
-        self.bn = nn.BatchNorm2d(channel_out,
-                                 eps=1e-05,
-                                 momentum=0.1,
-                                 affine=True,
-                                 track_running_stats=True)
+        self.bn = BatchNorm2d(channel_out,
+                              eps=1e-05,
+                              momentum=0.1,
+                              affine=True,
+                              track_running_stats=True)
         self.relu = nn.ReLU(inplace=True)
         self.pool = nn.MaxPool2d(kernel_size=[3, 3],
                                  stride=[2, 2],
@@ -146,13 +148,13 @@ class SumY(nn.Module):
     def __init__(self, channel_in, linear=False):
         super(SumY, self).__init__()
         if linear:
-            self.bn = nn.BatchNorm1d(channel_in,
+            self.bn = BatchNorm1d(channel_in,
                                      eps=1e-05,
                                      momentum=0.1,
                                      affine=True,
                                      track_running_stats=True)
         else:
-            self.bn = nn.BatchNorm2d(channel_in,
+            self.bn = BatchNorm2d(channel_in,
                                      eps=1e-05,
                                      momentum=0.1,
                                      affine=True,
@@ -232,7 +234,7 @@ class FCBlock(nn.Module):
         self.is_tail = is_tail
         self.fc = nn.Linear(channel_in, channel_out, bias=self.is_tail)
         if not self.is_tail:
-            self.bn = nn.BatchNorm1d(channel_out,
+            self.bn = BatchNorm1d(channel_out,
                                      eps=1e-05,
                                      momentum=0.1,
                                      affine=True,

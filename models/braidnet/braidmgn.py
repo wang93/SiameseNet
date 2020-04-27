@@ -5,6 +5,9 @@ from torch.optim import SGD, Adam
 from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
 from .subblocks import *
 
+from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
+from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+from sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
 
 class MGN(nn.Module):
     def __init__(self, feats=256):
@@ -27,7 +30,7 @@ class MGN(nn.Module):
         res_g_conv5 = resnet.layer4
 
         res_p_conv5 = nn.Sequential(
-            Bottleneck(1024, 512, downsample=nn.Sequential(nn.Conv2d(1024, 2048, 1, bias=False), nn.BatchNorm2d(2048))),
+            Bottleneck(1024, 512, downsample=nn.Sequential(nn.Conv2d(1024, 2048, 1, bias=False), BatchNorm2d(2048))),
             Bottleneck(2048, 512),
             Bottleneck(2048, 512))
         res_p_conv5.load_state_dict(resnet.layer4.state_dict())
@@ -42,7 +45,7 @@ class MGN(nn.Module):
         self.pool_zp2 = PartPool(part_num=2, method='avg')
         self.pool_zp3 = PartPool(part_num=3, method='avg')
 
-        reduction = nn.Sequential(nn.Conv2d(2048, feats, 1, bias=False), nn.BatchNorm2d(feats), nn.ReLU())
+        reduction = nn.Sequential(nn.Conv2d(2048, feats, 1, bias=False), BatchNorm2d(feats), nn.ReLU())
 
         self._init_reduction(reduction)
         self.reduction_0 = copy.deepcopy(reduction)
@@ -117,7 +120,7 @@ def weights_init_kaiming(m: nn.Module):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
+    elif isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
         if m.affine:
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)
@@ -247,7 +250,7 @@ class BraidMGN(nn.Module):
             for k, v in model._parameters.items():
                 if v is None or v in classified_params:
                     continue
-                if k in ('weight', ) and isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
+                if k in ('weight', ) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
                     self.noreg_params.append(v)
                 else:
                     self.reg_params.append(v)

@@ -6,6 +6,10 @@ import torch.utils.model_zoo as model_zoo
 from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
 from .subblocks import WConv2d, WBatchNorm2d
 
+from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
+from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+from sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
+
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
     'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
@@ -158,7 +162,7 @@ class BraidNet(nn.Module):
             for k, v in model._parameters.items():
                 if v is None or v in classified_params:
                     continue
-                if k in ('weight', ) and isinstance(model, (nn.BatchNorm2d, nn.BatchNorm1d, nn.BatchNorm3d, WBatchNorm2d)):
+                if k in ('weight', ) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
                     self.noreg_params.append(v)
                 else:
                     self.reg_params.append(v)

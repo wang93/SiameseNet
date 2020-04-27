@@ -332,7 +332,7 @@ class ResNetEvaluator:
     #     return all_cmc, mAP
 
 
-class BraidNetEvaluator(ResNetEvaluator):
+class BraidEvaluator(ResNetEvaluator):
     def evaluate(self, queryloader, galleryloader, queryFliploader, galleryFliploader,
                  eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()

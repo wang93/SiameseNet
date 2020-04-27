@@ -18,7 +18,7 @@ from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
 #from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet
 from models.braidnet.braidmgn import BraidMGN
-from trainers.evaluator import ResNetEvaluator, BraidNetEvaluator
+from trainers.evaluator import ResNetEvaluator, BraidEvaluator
 from trainers.trainer import braidTrainer, cls_tripletTrainer
 #from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
 #from utils.LiftedStructure import LiftedStructureLoss
@@ -175,8 +175,8 @@ def train(**kwargs):
         pin_memory=pin_memory
     )
 
-    if opt.model_name == 'braidnet':
-        reid_evaluator = BraidNetEvaluator(model, minors_num=opt.eval_minors_num)
+    if opt.model_name in ('braidnet', 'braidmgn'):
+        reid_evaluator = BraidEvaluator(model, minors_num=opt.eval_minors_num)
     else:
         reid_evaluator = ResNetEvaluator(model, minors_num=opt.eval_minors_num)
 
@@ -196,7 +196,7 @@ def train(**kwargs):
                                 eval_flip=True)
         return
 
-    if opt.model_name in ('braidnet', 'braidmgn'):
+    if opt.loss == 'bce':
         criterion = nn.BCELoss(reduction='mean')
     else:
         raise NotImplementedError

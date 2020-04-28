@@ -45,7 +45,6 @@ def train(**kwargs):
     # set random seed and cudnn benchmark
     random_seed(opt.seed)
     cudnn.benchmark = True
-    os.makedirs(opt.exp_dir, exist_ok=True)
 
     model, optimizer, start_epoch, best_rank1, best_epoch = get_model_with_optimizer(opt)
 
@@ -61,8 +60,6 @@ def train(**kwargs):
 
     reid_trainer = get_trainer(opt, reid_evaluator, optimizer, best_rank1, best_epoch)
 
-    lr_strategy = get_lr_strategy(opt, optimizer)
-
     if opt.evaluate:
         reid_evaluator.evaluate(re_ranking=opt.re_ranking,
                                 savefig=opt.savefig)
@@ -75,18 +72,6 @@ def train(**kwargs):
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
         epoch_from_1 = epoch + 1
-        if epoch_from_1 == opt.freeze_pretrained_untill:
-            print('no longer freeze pretrained params (if there were any pretrained params)!')
-            model.module.unlable_pretrained()
-            optimizer = model.module.get_optimizer(optim=opt.optim,
-                                                   lr=opt.lr,
-                                                   momentum=opt.momentum,
-                                                   weight_decay=opt.weight_decay)
-            reid_trainer.optimizer = optimizer
-
-        if opt.adjust_lr:
-            lr_strategy(epoch_from_1)
-
         reid_trainer.train(epoch_from_1, trainloader)
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'

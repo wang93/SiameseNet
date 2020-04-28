@@ -9,25 +9,39 @@ from utils.serialization import save_best_model, save_current_status
 
 
 class cls_tripletTrainer:
-    def __init__(self, opt, evaluator, optimzier, criterion, summary_writer, best_rank1=-1, best_epoch=0):
+    def __init__(self, opt, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1, best_epoch=0):
         self.opt = opt
         self.evaluator = evaluator
         self.model = evaluator.model
         self.optimizer = optimzier
+        self.lr_strategy = lr_strategy
         self.criterion = criterion
         self.summary_writer = summary_writer
         self.best_rank1 = best_rank1
         self.best_epoch = best_epoch
 
     def train(self, epoch, data_loader):
-        '''Note: epoch should start with 1'''
-        self.model.train()
+        """Note: epoch should start with 1"""
 
+        try:
+            if epoch == self.opt.freeze_pretrained_untill:
+                print('no longer freeze pretrained params (if there were any pretrained params)!')
+                self.model.module.unlable_pretrained()
+                optimizer = self.model.module.get_optimizer(optim=self.opt.optim,
+                                                            lr=self.opt.lr,
+                                                            momentum=self.opt.momentum,
+                                                            weight_decay=self.opt.weight_decay)
+                self.optimizer = optimizer
+        except AttributeError:
+            print('the net does not have \'unlable_pretrained\' method')
+
+
+        start = time.time()
+        self.model.train()
         batch_time = AverageMeter()
         data_time = AverageMeter()
         losses = AverageMeter()
-
-        start = time.time()
+        self.lr_strategy(epoch)
         for i, inputs in enumerate(data_loader):
             data_time.update(time.time() - start)
 
@@ -77,27 +91,6 @@ class cls_tripletTrainer:
 
     def _parse_data(self, inputs):
         imgs, pids, _ = inputs
-        # if self.opt.random_crop and random.random() > 0.3:
-        #     h, w = imgs.size()[-2:]
-        #     start = int((h-2*w)*random.random())
-        #     mask = imgs.new_zeros(imgs.size())
-        #     mask[:, :, start:start+2*w, :] = 1
-        #     imgs = imgs * mask
-        '''
-        if random.random() > 0.5:
-            h, w = imgs.size()[-2:]
-            for attempt in range(100):
-                area = h * w
-                target_area = random.uniform(0.02, 0.4) * area
-                aspect_ratio = random.uniform(0.3, 3.33)
-                ch = int(round(math.sqrt(target_area * aspect_ratio)))
-                cw = int(round(math.sqrt(target_area / aspect_ratio)))
-                if cw <  w and ch < h:
-                    x1 = random.randint(0, h - ch)
-                    y1 = random.randint(0, w - cw)
-                    imgs[:, :, x1:x1+h, y1:y1+w] = 0
-                    break
-        '''
         self.data = imgs.cuda()
         self.target = pids.cuda()
 

@@ -1,22 +1,23 @@
 # encoding: utf-8
-import math
 import time
-import numpy as np
-import random
+from os.path import join
+
 import torch
-from torch import nn
-from torch.utils.data import DataLoader
-from utils.loss import euclidean_dist, hard_example_mining
+
 from utils.meters import AverageMeter
+from utils.serialization import save_best_model, save_current_status
 
 
 class cls_tripletTrainer:
-    def __init__(self, opt, model, optimzier, criterion, summary_writer):
+    def __init__(self, opt, evaluator, optimzier, criterion, summary_writer, best_rank1=-1, best_epoch=0):
         self.opt = opt
-        self.model = model
+        self.evaluator = evaluator
+        self.model = evaluator.model
         self.optimizer = optimzier
         self.criterion = criterion
         self.summary_writer = summary_writer
+        self.best_rank1 = best_rank1
+        self.best_epoch = best_epoch
 
     def train(self, epoch, data_loader):
         '''Note: epoch should start with 1'''
@@ -61,7 +62,18 @@ class cls_tripletTrainer:
         print('Epoch: [{}]\tEpoch Time {:.3f} s\tLoss {:.3f}\t'
               'Lr {:.2e}'
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
-        print()
+
+        save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch)
+
+        if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
+            savefig = join(self.opt.savefig, 'origin') if epoch == self.opt.max_epoch else None
+            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=savefig)
+
+            is_best = rank1 > self.best_rank1
+            if is_best:
+                save_best_model(self.model, exp_dir=self.opt.exp_dir, epoch=epoch, rank1=rank1)
+                self.best_rank1 = rank1
+                self.best_epoch = epoch
 
     def _parse_data(self, inputs):
         imgs, pids, _ = inputs
@@ -98,8 +110,8 @@ class cls_tripletTrainer:
 
 
 class braidTrainer(cls_tripletTrainer):
-    def __init__(self, opt, model, optimzier, criterion, summary_writer):
-        super(braidTrainer, self).__init__(opt, model, optimzier, criterion, summary_writer)
+    def __init__(self, *args, **kwargs):
+        super(braidTrainer, self).__init__(*args, **kwargs)
 
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs

@@ -1,9 +1,11 @@
 # encoding: utf-8
-import numpy as np
 import os
+
+import matplotlib
+import numpy as np
 import torch
 from PIL import Image
-import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -19,13 +21,16 @@ from time import time as curtime
 
 
 class ResNetEvaluator:
-    def __init__(self, model, minors_num=0, ranks=[1, 2, 4, 5, 8, 10, 16, 20]):
+    def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
         self.model = model
+        self.queryloader = queryloader
+        self.galleryloader = galleryloader
+        self.queryFliploader = queryFliploader
+        self.galleryFliploader = galleryFliploader
         self.ranks = ranks
         self.minors_num = minors_num
 
-    def save_incorrect_pairs(self, distmat, queryloader, galleryloader, 
-        g_pids, q_pids, g_camids, q_camids, savefig):
+    def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, savefig):
         os.makedirs(savefig, exist_ok=True)
         self.model.eval()
         m = distmat.shape[0]
@@ -40,14 +45,14 @@ class ResNetEvaluator:
             if g_pids[index] == q_pids[i]:
                 continue
             fig, axes = plt.subplots(1, 11, figsize=(12, 8))
-            img = queryloader.dataset.dataset[i][0]
+            img = self.queryloader.dataset.dataset[i][0]
             img = Image.open(img).convert('RGB')
             axes[0].set_title(q_pids[i])
             axes[0].imshow(img)
             axes[0].set_axis_off()
             for j in range(10):
                 gallery_index = indices[i][j]
-                img = galleryloader.dataset.dataset[gallery_index][0]
+                img = self.galleryloader.dataset.dataset[gallery_index][0]
                 img = Image.open(img).convert('RGB')
                 axes[j+1].set_title(g_pids[gallery_index])
                 axes[j+1].set_axis_off()
@@ -55,14 +60,13 @@ class ResNetEvaluator:
             fig.savefig(os.path.join(savefig, '%d.png' %q_pids[i]))
             plt.close(fig)
 
-    def evaluate(self, queryloader, galleryloader, queryFliploader, galleryFliploader, 
-         eval_flip=False, re_ranking=False, savefig=False):
+    def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
         if eval_flip:
             print('****evaluate based on flip-fused features****')
 
         qf, q_pids, q_camids = [], [], []
-        for inputs0, inputs1 in zip(queryloader, queryFliploader):
+        for inputs0, inputs1 in zip(self.queryloader, self.queryFliploader):
             inputs, pids, camids = self._parse_data(inputs0)
             feature0 = self._forward(inputs)
             if eval_flip:
@@ -81,7 +85,7 @@ class ResNetEvaluator:
         print("Extracted features for query set: {} x {}".format(qf.size(0), qf.size(1)))
 
         gf, g_pids, g_camids = [], [], []
-        for inputs0, inputs1 in zip(galleryloader, galleryFliploader):
+        for inputs0, inputs1 in zip(self.galleryloader, self.galleryFliploader):
             inputs, pids, camids = self._parse_data(inputs0)
             feature0 = self._forward(inputs)
             if eval_flip:
@@ -134,8 +138,7 @@ class ResNetEvaluator:
 
         if savefig:
             print("Saving fingure")
-            self.save_incorrect_pairs(distmat.numpy(), queryloader, galleryloader, 
-                g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
+            self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
 
         if self.minors_num <= 0:
             rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
@@ -333,15 +336,14 @@ class ResNetEvaluator:
 
 
 class BraidEvaluator(ResNetEvaluator):
-    def evaluate(self, queryloader, galleryloader, queryFliploader, galleryFliploader,
-                 eval_flip=False, re_ranking=False, savefig=False):
+    def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
         if eval_flip:
             print('****evaluate with flip images****')
 
         q_pids, q_camids = [], []
         g_pids, g_camids = [], []
-        for queries in queryloader:
+        for queries in self.queryloader:
             _, pids, camids = self._parse_data(queries)
             q_pids.extend(pids)
             q_camids.extend(camids)
@@ -349,7 +351,7 @@ class BraidEvaluator(ResNetEvaluator):
         q_pids = torch.Tensor(q_pids)
         q_camids = torch.Tensor(q_camids)
 
-        for galleries in galleryloader:
+        for galleries in self.galleryloader:
             _, pids, camids = self._parse_data(galleries)
             g_pids.extend(pids)
             g_camids.extend(camids)
@@ -361,10 +363,10 @@ class BraidEvaluator(ResNetEvaluator):
         num_q, num_g = len(q_pids), len(g_pids)
         q_g_similarity = torch.zeros((num_q, num_g))
         with torch.no_grad():
-            galleries_all = [galleries for galleries, _, _ in galleryloader]
+            galleries_all = [galleries for galleries, _, _ in self.galleryloader]
 
             cur_query_index = -1
-            for queries in queryloader:
+            for queries in self.queryloader:
                 q_features, _, _ = self._parse_data(queries)
                 for q_feature in q_features:
                     cur_query_index += 1
@@ -381,7 +383,7 @@ class BraidEvaluator(ResNetEvaluator):
                 del galleries_all
             else:
                 cur_query_index = -1
-                for queries in queryFliploader:
+                for queries in self.queryFliploader:
                     q_features, _, _ = self._parse_data(queries)
                     for q_feature in q_features:
                         cur_query_index += 1
@@ -395,10 +397,10 @@ class BraidEvaluator(ResNetEvaluator):
                             cur_gallery_index = e
 
                 del galleries_all
-                flip_galleries_all = [galleries for galleries, _, _ in galleryFliploader]
+                flip_galleries_all = [galleries for galleries, _, _ in self.galleryFliploader]
 
                 cur_query_index = -1
-                for queries in queryFliploader:
+                for queries in self.queryFliploader:
                     q_features, _, _ = self._parse_data(queries)
                     for q_feature in q_features:
                         cur_query_index += 1
@@ -412,7 +414,7 @@ class BraidEvaluator(ResNetEvaluator):
                             cur_gallery_index = e
 
                 cur_query_index = -1
-                for queries in queryloader:
+                for queries in self.queryloader:
                     q_features, _, _ = self._parse_data(queries)
                     for q_feature in q_features:
                         cur_query_index += 1
@@ -439,8 +441,7 @@ class BraidEvaluator(ResNetEvaluator):
 
         if savefig:
             print("Saving fingure")
-            self.save_incorrect_pairs(distmat.numpy(), queryloader, galleryloader,
-                                      g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
+            self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
 
         if self.minors_num <= 0:
             rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)

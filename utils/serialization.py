@@ -90,8 +90,9 @@ def save_current_status(model, optimizer, exp_dir, epoch):
                     exp_dir=exp_dir, epoch=epoch, prefix=PREFIX_OPTIMIZER)
 
 
-def save_bset_model(model, exp_dir, epoch, rank1):
+def save_best_model(model, exp_dir, epoch, rank1):
     save_dir = osp.join(exp_dir, CHECKPOINT_DIR)
+    os.makedirs(save_dir, exist_ok=True)
     fpath = osp.join(save_dir, BEST_MODEL_NAME)
 
     model_state_dict = model.module.state_dict()

@@ -3,6 +3,7 @@
 .DS_Store
 data/
 pytorch-ckpt/
+exps/
 .vscode/
 
 # Byte-compiled / optimized / DLL files

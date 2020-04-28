@@ -13,7 +13,6 @@ import contextlib
 
 import torch
 import torch.nn.functional as F
-
 from torch.nn.modules.batchnorm import _BatchNorm
 
 try:
@@ -383,7 +382,7 @@ def convert_model(module):
                                         SynchronizedBatchNorm2d,
                                         SynchronizedBatchNorm3d]):
         if isinstance(module, pth_module):
-            mod = sync_module(module.num_features, module.eps, module.momentum, module.affine)
+            mod = sync_module(module.num_features, module.eps, module.momentum, module.affine, module.track_running_stats)
             mod.running_mean = module.running_mean
             mod.running_var = module.running_var
             if module.affine:

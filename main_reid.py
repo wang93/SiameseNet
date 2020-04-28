@@ -1,6 +1,9 @@
 # encoding: utf-8
 import os
+import random
+import subprocess
 import sys
+import time
 from os import path as osp
 from pprint import pprint
 
@@ -13,23 +16,19 @@ from torch.utils.data import DataLoader
 
 from config import opt
 from datasets import data_manager
-from datasets.data_loader import ImageData#, ImagePairData#, PairLoader
-from datasets.samplers import RandomIdentitySampler, PosNegPairSampler
-#from models.networks import ResNetBuilder, IDE, Resnet, BFE
+from datasets.data_loader import ImageData  # , ImagePairData#, PairLoader
+from datasets.samplers import PosNegPairSampler
+# from models.networks import ResNetBuilder, IDE, Resnet, BFE
 from models.braidnet import BraidNet
 from models.braidnet.braidmgn import BraidMGN
 from trainers.evaluator import ResNetEvaluator, BraidEvaluator
-from trainers.trainer import braidTrainer, cls_tripletTrainer
-#from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
-#from utils.LiftedStructure import LiftedStructureLoss
-#from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
+from trainers.trainer import braidTrainer
+# from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
+# from utils.LiftedStructure import LiftedStructureLoss
+# from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
 from utils.serialization import Logger, save_checkpoint, parse_checkpoints
 from utils.transforms import TestTransform, TrainTransform
-import random
-import subprocess
-import time
 
-from sync_batchnorm import DataParallelWithCallback
 
 def get_git_revision_hash():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
@@ -51,9 +50,9 @@ def train(**kwargs):
     opt._parse(kwargs)
     # set random seed and cudnn benchmark
     random_seed(opt.seed)
-    os.makedirs(opt.save_dir, exist_ok=True)
+    os.makedirs(opt.exp_dir, exist_ok=True)
     use_gpu = torch.cuda.is_available()
-    sys.stdout = Logger(osp.join(opt.save_dir, 'log_train.txt'))
+    sys.stdout = Logger(osp.join(opt.exp_dir, 'log_train.txt'))
 
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     print('current commit hash: {}'.format(get_git_revision_hash()))
@@ -91,7 +90,7 @@ def train(**kwargs):
     best_epoch = 0
     optimizer_state_dict = None
     if not opt.disable_resume:
-        start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.save_dir)
+        start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.exp_dir)
         if start_epoch > 0:
             print('resume from epoch {0}'.format(start_epoch))
             print('the highest current rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
@@ -135,7 +134,7 @@ def train(**kwargs):
 
     pin_memory = True if use_gpu else False
 
-    summary_writer = SummaryWriter(osp.join(opt.save_dir, 'tensorboard_log'))
+    summary_writer = SummaryWriter(osp.join(opt.exp_dir, 'tensorboard_log'))
 
     if opt.model_name in ('braidnet', 'braidmgn'):
         trainloader = DataLoader(
@@ -265,12 +264,12 @@ def train(**kwargs):
             optimizer_state_dict = optimizer.state_dict()
 
             save_checkpoint({'state_dict': state_dict, 'epoch': epoch_from_1, 'rank1': rank1},
-                            is_best=is_best, save_dir=opt.save_dir,
-                            filename='checkpoint_ep' + str(epoch_from_1) + '.pth.tar')
+                            is_best=is_best, exp_dir=opt.exp_dir,
+                            epoch=epoch_from_1, prefix='model_checkpoint')
 
             save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch_from_1},
-                            is_best=False, save_dir=opt.save_dir,
-                            filename='optimizer_checkpoint_ep' + str(epoch_from_1) + '.pth.tar')
+                            is_best=False, exp_dir=opt.exp_dir,
+                            epoch=epoch_from_1, prefix='optimizer_checkpoint')
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
 

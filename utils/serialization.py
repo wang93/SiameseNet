@@ -1,14 +1,13 @@
 # encoding: utf-8
 import errno
 import os
+import os.path as osp
+import re
 import shutil
 import sys
 
-import os.path as osp
-import torch
-
-import re
 import numpy as np
+import torch
 
 
 class Logger(object):
@@ -58,7 +57,19 @@ def mkdir_if_missing(dir_path):
             raise
 
 
-def save_checkpoint(state, is_best, save_dir, filename):
+def save_checkpoint(state, is_best, exp_dir, epoch, prefix: str):
+    if 'ep' in prefix:
+        raise ValueError('prefix {0} can not contain "ep"!'.format(prefix))
+
+    save_dir = osp.join(exp_dir, 'checkpoints')
+    os.makedirs(save_dir, exist_ok=True)
+
+    # delete previous checkpoints
+    files_path = osp.join(save_dir, prefix + '*')
+    os.system('rm {0}'.format(files_path))
+
+    # save current checkpoint
+    filename = '{0}_ep{1}.pth.tar'.format(prefix, epoch)
     fpath = osp.join(save_dir, filename)
     mkdir_if_missing(save_dir)
     torch.save(state, fpath)
@@ -66,7 +77,10 @@ def save_checkpoint(state, is_best, save_dir, filename):
         shutil.copy(fpath, osp.join(save_dir, 'model_best.pth.tar'))
 
 
-def parse_checkpoints(load_dir):
+def parse_checkpoints(exp_dir):
+    load_dir = osp.join(exp_dir, 'checkpoints')
+    os.makedirs(load_dir, exist_ok=True)
+
     files = os.listdir(load_dir)
     files = [f for f in files if '.pth.tar' in f]
     if 'model_best.pth.tar' in files:
@@ -90,7 +104,6 @@ def parse_checkpoints(load_dir):
             best_params = torch.load(best_params_file_path)
             best_rank1 = best_params['rank1']
             best_epoch = best_params['epoch']
-
 
     optimizer_state_dict = None
     if start_epoch > 0:

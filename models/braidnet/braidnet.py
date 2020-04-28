@@ -71,8 +71,7 @@ class BraidNet(nn.Module):
         bi_blocks = []
         for i, sub_bi in enumerate(bi):
             kernel_size = 3 if i > 0 else 7
-            stride = 1 #if i > 0 else 2
-            bi_blocks.append(BiBlock(channel_in, sub_bi, kernel_size=kernel_size, stride=stride))
+            bi_blocks.append(BiBlock(channel_in, sub_bi, kernel_size=kernel_size, stride=1))
             channel_in = sub_bi
         self.bi = nn.Sequential(*bi_blocks)
 

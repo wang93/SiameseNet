@@ -1,9 +1,11 @@
-import torch.nn as nn
 import torch
-from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
-
+import torch.nn as nn
 from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
+
+from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
+
+
 # from torch.nn import BatchNorm3d as BatchNorm3d
 # from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
 # from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
@@ -239,10 +241,10 @@ class FCBlock(nn.Module):
         self.fc = nn.Linear(channel_in, channel_out, bias=self.is_tail)
         if not self.is_tail:
             self.bn = BatchNorm1d(channel_out,
-                                     eps=1e-05,
-                                     momentum=0.1,
-                                     affine=True,
-                                     track_running_stats=True)
+                                  eps=1e-05,
+                                  momentum=0.1,
+                                  affine=True,
+                                  track_running_stats=True)
             self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):

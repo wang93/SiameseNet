@@ -1,7 +1,6 @@
 # encoding: utf-8
 import warnings
 from os.path import join
-import numpy as np
 
 
 class DefaultConfig(object):
@@ -14,6 +13,7 @@ class DefaultConfig(object):
     mode = 'retrieval'
     pos_rate = 0.5
     num_instances = 4
+    workers = 8
 
     # optimization options
     loss = 'bce'
@@ -23,17 +23,17 @@ class DefaultConfig(object):
     train_batch = 256
     test_batch = 256
     adjust_lr = False
-    freeze_pretrained_untill = -1 #=0, 1, 2... =0 when always freeze pretrained
+    freeze_pretrained_untill = -1 # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
     adjust_lr = False
     gamma = 0.5
     weight_decay = 5e-4
     momentum = 0.9
-    #random_crop = False
+    # random_crop = False
     margin = None
     sync_bn = False
 
-    #evaluation options
+    # evaluation options
     evaluate = False
     savefig = None 
     re_ranking = False
@@ -42,7 +42,7 @@ class DefaultConfig(object):
     eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
 
     # model options
-    model_name = 'braidmgn'  #braidnet, braidmgn
+    model_name = 'braidmgn'  # braidnet, braidmgn
     last_stride = 1
     pretrained_subparams = False
     pretrained_model = None
@@ -50,8 +50,9 @@ class DefaultConfig(object):
     
     # miscs
     print_freq = 30
-    save_dir = './pytorch-ckpt/market'
-    workers = 8
+    exp_name = 'test'
+    exp_dir = './exps/test'
+
 
     def _parse(self, kwargs):
         for k, v in kwargs.items():
@@ -59,7 +60,8 @@ class DefaultConfig(object):
                 warnings.warn("Warning: opt does not have attribute %s" % k)
             setattr(self, k, v)
         #print(self.dataset)
-        self.savefig = join(self.save_dir, 'visualize')
+        self.exp_dir = join('./exps', self.exp_name)
+        self.savefig = join(self.exp_dir, 'visualize')
 
         if self.dataset[0] == '[':
             self.dataset = eval(self.dataset)

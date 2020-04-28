@@ -195,6 +195,19 @@ class SumMaxY(SumY):
         return y.view(y.size(0), -1)
 
 
+class SumMinY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(SumMinY, self).__init__(channel_in*2, linear)
+
+    def forward(self, x_from_braid):
+        x = torch.chunk(x_from_braid, 2, dim=1)
+        y_sum = torch.add(*x)
+        y_min = torch.min(*x)
+        y = torch.cat((y_sum, y_min), dim=1)
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
+
+
 class MinMaxY(SumY):
     def __init__(self, channel_in, linear=False):
         super(MinMaxY, self).__init__(channel_in*2, linear)

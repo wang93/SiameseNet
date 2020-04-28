@@ -178,7 +178,7 @@ def train(**kwargs):
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
-
+###################################################
     if opt.model_name in ('braidnet', 'braidmgn'):
         reid_evaluator = BraidEvaluator(model, minors_num=opt.eval_minors_num)
     else:
@@ -199,18 +199,22 @@ def train(**kwargs):
                                 savefig=opt.savefig,
                                 eval_flip=True)
         return
-
+################################################################
     if opt.loss == 'bce':
-        criterion = nn.BCELoss(reduction='mean')
+        try:
+            criterion = nn.BCELoss(reduction='mean')
+        except ValueError:
+            criterion = nn.BCELoss(reduction='elementwise_mean')
     else:
         raise NotImplementedError
-
+################################################################
     # get trainer
     if opt.model_name in ('braidnet', 'braidmgn'):
         reid_trainer = braidTrainer(opt, model, optimizer, criterion, summary_writer)
     else:
         raise NotImplementedError
-        #reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
+        # reid_trainer = cls_tripletTrainer(opt, model, optimizer, criterion, summary_writer)
+###############################################################
 
     def adjust_lr(optimizer, ep_from_1):
         #ep starts with 0
@@ -223,7 +227,7 @@ def train(**kwargs):
         for p in optimizer.param_groups:
             p['lr'] = p['initial_lr'] * mul
             #print('in this param group, the base_lr is {0}, the lr is {1}'.format(p['base_lr'],p['lr'] ))
-
+################################################################
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
         epoch_from_1 = epoch + 1
@@ -240,6 +244,7 @@ def train(**kwargs):
             adjust_lr(optimizer, epoch_from_1)
 
         reid_trainer.train(epoch_from_1, trainloader)
+
         # skip if not save model
         if opt.eval_step > 0 and epoch_from_1 % opt.eval_step == 0 or epoch_from_1 == opt.max_epoch:
             # if opt.mode == 'class':

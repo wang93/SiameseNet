@@ -33,9 +33,9 @@ def train(**kwargs):
     sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     print('current commit hash: {}'.format(get_git_revision_hash()))
-    print('=========experiment config==========')
+    print('======== experiment config =========')
     pprint(opt._state_dict())
-    print('===============end==================')
+    print('=============== end ================')
     random_seed(opt.seed)
     torch.backends.cudnn.benchmark = True
 

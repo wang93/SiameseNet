@@ -57,4 +57,8 @@ def get_dataloaders(opt, model_meta):
         pin_memory=pin_memory
     )
 
-    return trainloader, queryloader, galleryloader, queryFliploader, galleryFliploader
+    return {'trainloader': trainloader,
+            'queryloader':queryloader,
+            'galleryloader': galleryloader,
+            'queryFliploader': queryFliploader,
+            'galleryFliploader': galleryFliploader}

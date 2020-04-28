@@ -1,6 +1,6 @@
 
 
-def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galleryFliploader, minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
+def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galleryFliploader, ranks=(1, 2, 4, 5, 8, 10, 16, 20), **kwargs):
     print('initializing evaluator...')
 
     if opt.model_name in ('braidnet', 'braidmgn'):
@@ -10,7 +10,8 @@ def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galle
                                         galleryloader=galleryloader,
                                         queryFliploader=queryFliploader,
                                         galleryFliploader=galleryFliploader,
-                                        minors_num=opt.eval_minors_num)
+                                        minors_num=opt.eval_minors_num,
+                                        ranks=ranks)
     else:
         from trainers.evaluator import ResNetEvaluator
         reid_evaluator = ResNetEvaluator(model,
@@ -18,7 +19,8 @@ def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galle
                                          galleryloader=galleryloader,
                                          queryFliploader=queryFliploader,
                                          galleryFliploader=galleryFliploader,
-                                         minors_num=opt.eval_minors_num)
+                                         minors_num=opt.eval_minors_num,
+                                         ranks=ranks)
 
     return reid_evaluator
 

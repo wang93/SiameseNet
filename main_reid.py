@@ -19,10 +19,6 @@ def get_git_revision_hash():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
 
 
-def get_git_revision_short_hash():
-    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-
-
 def random_seed(seed):
     torch.manual_seed(seed)  # cpu
     torch.cuda.manual_seed_all(seed)  # gpu
@@ -37,7 +33,7 @@ def train(**kwargs):
 
     opt._parse(kwargs)
     sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
-    
+
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     print('current commit hash: {}'.format(get_git_revision_hash()))
     print('=========experiment config==========')
@@ -48,35 +44,21 @@ def train(**kwargs):
     cudnn.benchmark = True
 
     model, optimizer, start_epoch, best_rank1, best_epoch = get_model_with_optimizer(opt)
-
-    trainloader, queryloader, galleryloader, queryFliploader, galleryFliploader\
-        = get_dataloaders(opt, model.module.meta)
-
-    reid_evaluator = get_evaluator(opt, model,
-                                   queryloader=queryloader,
-                                   galleryloader=galleryloader,
-                                   queryFliploader=queryFliploader,
-                                   galleryFliploader=galleryFliploader,
-                                   minors_num=opt.eval_minors_num)
-
+    data_loaders = get_dataloaders(opt, model.module.meta)
+    reid_evaluator = get_evaluator(opt, model, **data_loaders)
     reid_trainer = get_trainer(opt, reid_evaluator, optimizer, best_rank1, best_epoch)
 
     if opt.evaluate:
-        reid_evaluator.evaluate(re_ranking=opt.re_ranking,
-                                savefig=opt.savefig)
-
-        reid_evaluator.evaluate(re_ranking=opt.re_ranking,
-                                savefig=opt.savefig,
-                                eval_flip=True)
+        reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig)
+        reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig, eval_flip=True)
         return
 
     # start training
     for epoch in range(start_epoch, opt.max_epoch):
         epoch_from_1 = epoch + 1
-        reid_trainer.train(epoch_from_1, trainloader)
+        reid_trainer.train(epoch_from_1, data_loaders['trainloader'])
 
-    print('Best rank-1 {:.1%}, achieved at epoch {}'
-          .format(reid_trainer.best_rank1, reid_trainer.best_epoch))
+    print('Best rank-1 {:.1%}, achieved at epoch {}'.format(reid_trainer.best_rank1, reid_trainer.best_epoch))
 
     savefig = os.path.join(opt.savefig, 'fused')
     reid_evaluator.evaluate(re_ranking=opt.re_ranking, eval_flip=True, savefig=savefig)

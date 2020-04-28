@@ -139,8 +139,7 @@ class BraidMGN(nn.Module):
 
     reg_params = []
     noreg_params = []
-    pretrained_params = []
-    has_resnet = True
+    freeze_pretrained = True
 
     def __init__(self, feats=256, fc=(1,)):
         super(BraidMGN, self).__init__()
@@ -190,6 +189,9 @@ class BraidMGN(nn.Module):
         x = self.bi(ims)
         return x
 
+    def load_pretrained(self):
+        pass
+
     def metric(self, feat_a, feat_b):
         x = self.pair2braid(feat_a, feat_b)
         x = [model(data) for model, data in zip(self.part_braids, x)]
@@ -229,30 +231,27 @@ class BraidMGN(nn.Module):
                 m.correct_grads()
 
     def unlable_pretrained(self):
-        self.has_resnet = False
+        self.freeze_pretrained = False
 
     def check_pretrained_params(self):
-        self.pretrained_params = []
-        # if self.has_resnet:
-        #     for _, in_ in self.resnet2in.items():
-        #         if '.running_' not in in_:
-        #             self.pretrained_params.append(self.get_indirect_attr(in_))
+        for model in [self.bi.backone, self.bi.p1, self.bi.p2, self.bi.p3]:
+            for parameter in model.parameters():
+                parameter.requires_grad = not self.freeze_pretrained
 
-    def get_indirect_attr(self, name: str):
-        attr = self
-        for n in name.split('.'):
-            attr = getattr(attr, n)
-
-        return attr
+    # def get_indirect_attr(self, name: str):
+    #     attr = self
+    #     for n in name.split('.'):
+    #         attr = getattr(attr, n)
+    #
+    #     return attr
 
     def divide_params(self):
         self.check_pretrained_params()
         self.reg_params = []
         self.noreg_params = []
-        classified_params = set(self.pretrained_params)
         for model in self.modules():
             for k, v in model._parameters.items():
-                if v is None or v in classified_params:
+                if v is None:
                     continue
                 if k in ('weight', ) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
                     self.noreg_params.append(v)
@@ -264,15 +263,12 @@ class BraidMGN(nn.Module):
 
         if optim == "sgd":
             param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.},
-                            {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0.,
-                             'momentum': 0.}]
+                            {'params': self.noreg_params, 'weight_decay': 0.}]
             default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
             optimizer = SGD(param_groups, **default)
         elif optim == 'adam':
             param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.},
-                            {'params': self.pretrained_params, 'weight_decay': 0., 'lr': 0.}]
+                            {'params': self.noreg_params, 'weight_decay': 0.}]
             default = {'lr': lr, 'weight_decay': weight_decay}
             optimizer = Adam(param_groups, **default,
                              betas=(0.9, 0.999),
@@ -286,26 +282,27 @@ class BraidMGN(nn.Module):
 
         return optimizer
 
-    # def train(self, mode=True):
-    #     r"""Sets the module in training mode.
-    #
-    #     This has any effect only on certain modules. See documentations of
-    #     particular modules for details of their behaviors in training/evaluation
-    #     mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
-    #     etc.
-    #
-    #     Returns:
-    #         Module: self
-    #     """
-    #     self.training = mode
-    #
-    #     for name, module in self.named_children():
-    #         module.train(mode)
-    #
-    #     stem_training = mode and (not self.has_resnet)
-    #     self.bi[0].train(stem_training)
-    #
-    #     return self
+    def train(self, mode=True):
+        r"""Sets the module in training mode.
+
+        This has any effect only on certain modules. See documentations of
+        particular modules for details of their behaviors in training/evaluation
+        mode, if they are affected, e.g. :class:`Dropout`, :class:`BatchNorm`,
+        etc.
+
+        Returns:
+            Module: self
+        """
+        self.training = mode
+
+        for name, module in self.named_children():
+            module.train(mode)
+
+        pretrained_training = mode and (not self.freeze_pretrained)
+        for model in [self.bi.backone, self.bi.p1, self.bi.p2, self.bi.p3]:
+            model.train(pretrained_training)
+
+        return self
 
 
 if __name__ == '__main__':

@@ -22,19 +22,25 @@ model_urls = {
 }
 
 
-def weights_init_kaiming(m):
-    classname = m.__class__.__name__
-    if classname.find('Linear') != -1:
-        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
-        nn.init.constant_(m.bias, 0.0)
-    elif classname.find('Conv') != -1:
+def weights_init_kaiming(m: nn.Module):
+    #classname = m.__class__.__name__
+    if isinstance(m, (nn.Linear, WLinear)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
-    elif classname.find('BatchNorm') != -1:
+    elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d, WConv2d)):
+        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0.0)
+    elif isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
         if m.affine:
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)
+    else:
+        for _, n in m._modules.items():
+            if n is None:
+                continue
+            weights_init_kaiming(n)
 
 
 class BraidNet(nn.Module):
@@ -48,7 +54,7 @@ class BraidNet(nn.Module):
 
     reg_params = []
     noreg_params = []
-    pretrained_params = []
+    #pretrained_params = []
     has_resnet_stem = False
 
     def __init__(self, bi, braid, fc):
@@ -143,27 +149,30 @@ class BraidNet(nn.Module):
         self.has_resnet_stem = False
 
     def check_pretrained_params(self):
-        self.pretrained_params = []
+        #self.pretrained_params = []
         if self.has_resnet_stem:
-            for _, in_ in self.resnet2in.items():
-                if '.running_' not in in_:
-                    self.pretrained_params.append(self.get_indirect_attr(in_))
+            for param in self.bi[0].parameters():
+                param.requires_grad = False
+            # for _, in_ in self.resnet2in.items():
+            #     if '.running_' not in in_:
+            #         self.get_indirect_attr(in_).requires_grad = False
+                    #self.pretrained_params.append(self.get_indirect_attr(in_))
 
-    def get_indirect_attr(self, name: str):
-        attr = self
-        for n in name.split('.'):
-            attr = getattr(attr, n)
-
-        return attr
+    # def get_indirect_attr(self, name: str):
+    #     attr = self
+    #     for n in name.split('.'):
+    #         attr = getattr(attr, n)
+    #
+    #     return attr
 
     def divide_params(self):
         self.check_pretrained_params()
         self.reg_params = []
         self.noreg_params = []
-        classified_params = set(self.pretrained_params)
+        #classified_params = set(self.pretrained_params)
         for model in self.modules():
             for k, v in model._parameters.items():
-                if v is None or v in classified_params:
+                if v is None:
                     continue
                 if k in ('weight', ) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
                     self.noreg_params.append(v)
@@ -175,15 +184,12 @@ class BraidNet(nn.Module):
 
         if optim == "sgd":
             param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.},
-                            {'params': self.pretrained_params, 'weight_decay': 0., 'base_lr': 0., 'lr': 0.,
-                             'momentum': 0.}]
+                            {'params': self.noreg_params, 'weight_decay': 0.}]
             default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
             optimizer = SGD(param_groups, **default)
         elif optim == 'adam':
             param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.},
-                            {'params': self.pretrained_params, 'weight_decay': 0., 'lr': 0.}]
+                            {'params': self.noreg_params, 'weight_decay': 0.}]
             default = {'lr': lr, 'weight_decay': weight_decay}
             optimizer = Adam(param_groups, **default,
                              betas=(0.9, 0.999),

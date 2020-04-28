@@ -76,7 +76,7 @@ def train(**kwargs):
     else:
         raise NotImplementedError
 
-    if opt.model_name == 'braidnet' and opt.pretrained_subparams:
+    if opt.pretrained_subparams:
         print('use pretrained params')
         model.load_pretrained()
 

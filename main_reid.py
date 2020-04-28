@@ -30,16 +30,13 @@ def random_seed(seed):
 def train(**kwargs):
     if not torch.cuda.is_available():
         raise NotImplementedError('This project must be implemented with CUDA!')
-
     opt._parse(kwargs)
     sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
-
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     print('current commit hash: {}'.format(get_git_revision_hash()))
     print('=========experiment config==========')
     pprint(opt._state_dict())
     print('===============end==================')
-    # set random seed and cudnn benchmark
     random_seed(opt.seed)
     cudnn.benchmark = True
 
@@ -53,16 +50,11 @@ def train(**kwargs):
         reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig, eval_flip=True)
         return
 
-    # start training
-    for epoch in range(start_epoch, opt.max_epoch):
-        epoch_from_1 = epoch + 1
-        reid_trainer.train(epoch_from_1, data_loaders['trainloader'])
+    for epoch in range(start_epoch+1, opt.max_epoch+1):
+        reid_trainer.train(epoch, data_loaders['trainloader'])
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(reid_trainer.best_rank1, reid_trainer.best_epoch))
-
-    savefig = os.path.join(opt.savefig, 'fused')
-    reid_evaluator.evaluate(re_ranking=opt.re_ranking, eval_flip=True, savefig=savefig)
-
+    reid_evaluator.evaluate(re_ranking=opt.re_ranking, eval_flip=True, savefig=os.path.join(opt.savefig, 'fused'))
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
 

@@ -26,7 +26,7 @@ from trainers.trainer import braidTrainer
 # from utils.loss import CrossEntropyLabelSmooth, TripletLoss, Margin
 # from utils.LiftedStructure import LiftedStructureLoss
 # from utils.DistWeightDevianceLoss import DistWeightBinDevianceLoss
-from utils.serialization import Logger, save_checkpoint, parse_checkpoints
+from utils.serialization import Logger, parse_checkpoints, save_bset_model, save_current_status
 from utils.transforms import TestTransform, TrainTransform
 
 
@@ -101,10 +101,9 @@ def train(**kwargs):
         model.unlable_pretrained()
 
     model_meta = model.meta
-    if use_gpu:
-        model = nn.DataParallel(model).cuda()
-    else:
-        raise NotImplementedError
+
+    model = nn.DataParallel(model).cuda()
+
 
     if opt.sync_bn:
         from sync_batchnorm.batchnorm import convert_model
@@ -132,7 +131,7 @@ def train(**kwargs):
 
     dataset.print_summary()
 
-    pin_memory = True if use_gpu else False
+    pin_memory = True
 
     summary_writer = SummaryWriter(osp.join(opt.exp_dir, 'tensorboard_log'))
 
@@ -245,6 +244,8 @@ def train(**kwargs):
 
         reid_trainer.train(epoch_from_1, trainloader)
 
+        save_current_status(model, optimizer, opt.exp_dir, epoch_from_1)
+
         # skip if not save model
         if opt.eval_step > 0 and epoch_from_1 % opt.eval_step == 0 or epoch_from_1 == opt.max_epoch:
             # if opt.mode == 'class':
@@ -259,22 +260,9 @@ def train(**kwargs):
 
             is_best = rank1 > best_rank1
             if is_best:
+                save_bset_model(model, exp_dir=opt.exp_dir, epoch=epoch_from_1, rank1=rank1)
                 best_rank1 = rank1
                 best_epoch = epoch_from_1
-
-            if use_gpu:
-                state_dict = model.module.state_dict()
-            else:
-                state_dict = model.state_dict()
-            optimizer_state_dict = optimizer.state_dict()
-
-            save_checkpoint({'state_dict': state_dict, 'epoch': epoch_from_1, 'rank1': rank1},
-                            is_best=is_best, exp_dir=opt.exp_dir,
-                            epoch=epoch_from_1, prefix='model_checkpoint')
-
-            save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch_from_1},
-                            is_best=False, exp_dir=opt.exp_dir,
-                            epoch=epoch_from_1, prefix='optimizer_checkpoint')
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
 

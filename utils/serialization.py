@@ -3,11 +3,15 @@ import errno
 import os
 import os.path as osp
 import re
-import shutil
 import sys
 
 import numpy as np
 import torch
+
+PREFIX_MODEL = 'model_checkpoint'
+PREFIX_OPTIMIZER = 'optimizer_checkpoint'
+BEST_MODEL_NAME = 'model_best.pth.tar'
+CHECKPOINT_DIR = 'checkpoints'
 
 
 class Logger(object):
@@ -57,35 +61,54 @@ def mkdir_if_missing(dir_path):
             raise
 
 
-def save_checkpoint(state, is_best, exp_dir, epoch, prefix: str):
+def save_checkpoint(state, exp_dir, epoch, prefix: str):
     if 'ep' in prefix:
         raise ValueError('prefix {0} can not contain "ep"!'.format(prefix))
 
-    save_dir = osp.join(exp_dir, 'checkpoints')
+    save_dir = osp.join(exp_dir, CHECKPOINT_DIR)
     os.makedirs(save_dir, exist_ok=True)
 
     # delete previous checkpoints
     files_path = osp.join(save_dir, prefix + '*')
-    os.system('rm {0}'.format(files_path))
+    os.system('rm {0} &>/dev/null'.format(files_path))
 
     # save current checkpoint
     filename = '{0}_ep{1}.pth.tar'.format(prefix, epoch)
     fpath = osp.join(save_dir, filename)
     mkdir_if_missing(save_dir)
     torch.save(state, fpath)
-    if is_best:
-        shutil.copy(fpath, osp.join(save_dir, 'model_best.pth.tar'))
+
+
+def save_current_status(model, optimizer, exp_dir, epoch):
+    model_state_dict = model.module.state_dict()
+    optimizer_state_dict = optimizer.state_dict()
+
+    save_checkpoint({'state_dict': model_state_dict, 'epoch': epoch},
+                    exp_dir=exp_dir, epoch=epoch, prefix=PREFIX_MODEL)
+
+    save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch},
+                    exp_dir=exp_dir, epoch=epoch, prefix=PREFIX_OPTIMIZER)
+
+
+def save_bset_model(model, exp_dir, epoch, rank1):
+    save_dir = osp.join(exp_dir, CHECKPOINT_DIR)
+    fpath = osp.join(save_dir, BEST_MODEL_NAME)
+
+    model_state_dict = model.module.state_dict()
+    state = {'state_dict': model_state_dict, 'epoch': epoch, 'rank1': rank1}
+
+    torch.save(state, fpath)
 
 
 def parse_checkpoints(exp_dir):
-    load_dir = osp.join(exp_dir, 'checkpoints')
+    load_dir = osp.join(exp_dir, CHECKPOINT_DIR)
     os.makedirs(load_dir, exist_ok=True)
 
     files = os.listdir(load_dir)
     files = [f for f in files if '.pth.tar' in f]
-    if 'model_best.pth.tar' in files:
-        files.remove('model_best.pth.tar')
-    pattern = re.compile(r'(?<=^checkpoint_ep)\d+')  # look for numbers
+    if BEST_MODEL_NAME in files:
+        files.remove(BEST_MODEL_NAME)
+    pattern = re.compile(r'(?<=^{0}_ep)\d+'.format(PREFIX_MODEL))  # look for numbers
     epochs = [pattern.findall(f) for f in files]
     epochs = [int(e[0]) for e in epochs if len(e) > 0]
 
@@ -95,11 +118,11 @@ def parse_checkpoints(exp_dir):
     best_epoch = 0
     if len(epochs) > 0:
         start_epoch = max(epochs)
-        params_file_name = 'checkpoint_ep{0}.pth.tar'.format(start_epoch)
+        params_file_name = '{0}_ep{1}.pth.tar'.format(PREFIX_MODEL, start_epoch)
         params_file_path = osp.join(load_dir, params_file_name)
         state_dict = torch.load(params_file_path)['state_dict']
 
-        best_params_file_path = osp.join(load_dir, 'model_best.pth.tar')
+        best_params_file_path = osp.join(load_dir, BEST_MODEL_NAME)
         if os.path.exists(best_params_file_path):
             best_params = torch.load(best_params_file_path)
             best_rank1 = best_params['rank1']
@@ -107,10 +130,7 @@ def parse_checkpoints(exp_dir):
 
     optimizer_state_dict = None
     if start_epoch > 0:
-        optimizer_state_dict_path = os.path.join(load_dir,
-                                                 'optimizer_checkpoint_ep'
-                                                 + str(start_epoch)
-                                                 + '.pth.tar')
+        optimizer_state_dict_path = os.path.join(load_dir, '{0}_ep{1}.pth.tar'.format(PREFIX_OPTIMIZER, start_epoch))
 
         if os.path.exists(optimizer_state_dict_path):
             optimizer_state_dict = torch.load(optimizer_state_dict_path)['state_dict']

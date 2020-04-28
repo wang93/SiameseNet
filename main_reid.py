@@ -8,7 +8,6 @@ from pprint import pprint
 
 import numpy as np
 import torch
-from torch.backends import cudnn
 
 from config import opt
 from primary_objects_factory import *
@@ -38,7 +37,7 @@ def train(**kwargs):
     pprint(opt._state_dict())
     print('===============end==================')
     random_seed(opt.seed)
-    cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = True
 
     model, optimizer, start_epoch, best_rank1, best_epoch = get_model_with_optimizer(opt)
     data_loaders = get_dataloaders(opt, model.module.meta)

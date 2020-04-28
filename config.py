@@ -31,7 +31,7 @@ class DefaultConfig(object):
     momentum = 0.9
     #random_crop = False
     margin = None
-    num_gpu = 1
+    sync_bn = False
 
     #evaluation options
     evaluate = False

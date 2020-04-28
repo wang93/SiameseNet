@@ -103,9 +103,13 @@ def train(**kwargs):
 
     model_meta = model.meta
     if use_gpu:
-        model = DataParallelWithCallback(model).cuda()
+        model = nn.DataParallel(model).cuda()
     else:
         raise NotImplementedError
+
+    if opt.sync_bn:
+        from sync_batchnorm.batchnorm import convert_model
+        model = convert_model(model)
 
     # get optimizer
     optimizer = model.module.get_optimizer(optim=opt.optim,

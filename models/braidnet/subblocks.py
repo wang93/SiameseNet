@@ -2,8 +2,11 @@ import torch.nn as nn
 import torch
 from torch.nn import functional as F
 
-from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
-from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+from torch.nn import BatchNorm1d as BatchNorm1d
+from torch.nn import BatchNorm2d as BatchNorm2d
+#from torch.nn import BatchNorm3d as BatchNorm3d
+#from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
+#from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
 
 
 class WConv2d(nn.Conv2d):

@@ -2,8 +2,12 @@ import torch.nn as nn
 import torch
 from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
-from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
-from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+from torch.nn import BatchNorm1d as BatchNorm1d
+from torch.nn import BatchNorm2d as BatchNorm2d
+# from torch.nn import BatchNorm3d as BatchNorm3d
+# from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
+# from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+
 
 def int2tuple(n):
     if isinstance(n, int):

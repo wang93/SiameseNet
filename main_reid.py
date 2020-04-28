@@ -32,11 +32,12 @@ def random_seed(seed):
 
 
 def train(**kwargs):
-    sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
     if not torch.cuda.is_available():
         raise NotImplementedError('This project must be implemented with CUDA!')
-    opt._parse(kwargs)
 
+    opt._parse(kwargs)
+    sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
+    
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     print('current commit hash: {}'.format(get_git_revision_hash()))
     print('=========experiment config==========')

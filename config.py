@@ -1,7 +1,7 @@
 # encoding: utf-8
 import warnings
 from os.path import join
-
+from pprint import pprint
 
 class DefaultConfig(object):
     seed = 0
@@ -52,25 +52,29 @@ class DefaultConfig(object):
     exp_name = 'test'
     exp_dir = './exps/test'
 
-
-    def _parse(self, kwargs):
+    def parse(self, kwargs):
         for k, v in kwargs.items():
             if not hasattr(self, k):
                 warnings.warn("Warning: opt does not have attribute %s" % k)
             setattr(self, k, v)
-        #print(self.dataset)
+        # print(self.dataset)
         self.exp_dir = join('./exps', self.exp_name)
         self.savefig = join(self.exp_dir, 'visualize')
 
         if self.dataset[0] == '[':
             self.dataset = eval(self.dataset)
-            #print(self.dataset)
+            # print(self.dataset)
 
         self.datatype = 'person'
 
-    def _state_dict(self):
+    def state_dict(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
                 if not k.startswith('_')}
+
+    def print(self):
+        print('======== experiment config =========')
+        pprint(self.state_dict())
+        print('=============== end ================')
 
 
 opt = DefaultConfig()

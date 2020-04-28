@@ -4,7 +4,6 @@ import random
 import subprocess
 import sys
 import time
-from pprint import pprint
 
 import numpy as np
 import torch
@@ -12,10 +11,6 @@ import torch
 from config import opt
 from primary_objects_factory import *
 from utils.serialization import Logger
-
-
-def get_git_revision_hash():
-    return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
 
 
 def random_seed(seed):
@@ -29,13 +24,11 @@ def random_seed(seed):
 def train(**kwargs):
     if not torch.cuda.is_available():
         raise NotImplementedError('This project must be implemented with CUDA!')
-    opt._parse(kwargs)
+    opt.parse(kwargs)
     sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-    print('current commit hash: {}'.format(get_git_revision_hash()))
-    print('======== experiment config =========')
-    pprint(opt._state_dict())
-    print('=============== end ================')
+    print('current commit hash: {}'.format(subprocess.check_output(['git', 'rev-parse', 'HEAD'])))
+    opt.print()
     random_seed(opt.seed)
     torch.backends.cudnn.benchmark = True
 

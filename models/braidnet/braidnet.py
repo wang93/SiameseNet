@@ -1,14 +1,13 @@
 # coding=utf-8
 #import torch.nn as nn
 #from optimizers import SGD2, Adam2
-from torch.optim import SGD, Adam
 import torch.utils.model_zoo as model_zoo
+from torch.nn import BatchNorm3d as BatchNorm3d
+from torch.optim import SGD, Adam
+
 from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
 from .subblocks import WConv2d, WBatchNorm2d
 
-from torch.nn import BatchNorm1d as BatchNorm1d
-from torch.nn import BatchNorm2d as BatchNorm2d
-from torch.nn import BatchNorm3d as BatchNorm3d
 # from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
 # from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
 # from sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
@@ -62,7 +61,7 @@ class BraidNet(nn.Module):
 
         self.meta = {'mean': [0.485, 0.456, 0.406],
                      'std': [0.229, 0.224, 0.225],
-                     'imageSize': [256, 128]
+                     'imageSize': [128, 64]
                      }
 
         channel_in = 3

@@ -131,7 +131,7 @@ class braid_tripletTrainer(braidTrainer):
 
     def _extract_feature(self):
         self.features = self.model(self.data, None, mode='extract')
-        self.dims_num = len(self.features.size())
+        # self.dims_num = len(self.features.size())
 
     def _compare_feature(self):
         """has been optimized to save half of the time"""

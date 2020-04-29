@@ -23,7 +23,6 @@ class DefaultConfig(object):
     iter_num_per_epoch = 500
     train_batch = 256
     test_batch = 256
-    #adjust_lr = False
     freeze_pretrained_untill = -1 # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
     gamma = 0.5

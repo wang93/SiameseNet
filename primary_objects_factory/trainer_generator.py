@@ -13,10 +13,7 @@ def get_trainer(opt, evaluator, optimizer, best_rank1, best_epoch):
     lr_strategy = get_lr_strategy(opt, optimizer)
 
     if opt.loss == 'bce':
-        try:
-            criterion = nn.BCELoss(reduction='mean')
-        except ValueError:
-            criterion = nn.BCELoss(reduction='elementwise_mean')
+        criterion = nn.BCELoss()
     else:
         raise NotImplementedError
 

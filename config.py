@@ -69,7 +69,9 @@ class DefaultConfig(object):
 
     def state_dict(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
-                if not k.startswith('_')}
+                if not callable(k)}
+        # return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
+        #         if not k.startswith('_')}
 
     def print(self):
         print('======== experiment config =========')

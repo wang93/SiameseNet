@@ -2,6 +2,7 @@
 import warnings
 from os.path import join
 from pprint import pprint
+from types import FunctionType
 
 class DefaultConfig(object):
     seed = 0
@@ -69,7 +70,7 @@ class DefaultConfig(object):
 
     def state_dict(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
-                if not callable(k)}
+                if not (isinstance(k, FunctionType) or k.startswith('_'))}
         # return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
         #         if not k.startswith('_')}
 

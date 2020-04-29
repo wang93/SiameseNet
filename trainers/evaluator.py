@@ -339,7 +339,7 @@ class BraidEvaluator(ResNetEvaluator):
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
         if eval_flip:
-            print('****evaluate with flip images****')
+            print('**** evaluate with flip images ****')
 
         q_pids, q_camids = [], []
         g_pids, g_camids = [], []
@@ -440,8 +440,9 @@ class BraidEvaluator(ResNetEvaluator):
             distmat = -q_g_similarity
 
         if savefig:
-            print("Saving fingure")
-            self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(), q_camids.numpy(), savefig)
+            print("Saving visualization fingures")
+            self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(),
+                                      q_camids.numpy(), savefig)
 
         if self.minors_num <= 0:
             rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)

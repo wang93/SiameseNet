@@ -3,6 +3,7 @@ import errno
 import os
 import os.path as osp
 import re
+import subprocess
 import sys
 
 import numpy as np
@@ -70,7 +71,8 @@ def save_checkpoint(state, exp_dir, epoch, prefix: str):
 
     # delete previous checkpoints
     files_path = osp.join(save_dir, prefix + '*')
-    os.system('rm {0} &>/dev/null'.format(files_path))
+    _ = subprocess.call('rm {0} &>/dev/null'.format(files_path))
+    # os.system('rm {0} &>/dev/null'.format(files_path))
 
     # save current checkpoint
     filename = '{0}_ep{1}.pth.tar'.format(prefix, epoch)

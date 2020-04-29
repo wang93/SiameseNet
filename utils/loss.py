@@ -121,7 +121,7 @@ class TripletLoss(object):
             loss = self.ranking_loss(dist_an, dist_ap, y)
         else:
             loss = self.ranking_loss(dist_an - dist_ap, y)
-        return loss, dist_ap, dist_an
+        return loss  # , dist_ap, dist_an
 
 
 class TripletLoss4Braid(object):
@@ -139,7 +139,7 @@ class TripletLoss4Braid(object):
             loss = self.ranking_loss(dist_an, dist_ap, y)
         else:
             loss = self.ranking_loss(dist_an - dist_ap, y)
-        return loss, dist_ap, dist_an
+        return loss  # dist_ap, dist_an
 
 
 class CrossEntropyLabelSmooth(nn.Module):

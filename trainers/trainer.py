@@ -129,6 +129,16 @@ class braid_tripletTrainer(braidTrainer):
         self.target = pids.cuda()
         self.n = len(pids)
 
+    def _slice_tensor(self, data, indices):
+        if isinstance(data, torch.Tensor):
+            return data[indices]
+        elif isinstance(data, (list, tuple)):
+            return [self._slice_tensor(d, indices) for d in data]
+        elif isinstance(data, dict):
+            return {k: self._slice_tensor(v, indices) for k, v in data.items()}
+        else:
+            raise TypeError('type {0} is not supported'.format(type(data)))
+
     def _extract_feature(self):
         self.features = self.model(self.data, None, mode='extract')
         # self.dims_num = len(self.features.size())
@@ -137,8 +147,8 @@ class braid_tripletTrainer(braidTrainer):
         """has been optimized to save half of the time"""
         # only compute the lower triangular of the distmat
         a_indices, b_indices = torch.tril_indices(self.n, self.n)
-        dists_l = - self.model(self.features[a_indices],
-                               self.features[b_indices],
+        dists_l = - self.model(self._slice_tensor(self.features, a_indices),
+                               self._slice_tensor(self.features, b_indices),
                                mode='metric')
 
         distmat = torch.zeros((self.n, self.n), device=dists_l.device, dtype=dists_l.dtype)

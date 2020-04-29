@@ -25,6 +25,23 @@ def cat_tensor_pair(a, b, dim):
         raise TypeError('type {0} is not supported'.format(type(a)))
 
 
+def cat_tensors(data, dim):
+    if not isinstance(data, (list, tuple, dict)):
+        raise ValueError
+
+    if isinstance(data, dict):
+        raise NotImplementedError
+
+    if isinstance(data[0], Tensor):
+        return torch.cat(data, dim=dim)
+    elif isinstance(data[0], (list, tuple)):
+        return [cat_tensors(d, dim) for d in zip(*data)]
+    elif isinstance(data[0], dict):
+        raise NotImplementedError
+    else:
+        raise TypeError('type {0} is not supported'.format(type(a)))
+
+
 def tensor_cpu(data):
     if isinstance(data, Tensor):
         return data.cpu()

@@ -19,7 +19,7 @@ from collections import defaultdict
 from random import choice as randchoice
 from time import time as curtime
 
-from utils.tensor_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size
+from utils.tensor_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size, cat_tensors
 
 class ResNetEvaluator:
     def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
@@ -480,7 +480,7 @@ class BraidEvaluator_2Phases(ResNetEvaluator):
 
     def _get_feature(self, dataloader):
         features = [self._extract_feature(data) for data, _, _ in dataloader]
-        features = torch.cat(features, dim=0)
+        features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
         return features
 
     def _extract_feature(self, ims):

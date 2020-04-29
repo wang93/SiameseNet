@@ -39,7 +39,7 @@ def cat_tensors(data, dim):
     elif isinstance(data[0], dict):
         raise NotImplementedError
     else:
-        raise TypeError('type {0} is not supported'.format(type(a)))
+        raise TypeError('type {0} is not supported'.format(type(data)))
 
 
 def tensor_cpu(data):
@@ -65,16 +65,15 @@ def tensor_cuda(data):
 
 
 def tensor_repeat(data, dim, num, interleave=False):
-    if not interleave:
-        fun = torch.Tensor.repeat
-    else:
-        fun = torch.Tensor.repeat_interleave
-
     if isinstance(data, Tensor):
-        dim_num = len(data.size())
-        szs = [1, ] * dim_num
-        szs[dim] = num
-        return fun(data, szs)
+        if not interleave:
+            dim_num = len(data.size())
+            szs = [1, ] * dim_num
+            szs[dim] = num
+            return torch.Tensor.repeat(data, szs)
+        else:
+            return torch.Tensor.repeat_interleave(data, repeats=num, dim=dim)
+
     elif isinstance(data, (list, tuple)):
         return [tensor_repeat(d, dim, num, interleave) for d in data]
     elif isinstance(data, dict):

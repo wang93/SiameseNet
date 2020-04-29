@@ -2,7 +2,7 @@
 import warnings
 from os.path import join
 from pprint import pprint
-from types import FunctionType
+from types import MethodType
 
 class DefaultConfig(object):
     seed = 0
@@ -10,7 +10,7 @@ class DefaultConfig(object):
     # dataset options
     dataset = 'market1501'
     datatype = 'person'
-    augmentation = None # 'Cutout' or RandomErasing or None
+    augmentation = None  # 'Cutout' or 'RandomErasing' or None
     mode = 'retrieval'
     pos_rate = 0.5
     num_instances = 4
@@ -70,7 +70,7 @@ class DefaultConfig(object):
 
     def state_dict(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
-                if not (isinstance(k, FunctionType) or k.startswith('_'))}
+                if not (isinstance(k, MethodType) or k.startswith('_'))}
         # return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
         #         if not k.startswith('_')}
 

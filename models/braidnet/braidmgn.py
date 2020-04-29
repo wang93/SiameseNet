@@ -1,7 +1,5 @@
 import copy
 
-from torch.nn import BatchNorm1d as BatchNorm1d
-from torch.nn import BatchNorm2d as BatchNorm2d
 from torch.nn import BatchNorm3d as BatchNorm3d
 # from optimizers import SGD2, Adam2
 from torch.optim import SGD, Adam
@@ -40,7 +38,7 @@ class MGN(nn.Module):
             Bottleneck(1024, 512, downsample=nn.Sequential(nn.Conv2d(1024, 2048, 1, bias=False), BatchNorm2d(2048))),
             Bottleneck(2048, 512),
             Bottleneck(2048, 512))
-        res_p_conv5.load_state_dict(resnet.layer4.state_dict_())
+        res_p_conv5.load_state_dict(resnet.layer4.state_dict())
 
         self.p1 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_g_conv5))
         self.p2 = nn.Sequential(copy.deepcopy(res_conv4), copy.deepcopy(res_p_conv5))

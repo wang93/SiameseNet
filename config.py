@@ -2,7 +2,7 @@
 import warnings
 from os.path import join
 from pprint import pprint
-from types import MethodType
+
 
 class DefaultConfig(object):
     seed = 0
@@ -53,7 +53,7 @@ class DefaultConfig(object):
     exp_name = 'test'
     exp_dir = './exps/test'
 
-    def parse(self, kwargs):
+    def parse_(self, kwargs):
         for k, v in kwargs.items():
             if not hasattr(self, k):
                 warnings.warn("Warning: opt does not have attribute %s" % k)
@@ -68,15 +68,15 @@ class DefaultConfig(object):
 
         self.datatype = 'person'
 
-    def state_dict(self):
+    def state_dict_(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
-                if not (isinstance(k, MethodType) or k.startswith('_'))}
+                if not k.endswith('_')}
         # return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
         #         if not k.startswith('_')}
 
-    def print(self):
+    def print_(self):
         print('======== experiment config =========')
-        pprint(self.state_dict())
+        pprint(self.state_dict_())
         print('=============== end ================')
 
 

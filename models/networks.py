@@ -1,21 +1,16 @@
 # encoding: utf-8
 import copy
 import itertools
+import random
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
-import random
-from scipy.spatial.distance import cdist
-from sklearn.preprocessing import normalize
-from torch import nn, optim
-from torch.utils.data import dataloader
-from torchvision import transforms
+from torch import nn
 from torchvision.models.resnet import Bottleneck, resnet50
-from torchvision.transforms import functional
 
 from .resnet import ResNet
+
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
@@ -162,7 +157,7 @@ class BFE(nn.Module):
             Bottleneck(2048, 512),
             Bottleneck(2048, 512),
         )
-        self.res_part.load_state_dict(resnet.layer4.state_dict())
+        self.res_part.load_state_dict(resnet.layer4.state_dict_())
         reduction = nn.Sequential(
             nn.Conv2d(2048, 512, 1), 
             nn.BatchNorm2d(512), 

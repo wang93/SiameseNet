@@ -85,8 +85,8 @@ def save_checkpoint(state, exp_dir, epoch, prefix: str):
 
 
 def save_current_status(model, optimizer, exp_dir, epoch):
-    model_state_dict = model.module.state_dict()
-    optimizer_state_dict = optimizer.state_dict()
+    model_state_dict = model.module.state_dict_()
+    optimizer_state_dict = optimizer.state_dict_()
 
     save_checkpoint({'state_dict': model_state_dict, 'epoch': epoch},
                     exp_dir=exp_dir, epoch=epoch, prefix=PREFIX_MODEL)
@@ -100,7 +100,7 @@ def save_best_model(model, exp_dir, epoch, rank1):
     os.makedirs(save_dir, exist_ok=True)
     fpath = osp.join(save_dir, BEST_MODEL_NAME)
 
-    model_state_dict = model.module.state_dict()
+    model_state_dict = model.module.state_dict_()
     state = {'state_dict': model_state_dict, 'epoch': epoch, 'rank1': rank1}
 
     torch.save(state, fpath)

@@ -149,7 +149,7 @@ class braid_tripletTrainer(braidTrainer):
         a_indices, b_indices = torch.tril_indices(self.n, self.n)
         dists_l = - self.model(self._slice_tensor(self.features, a_indices),
                                self._slice_tensor(self.features, b_indices),
-                               mode='metric')
+                               mode='metric').squeeze()
 
         distmat = torch.zeros((self.n, self.n), device=dists_l.device, dtype=dists_l.dtype)
         distmat[a_indices, b_indices] = dists_l

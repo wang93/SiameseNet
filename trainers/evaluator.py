@@ -19,6 +19,7 @@ from collections import defaultdict
 from random import choice as randchoice
 from time import time as curtime
 
+from utils.tensor_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size
 
 class ResNetEvaluator:
     def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
@@ -486,21 +487,16 @@ class BraidEvaluator_2Phases(ResNetEvaluator):
         with torch.no_grad():
             ims = ims.cuda()
             features = self.model(ims, None, mode='extract')
-        return features.cpu()
+        return tensor_cpu(features)  # features.cpu()
 
     def _compare_feature(self, f_a, f_b):
-        dims_num = len(f_a.size())
-        n_a = f_a.size()[0]
-        n_b = f_b.size()[0]
-        repeat_param_a = [1, ] * dims_num
-        repeat_param_a[0] = n_b
-        repeat_param_b = [1, ] * dims_num
-        repeat_param_b[0] = n_a
+        n_a = tensor_size(f_a, 0)
+        n_b = tensor_size(f_b, 0)
         with torch.no_grad():
-            f_a = f_a.cuda()
-            f_b = f_b.cuda()
-            score_mat = self.model(f_b.repeat(*repeat_param_b),
-                                   f_a.repeat_interleave(*repeat_param_a),
+            f_a = tensor_cuda(f_a)
+            f_b = tensor_cuda(f_b)
+            score_mat = self.model(tensor_repeat(f_b, dim=0, num=n_a, interleave=False),
+                                   tensor_repeat(f_a, dim=0, num=n_b, interleave=True),
                                    mode='metric').reshape(n_a, n_b)
 
         return score_mat.cpu()

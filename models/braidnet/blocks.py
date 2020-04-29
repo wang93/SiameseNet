@@ -3,12 +3,8 @@ import torch.nn as nn
 from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
+from utils.tensor_functions import cat_tensor_pair
 from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
-
-
-# from torch.nn import BatchNorm3d as BatchNorm3d
-# from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
-# from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
 
 
 def int2tuple(n):
@@ -63,27 +59,27 @@ class Bi2Braid(nn.Module):
             raise NotImplementedError
 
 
-def _cat_tensors(a, b, dim):
-    assert type(a) == type(b)
-
-    if isinstance(a, torch.Tensor):
-        return torch.cat((a, b), dim=dim)
-    elif isinstance(a, (list, tuple)):
-        return [_cat_tensors(i, j, dim) for i, j in zip(a, b)]
-    elif isinstance(a, dict):
-        return {k: _cat_tensors(v, b[k], dim) for k, v in a.items()}
-    else:
-        raise TypeError('type {0} is not supported'.format(type(a)))
+# def _cat_tensors(a, b, dim):
+#     assert type(a) == type(b)
+#
+#     if isinstance(a, torch.Tensor):
+#         return torch.cat((a, b), dim=dim)
+#     elif isinstance(a, (list, tuple)):
+#         return [_cat_tensors(i, j, dim) for i, j in zip(a, b)]
+#     elif isinstance(a, dict):
+#         return {k: _cat_tensors(v, b[k], dim) for k, v in a.items()}
+#     else:
+#         raise TypeError('type {0} is not supported'.format(type(a)))
 
 
 class Pair2Bi(nn.Module):
     def forward(self, im_a, im_b):
-        return _cat_tensors(im_a, im_b, dim=0)
+        return cat_tensor_pair(im_a, im_b, dim=0)
 
 
 class Pair2Braid(nn.Module):
     def forward(self, feat_a, feat_b):
-        return _cat_tensors(feat_a, feat_b, dim=1)
+        return cat_tensor_pair(feat_a, feat_b, dim=1)
 
 
 class CatBraids(nn.Module):

@@ -17,16 +17,6 @@ def int2tuple(n):
     return n
 
 
-class Pair2Bi(nn.Module):
-    def forward(self, im_a, im_b):
-        return torch.cat((im_a, im_b), dim=0)
-
-
-class Pair2Braid(nn.Module):
-    def forward(self, feat_a, feat_b):
-        return torch.cat((feat_a, feat_b), dim=1)
-
-
 class BiBlock(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1)):
         super(BiBlock, self).__init__()
@@ -73,8 +63,32 @@ class Bi2Braid(nn.Module):
             raise NotImplementedError
 
 
+def _cat_tensors(a, b, dim):
+    assert type(a) == type(b)
+
+    if isinstance(a, torch.Tensor):
+        return torch.cat((a, b), dim=dim)
+    elif isinstance(a, (list, tuple)):
+        return [_cat_tensors(i, j, dim) for i, j in zip(a, b)]
+    elif isinstance(a, dict):
+        return {k: _cat_tensors(v, b[k], dim) for k, v in a.items()}
+    else:
+        raise TypeError('type {0} is not supported'.format(type(a)))
+
+
+class Pair2Bi(nn.Module):
+    def forward(self, im_a, im_b):
+        return _cat_tensors(im_a, im_b, dim=0)
+
+
+class Pair2Braid(nn.Module):
+    def forward(self, feat_a, feat_b):
+        return _cat_tensors(feat_a, feat_b, dim=1)
+
+
 class CatBraids(nn.Module):
     """cat the braid-form feature maps from multiple PartPool operations"""
+
     def __init__(self):
         super(CatBraids, self).__init__()
 

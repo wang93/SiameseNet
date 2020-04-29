@@ -18,7 +18,7 @@ class DefaultConfig(object):
     workers = 8
 
     # optimization options
-    loss = 'bce'
+    loss = 'bce'  # bce / triplet
     optim = 'sgd'
     max_epoch = 280
     iter_num_per_epoch = 500
@@ -37,6 +37,7 @@ class DefaultConfig(object):
     savefig = None 
     re_ranking = False
     eval_step = 50
+    eval_phase_num = 1  # 1 / 2
     test_pids_num = -1  # = <0 when don't change test set
     eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
 

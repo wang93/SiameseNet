@@ -14,12 +14,14 @@ def train(**kwargs):
     reid_evaluator = get_evaluator(opt, model, **data_loaders)
     reid_trainer = get_trainer(opt, reid_evaluator, optimizer, best_rank1, best_epoch)
 
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+
     if opt.evaluate:
         reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig)
         reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig, eval_flip=True)
         return
 
-    for epoch in range(start_epoch+1, opt.max_epoch+1):
+    for epoch in range(start_epoch + 1, opt.max_epoch + 1):
         reid_trainer.train(epoch, data_loaders['trainloader'])
 
     print('Best rank-1 {:.1%}, achieved at epoch {}'.format(reid_trainer.best_rank1, reid_trainer.best_epoch))

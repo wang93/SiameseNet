@@ -279,61 +279,6 @@ class ResNetEvaluator:
 
         return thresh, eer
 
-    # def eval_func(self, distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
-    #     """Evaluation with market1501 metric
-    #         Key: for each query identity, its gallery images from the same camera view are discarded.
-    #         """
-    #     num_q, num_g = distmat.shape
-    #     if num_g < max_rank:
-    #         max_rank = num_g
-    #         print("Note: number of gallery samples is quite small, got {}".format(num_g))
-    #     indices = np.argsort(distmat, axis=1)
-    #     matches = (g_pids[indices] == q_pids[:, np.newaxis]).astype(np.int32)
-    #
-    #     # compute cmc curve for each query
-    #     all_cmc = []
-    #     all_AP = []
-    #     num_valid_q = 0.  # number of valid query
-    #     for q_idx in range(num_q):
-    #         # get query pid and camid
-    #         q_pid = q_pids[q_idx]
-    #         q_camid = q_camids[q_idx]
-    #
-    #         # remove gallery samples that have the same pid and camid with query
-    #         order = indices[q_idx]
-    #         remove = (g_pids[order] == q_pid) & (g_camids[order] == q_camid)
-    #         keep = np.invert(remove)
-    #
-    #         # compute cmc curve
-    #         # binary vector, positions with value 1 are correct matches
-    #         orig_cmc = matches[q_idx][keep]
-    #         if not np.any(orig_cmc):
-    #             # this condition is true when query identity does not appear in gallery
-    #             continue
-    #
-    #         cmc = orig_cmc.cumsum()
-    #         cmc[cmc > 1] = 1
-    #
-    #         all_cmc.append(cmc[:max_rank])
-    #         num_valid_q += 1.
-    #
-    #         # compute average precision
-    #         # reference: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision
-    #         num_rel = orig_cmc.sum()
-    #         tmp_cmc = orig_cmc.cumsum()
-    #         tmp_cmc = [x / (i + 1.) for i, x in enumerate(tmp_cmc)]
-    #         tmp_cmc = np.asarray(tmp_cmc) * orig_cmc
-    #         AP = tmp_cmc.sum() / num_rel
-    #         all_AP.append(AP)
-    #
-    #     assert num_valid_q > 0, "Error: all query identities do not appear in gallery"
-    #
-    #     all_cmc = np.asarray(all_cmc).astype(np.float32)
-    #     all_cmc = all_cmc.sum(0) / num_valid_q
-    #     mAP = np.mean(all_AP)
-    #
-    #     return all_cmc, mAP
-
 
 class BraidEvaluator(ResNetEvaluator):
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
@@ -454,3 +399,108 @@ class BraidEvaluator(ResNetEvaluator):
         with torch.no_grad():
             scores = self.model(*inputs)
         return scores.cpu()
+
+
+class BraidEvaluator_2Phases(ResNetEvaluator):
+    def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
+        self.model.eval()
+        if eval_flip:
+            print('**** evaluate with flip images ****')
+
+        q_pids, q_camids = [], []
+        g_pids, g_camids = [], []
+        for queries in self.queryloader:
+            _, pids, camids = self._parse_data(queries)
+            q_pids.extend(pids)
+            q_camids.extend(camids)
+
+        q_pids = torch.Tensor(q_pids)
+        q_camids = torch.Tensor(q_camids)
+
+        for galleries in self.galleryloader:
+            _, pids, camids = self._parse_data(galleries)
+            g_pids.extend(pids)
+            g_camids.extend(camids)
+
+        g_pids = torch.Tensor(g_pids)
+        g_camids = torch.Tensor(g_camids)
+
+        start = curtime()
+
+        query_features = self._get_feature(self.queryloader)
+        gallery_features = self._get_feature(self.galleryloader)
+
+        q_g_similarity = self._compare_feature(query_features, gallery_features)
+
+        if not eval_flip:
+            del gallery_features, query_features
+
+        else:
+            query_flip_features = self._get_feature(self.queryFliploader)
+
+            q_g_similarity += self._compare_feature(query_flip_features, gallery_features)
+
+            del gallery_features
+
+            gallery_flip_features = self._get_feature(self.galleryFliploader)
+
+            q_g_similarity += self._compare_feature(query_flip_features, gallery_flip_features)
+
+            del query_flip_features
+
+            q_g_similarity += self._compare_feature(query_features, gallery_flip_features)
+
+            del gallery_flip_features
+
+            q_g_similarity /= 4.0
+
+        end = curtime()
+        print('it costs {:.3f} s to compute similarity matrix'
+              .format(end - start))
+
+        if re_ranking:
+            raise NotImplementedError('Not recommended, as it costs too much time.')
+        else:
+            distmat = -q_g_similarity
+
+        if savefig:
+            print("Saving visualization fingures")
+            self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(),
+                                      q_camids.numpy(), savefig)
+
+        if self.minors_num <= 0:
+            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
+        else:
+            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
+        return rank1
+
+    def _forward(self, *inputs):
+        raise NotImplementedError('It is a 2-phases evaluator!')
+
+    def _get_feature(self, dataloader):
+        features = [self._extract_feature(data) for data, _, _ in dataloader]
+        features = torch.cat(features, dim=0)
+        return features
+
+    def _extract_feature(self, ims):
+        with torch.no_grad():
+            ims = ims.cuda()
+            features = self.model(ims, None, mode='extract')
+        return features.cpu()
+
+    def _compare_feature(self, f_a, f_b):
+        dims_num = len(f_a.size())
+        n_a = f_a.size()[0]
+        n_b = f_b.size()[0]
+        repeat_param_a = [1, ] * dims_num
+        repeat_param_a[0] = n_b
+        repeat_param_b = [1, ] * dims_num
+        repeat_param_b[0] = n_a
+        with torch.no_grad():
+            f_a = f_a.cuda()
+            f_b = f_b.cuda()
+            score_mat = self.model(f_b.repeat(*repeat_param_b),
+                                   f_a.repeat_interleave(*repeat_param_a),
+                                   mode='metric').reshape(n_a, n_b)
+
+        return score_mat.cpu()

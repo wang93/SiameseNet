@@ -120,3 +120,39 @@ class braidTrainer(cls_tripletTrainer):
     def _backward(self):
         self.loss.backward()
         self.model.module.correct_grads()
+
+
+class braid_tripletTrainer(braidTrainer):
+    def _parse_data(self, inputs):
+        imgs, pids, _ = inputs
+        self.data = imgs.cuda()
+        self.target = pids.cuda()
+        self.n = len(pids)
+
+    def _extract_feature(self):
+        self.features = self.model(self.data, None, mode='extract')
+        self.dims_num = len(self.features.size())
+
+    def _compare_feature(self):
+        """has been optimized to save half of the time"""
+        # only compute the lower triangular of the distmat
+        a_indices, b_indices = torch.tril_indices(self.n, self.n)
+        dists_l = - self.model(self.features[a_indices],
+                               self.features[b_indices],
+                               mode='metric')
+
+        distmat = torch.zeros((self.n, self.n), device=dists_l.device, dtype=dists_l.dtype)
+        distmat[a_indices, b_indices] = dists_l
+        distmat[b_indices, a_indices] = dists_l
+
+        self.distmat = distmat
+        # repeat_param = [1, ]*self.dims_num
+        # repeat_param[0] = self.n
+        # self.distmat = - self.model(self.features.repeat(*repeat_param),
+        #                             self.features.repeat_interleave(*repeat_param),
+        #                             mode='metric').reshape(self.n, self.n)
+
+    def _forward(self):
+        self._extract_feature()
+        self._compare_feature()
+        self.loss = self.criterion(self.distmat, self.target)

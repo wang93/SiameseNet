@@ -1,17 +1,11 @@
 import copy
 
 from torch.nn import BatchNorm3d as BatchNorm3d
-# from optimizers import SGD2, Adam2
 from torch.optim import SGD, Adam
 from torchvision.models.resnet import resnet50, Bottleneck
 
-from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
+from .blocks import *
 from .subblocks import *
-
-
-# from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
-# from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
-# from sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
 
 
 class MGN(nn.Module):
@@ -75,7 +69,6 @@ class MGN(nn.Module):
     @staticmethod
     def _init_fc(fc):
         nn.init.kaiming_normal_(fc.weight, mode='fan_out')
-        # nn.init.normal_(fc.weight, std=0.001)
         nn.init.constant_(fc.bias, 0.)
 
     def forward(self, x):
@@ -186,12 +179,12 @@ class BraidMGN(nn.Module):
 
         self.correct_params()
 
+    def load_pretrained(self):
+        pass
+
     def extract(self, ims):
         x = self.bi(ims)
         return x
-
-    def load_pretrained(self):
-        pass
 
     def metric(self, feat_a, feat_b):
         x = self.pair2braid(feat_a, feat_b)
@@ -206,8 +199,13 @@ class BraidMGN(nn.Module):
         else:
             return x
 
-    def forward(self, ims_a, ims_b):
-        x = self.pair2bi(ims_a, ims_b)
+    def forward(self, a=None, b=None, mode='normal'):
+        if mode == 'extract':
+            return self.extract(a)
+        elif mode == 'metric':
+            return self.metric(a, b)
+
+        x = self.pair2bi(a, b)
         x = self.bi(x)
         x = self.bi2braid(x)
         x = [model(data) for model, data in zip(self.part_braids, x)]
@@ -238,13 +236,6 @@ class BraidMGN(nn.Module):
         for model in [self.bi.backone, self.bi.p1, self.bi.p2, self.bi.p3]:
             for parameter in model.parameters():
                 parameter.requires_grad = not self.freeze_pretrained
-
-    # def get_indirect_attr(self, name: str):
-    #     attr = self
-    #     for n in name.split('.'):
-    #         attr = getattr(attr, n)
-    #
-    #     return attr
 
     def divide_params(self):
         self.check_pretrained_params()

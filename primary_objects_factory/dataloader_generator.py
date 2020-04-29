@@ -20,16 +20,26 @@ def get_dataloaders(opt, model_meta):
 
     pin_memory = True
 
-    if opt.model_name in ('braidnet', 'braidmgn'):
+    if opt.loss in ('bce',):
         from datasets.samplers import PosNegPairSampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=PosNegPairSampler(data_source=dataset.train,
                                       pos_rate=opt.pos_rate,
-                                      sample_num_per_epoch=opt.iter_num_per_epoch*opt.train_batch),
+                                      sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=False
         )
+
+    elif opt.loss in ('triplet',):
+        from datasets.samplers import RandomIdentitySampler
+        trainloader = DataLoader(
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
+            batch_size=opt.train_batch, num_workers=opt.workers,
+            pin_memory=pin_memory, drop_last=True
+        )
+
     else:
         raise NotImplementedError
 

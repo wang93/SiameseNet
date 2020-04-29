@@ -1,18 +1,19 @@
 # encoding: utf-8
-import random
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
-def topk_mask(input, dim, K = 10, **kwargs):
-    index = input.topk(max(1, min(K, input.size(dim))), dim = dim, **kwargs)[1]
+
+def topk_mask(input, dim, K=10, **kwargs):
+    index = input.topk(max(1, min(K, input.size(dim))), dim=dim, **kwargs)[1]
     return torch.autograd.Variable(torch.zeros_like(input.data)).scatter(dim, index, 1.0)
 
-def pdist(A, squared = False, eps = 1e-4):
+
+def pdist(A, squared=False, eps=1e-4):
     prod = torch.mm(A, A.t())
     norm = prod.diag().unsqueeze(1).expand_as(prod)
-    res = (norm + norm.t() - 2 * prod).clamp(min = 0)
-    return res if squared else res.clamp(min = eps).sqrt()
+    res = (norm + norm.t() - 2 * prod).clamp(min=0)
+    return res if squared else res.clamp(min=eps).sqrt()
 
 
 def normalize(x, axis=-1):
@@ -123,6 +124,24 @@ class TripletLoss(object):
         return loss, dist_ap, dist_an
 
 
+class TripletLoss4Braid(object):
+    def __init__(self, margin=None):
+        self.margin = margin
+        if margin is not None:
+            self.ranking_loss = nn.MarginRankingLoss(margin=margin)
+        else:
+            self.ranking_loss = nn.SoftMarginLoss()
+
+    def __call__(self, dist_mat, labels):
+        dist_ap, dist_an = hard_example_mining(dist_mat, labels, self.margin)
+        y = dist_an.new().resize_as_(dist_an).fill_(1)
+        if self.margin is not None:
+            loss = self.ranking_loss(dist_an, dist_ap, y)
+        else:
+            loss = self.ranking_loss(dist_an - dist_ap, y)
+        return loss, dist_ap, dist_an
+
+
 class CrossEntropyLabelSmooth(nn.Module):
     """Cross entropy loss with label smoothing regularizer.
     Reference:
@@ -152,6 +171,7 @@ class CrossEntropyLabelSmooth(nn.Module):
         targets = (1 - self.epsilon) * targets + self.epsilon / self.num_classes
         loss = (- targets * log_probs).mean(0).sum()
         return loss
+
 
 class Margin:
     def __call__(self, embeddings, labels):

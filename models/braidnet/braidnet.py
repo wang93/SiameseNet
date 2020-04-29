@@ -68,6 +68,8 @@ class BraidNet(nn.Module):
 
         self.pair2bi = Pair2Bi()
 
+        self.pair2braid = Pair2Braid()
+
         bi_blocks = []
         for i, sub_bi in enumerate(bi):
             kernel_size = 3 if i > 0 else 7
@@ -87,11 +89,12 @@ class BraidNet(nn.Module):
         self.y = MinMaxY(channel_in)
         channel_in *= 2
 
-        self.fc_blocks = nn.ModuleList()
+        fc_blocks = []
         for i, sub_fc in enumerate(fc):
             is_tail = (i+1 == len(fc))
-            self.fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
             channel_in = sub_fc
+        self.fc = nn.Sequential(*fc_blocks)
 
         self.score2prob = nn.Sigmoid()
 
@@ -101,15 +104,33 @@ class BraidNet(nn.Module):
 
         self.correct_params()
 
-    def forward(self, ims_a, ims_b):
-        x = self.pair2bi(ims_a, ims_b)
+    def extract(self, ims):
+        x = self.bi(ims)
+        return x
+
+    def metric(self, feat_a, feat_b):
+        x = self.pair2braid(feat_a, feat_b)
+        x = self.braid(x)
+        x = self.y(x)
+        x = self.fc(x)
+
+        if self.training:
+            return self.score2prob(x)
+        else:
+            return x
+
+    def forward(self, a=None, b=None, mode='normal'):
+        if mode == 'extract':
+            return self.extract(a)
+        elif mode == 'metric':
+            return self.metric(a, b)
+
+        x = self.pair2bi(a, b)
         x = self.bi(x)
         x = self.bi2braid(x)
         x = self.braid(x)
         x = self.y(x)
-
-        for fc in self.fc_blocks:
-            x = fc(x)
+        x = self.fc(x)
 
         if self.training:
             return self.score2prob(x)
@@ -140,27 +161,13 @@ class BraidNet(nn.Module):
         self.has_resnet_stem = False
 
     def check_pretrained_params(self):
-        #self.pretrained_params = []
-        if self.has_resnet_stem:
-            for param in self.bi[0].parameters():
-                param.requires_grad = False
-            # for _, in_ in self.resnet2in.items():
-            #     if '.running_' not in in_:
-            #         self.get_indirect_attr(in_).requires_grad = False
-                    #self.pretrained_params.append(self.get_indirect_attr(in_))
-
-    # def get_indirect_attr(self, name: str):
-    #     attr = self
-    #     for n in name.split('.'):
-    #         attr = getattr(attr, n)
-    #
-    #     return attr
+        for param in self.bi[0].parameters():
+            param.requires_grad = not self.has_resnet_stem
 
     def divide_params(self):
         self.check_pretrained_params()
         self.reg_params = []
         self.noreg_params = []
-        #classified_params = set(self.pretrained_params)
         for model in self.modules():
             for k, v in model._parameters.items():
                 if v is None:

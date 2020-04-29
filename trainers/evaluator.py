@@ -428,32 +428,36 @@ class BraidEvaluator_2Phases(ResNetEvaluator):
 
         start = curtime()
 
-        query_features = self._get_feature(self.queryloader)
-        gallery_features = self._get_feature(self.galleryloader)
+        with torch.no_grad():
 
-        q_g_similarity = self._compare_feature(query_features, gallery_features)
+            '''phase one'''
+            query_features = self._get_feature(self.queryloader)
+            gallery_features = self._get_feature(self.galleryloader)
 
-        if not eval_flip:
-            del gallery_features, query_features
+            '''phase two'''
+            q_g_similarity = self._compare_feature(query_features, gallery_features)
 
-        else:
-            query_flip_features = self._get_feature(self.queryFliploader)
+            if not eval_flip:
+                del gallery_features, query_features
 
-            q_g_similarity += self._compare_feature(query_flip_features, gallery_features)
+            else:
+                query_flip_features = self._get_feature(self.queryFliploader)
 
-            del gallery_features
+                q_g_similarity += self._compare_feature(query_flip_features, gallery_features)
 
-            gallery_flip_features = self._get_feature(self.galleryFliploader)
+                del gallery_features
 
-            q_g_similarity += self._compare_feature(query_flip_features, gallery_flip_features)
+                gallery_flip_features = self._get_feature(self.galleryFliploader)
 
-            del query_flip_features
+                q_g_similarity += self._compare_feature(query_flip_features, gallery_flip_features)
 
-            q_g_similarity += self._compare_feature(query_features, gallery_flip_features)
+                del query_flip_features
 
-            del gallery_flip_features
+                q_g_similarity += self._compare_feature(query_features, gallery_flip_features)
 
-            q_g_similarity /= 4.0
+                del gallery_flip_features
+
+                q_g_similarity /= 4.0
 
         end = curtime()
         print('it costs {:.3f} s to compute similarity matrix'

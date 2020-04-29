@@ -1,8 +1,10 @@
 # encoding: utf-8
+import random
+
 from PIL import Image
 from torchvision import transforms as T
+
 from utils.random_erasing import RandomErasing, Cutout
-import random
 
 
 class Random2DTranslation(object):
@@ -101,19 +103,6 @@ class TestTransform(object):
         self.std = meta['std']
 
     def __call__(self, x=None):
-        # if self.data == 'cub':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        # elif self.data == 'car':
-        #     #x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        # elif self.data == 'clothes':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((256, 256))(x)
-        # elif self.data == 'product':
-        #     x = pad_shorter(x)
-        #     x = T.Resize((224, 224))(x)
-        # el
         if self.data == 'person':
             x = T.Resize(self.imageSize)(x)
             #x = bbox_worse(x, (384, 128), 0.5)

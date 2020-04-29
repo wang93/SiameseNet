@@ -34,13 +34,15 @@ def get_model_with_optimizer(opt):
     optimizer_state_dict = None
     if not opt.disable_resume:
         start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.exp_dir)
+        if best_epoch > 0:
+            print('the highest current rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1,
+                                                                                                           best_epoch))
         if start_epoch > 0:
-            print('resume from epoch {0}'.format(start_epoch))
-            print('the highest current rank-1 score is {0:.1%}, which was achieved after epoch {1}'.format(best_rank1, best_epoch))
+            print('net comes to the state after epoch {0}'.format(start_epoch))
             model.load_state_dict(state_dict, True)
 
     if opt.pretrained_subparams and start_epoch + 1 >= opt.freeze_pretrained_untill:
-        print('no longer freeze pretrained params!')
+        print('no longer freeze pretrained params')
         model.unlable_pretrained()
 
     #model_meta = model.meta

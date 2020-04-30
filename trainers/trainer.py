@@ -6,11 +6,12 @@ import torch
 
 from utils.meters import AverageMeter
 from utils.serialization import save_best_model, save_current_status
-from utils.tensor_section_functions import slice_tensor
+from utils.tensor_section_functions import slice_tensor, tensor_size
 
 
-class cls_tripletTrainer:
-    def __init__(self, opt, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1, best_epoch=0):
+class Trainer:
+    def __init__(self, opt, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1, best_epoch=0,
+                 phase_num=1):
         self.opt = opt
         self.evaluator = evaluator
         self.model = evaluator.model
@@ -20,6 +21,7 @@ class cls_tripletTrainer:
         self.summary_writer = summary_writer
         self.best_rank1 = best_rank1
         self.best_epoch = best_epoch
+        self.phase_num = phase_num
 
     def train(self, epoch, data_loader):
         """Note: epoch should start with 1"""
@@ -91,21 +93,24 @@ class cls_tripletTrainer:
                 self.best_epoch = epoch
 
     def _parse_data(self, inputs):
-        imgs, pids, _ = inputs
-        self.data = imgs.cuda()
-        self.target = pids.cuda()
+        raise NotImplementedError
 
     def _forward(self):
-        score, feat = self.model(self.data)
-        self.loss = self.criterion(score, feat, self.target)
+        raise NotImplementedError
 
     def _backward(self):
-        self.loss.backward()
+        raise NotImplementedError
+
+    def _extract_feature(self, data):
+        raise NotImplementedError
+
+    def _compare_feature(self, features):
+        raise NotImplementedError
 
 
-class braidTrainer(cls_tripletTrainer):
+class BraidPairTrainer(Trainer):
     def __init__(self, *args, **kwargs):
-        super(braidTrainer, self).__init__(*args, **kwargs)
+        super(BraidPairTrainer, self).__init__(*args, **kwargs)
 
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs
@@ -114,8 +119,24 @@ class braidTrainer(cls_tripletTrainer):
         self.data = (imgs_a.cuda(), imgs_b.cuda())
         self.target = torch.tensor(target).cuda().unsqueeze(1)
 
+    def _extract_feature(self, data):
+        return self.model(data, None, mode='extract')
+
+    def _compare_feature(self, features):
+        return self.model(*features, mode='metric').squeeze()
+
     def _forward(self):
-        score = self.model(*self.data)
+        if self.phase_num == 1:
+            score = self.model(*self.data, mode='normal')
+
+        elif self.phase_num == 2:
+            feat_a = self.model(self.data[0], mode='extract')
+            feat_b = self.model(self.data[1], mode='extract')
+            score = self.model(feat_a, feat_b, mode='metric')
+
+        else:
+            raise ValueError
+
         self.loss = self.criterion(score, self.target)
 
     def _backward(self):
@@ -123,47 +144,36 @@ class braidTrainer(cls_tripletTrainer):
         self.model.module.correct_grads()
 
 
-class braid_tripletTrainer(braidTrainer):
+class BraidCrossTrainer(BraidPairTrainer):
     def _parse_data(self, inputs):
         imgs, pids, _ = inputs
         self.data = imgs.cuda()
         self.target = pids.cuda()
-        self.n = len(pids)
 
-    # def _slice_tensor(self, data, indices):
-    #     if isinstance(data, torch.Tensor):
-    #         return data[indices]
-    #     elif isinstance(data, (list, tuple)):
-    #         return [self._slice_tensor(d, indices) for d in data]
-    #     elif isinstance(data, dict):
-    #         return {k: self._slice_tensor(v, indices) for k, v in data.items()}
-    #     else:
-    #         raise TypeError('type {0} is not supported'.format(type(data)))
-
-    def _extract_feature(self):
-        self.features = self.model(self.data, None, mode='extract')
-        # self.dims_num = len(self.features.size())
-
-    def _compare_feature(self):
+    def _compare_feature(self, features):
         """has been optimized to save half of the time"""
         # only compute the lower triangular of the distmat
-        a_indices, b_indices = torch.tril_indices(self.n, self.n)
-        dists_l = - self.model(slice_tensor(self.features, a_indices),
-                               slice_tensor(self.features, b_indices),
-                               mode='metric').squeeze()
+        n = tensor_size(features, dim=0)
+        a_indices, b_indices = torch.tril_indices(n, n)
+        scores_l = self.model(slice_tensor(features, a_indices),
+                              slice_tensor(features, b_indices),
+                              mode='metric').squeeze()
 
-        distmat = torch.zeros((self.n, self.n), device=dists_l.device, dtype=dists_l.dtype)
-        distmat[a_indices, b_indices] = dists_l
-        distmat[b_indices, a_indices] = dists_l
+        score_mat = torch.zeros((n, n), device=scores_l.device, dtype=scores_l.dtype)
+        score_mat[a_indices, b_indices] = scores_l
+        score_mat[b_indices, a_indices] = scores_l
 
-        self.distmat = distmat
-        # repeat_param = [1, ]*self.dims_num
-        # repeat_param[0] = self.n
-        # self.distmat = - self.model(self.features.repeat(*repeat_param),
-        #                             self.features.repeat_interleave(*repeat_param),
-        #                             mode='metric').reshape(self.n, self.n)
+        return score_mat
 
     def _forward(self):
-        self._extract_feature()
-        self._compare_feature()
-        self.loss = self.criterion(self.distmat, self.target)
+        if self.phase_num == 1:
+            raise NotImplementedError('In most cases, it will waste too much computation.')
+
+        elif self.phase_num == 2:
+            features = self._extract_feature(self.data)
+            score_mat = self._compare_feature(features)
+
+        else:
+            raise ValueError
+
+        self.loss = self.criterion(score_mat, self.target)

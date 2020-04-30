@@ -282,7 +282,7 @@ class ResNetEvaluator:
         return thresh, eer
 
 
-class BraidEvaluator(ResNetEvaluator):
+class BraidEvaluator_1Phase(ResNetEvaluator):
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
         if eval_flip:

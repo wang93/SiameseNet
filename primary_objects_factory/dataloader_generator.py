@@ -20,7 +20,7 @@ def get_dataloaders(opt, model_meta):
 
     pin_memory = True
 
-    if opt.loss in ('bce',):
+    if opt.train_mode == 'pair':
         from datasets.samplers import PosNegPairSampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
@@ -31,7 +31,7 @@ def get_dataloaders(opt, model_meta):
             pin_memory=pin_memory, drop_last=False
         )
 
-    elif opt.loss in ('triplet',):
+    elif opt.train_mode == 'cross':
         from datasets.samplers import RandomIdentitySampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),

@@ -24,7 +24,8 @@ class DefaultConfig(object):
     iter_num_per_epoch = 500
     train_batch = 256
     test_batch = 256
-    freeze_pretrained_untill = -1 # =0, 1, 2... <=0 when always freeze pretrained
+    train_mode = 'pair'  # 'pair' or 'cross'
+    freeze_pretrained_untill = -1  # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
     gamma = 0.5
     weight_decay = 5e-4

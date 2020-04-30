@@ -4,14 +4,14 @@ def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galle
     print('initializing evaluator...')
 
     if opt.eval_phase_num == 1:
-        from trainers.evaluator import BraidEvaluator
-        reid_evaluator = BraidEvaluator(model,
-                                        queryloader=queryloader,
-                                        galleryloader=galleryloader,
-                                        queryFliploader=queryFliploader,
-                                        galleryFliploader=galleryFliploader,
-                                        minors_num=opt.eval_minors_num,
-                                        ranks=ranks)
+        from trainers.evaluator import BraidEvaluator_1Phase
+        reid_evaluator = BraidEvaluator_1Phase(model,
+                                               queryloader=queryloader,
+                                               galleryloader=galleryloader,
+                                               queryFliploader=queryFliploader,
+                                               galleryFliploader=galleryFliploader,
+                                               minors_num=opt.eval_minors_num,
+                                               ranks=ranks)
     elif opt.eval_phase_num == 2:
         from trainers.evaluator import BraidEvaluator_2Phases
         reid_evaluator = BraidEvaluator_2Phases(model,
@@ -23,7 +23,6 @@ def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galle
                                                 ranks=ranks)
 
     else:
-
         raise NotImplementedError
 
     return reid_evaluator

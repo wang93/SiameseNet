@@ -132,7 +132,8 @@ class TripletLoss4Braid(object):
         else:
             self.ranking_loss = nn.SoftMarginLoss()
 
-    def __call__(self, dist_mat, labels):
+    def __call__(self, score_mat, labels):
+        dist_mat = - score_mat
         dist_ap, dist_an = hard_example_mining(dist_mat, labels, self.margin)
         y = dist_an.new().resize_as_(dist_an).fill_(1)
         if self.margin is not None:
@@ -140,6 +141,17 @@ class TripletLoss4Braid(object):
         else:
             loss = self.ranking_loss(dist_an - dist_ap, y)
         return loss  # dist_ap, dist_an
+
+
+class CrossSimilartyBCELoss(object):
+    def __init__(self):
+        self.bce_loss = nn.BCELoss()
+
+    def __call__(self, score_mat, labels):
+        N = score_mat.size(0)
+        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t())
+        loss = self.bce_loss(score_mat, is_pos)
+        return loss
 
 
 class CrossEntropyLabelSmooth(nn.Module):

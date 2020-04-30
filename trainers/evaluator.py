@@ -35,6 +35,8 @@ class ReIDEvaluator:
         self.phase_num = phase_num
         self.minors_num = minors_num
 
+        self.batch_size = self.queryloader.batch_size
+
     def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, savefig):
         os.makedirs(savefig, exist_ok=True)
         self.model.eval()

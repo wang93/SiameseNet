@@ -20,8 +20,9 @@ from random import choice as randchoice
 from time import time as curtime
 
 from utils.tensor_section_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size, cat_tensors, \
-    split_tensor, tensor_attr
+    split_tensor, tensor_attr, slice_tensor
 
+from utils.batchsize_optimizer import get_max_batchsize
 
 class ReIDEvaluator:
     def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, phase_num=1, minors_num=0,
@@ -209,15 +210,18 @@ class ReIDEvaluator:
         # fa = tensor_cuda(fa)
         # fb = tensor_cuda(fb)
         cur_idx_a = -1
-        # batch_size = 1
+
         with torch.no_grad():
+            fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
+            batch_size = get_max_batchsize(fun, tensor_cuda(slice_tensor(fa, 0)), tensor_cuda(slice_tensor(fb, 0)))
+            print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
             for sub_fa in split_tensor(fa, dim=0, split_size=1):
                 cur_idx_a += 1
                 cur_idx_b = 0
-                sub_fa_s = tensor_repeat(sub_fa, dim=0, num=self.batch_size, interleave=True)
+                sub_fa_s = tensor_repeat(sub_fa, dim=0, num=batch_size, interleave=True)
                 sub_fa_s = tensor_cuda(sub_fa_s)
-                n_a = self.batch_size
-                for sub_fb in split_tensor(fb, dim=0, split_size=self.batch_size):
+                n_a = batch_size
+                for sub_fb in split_tensor(fb, dim=0, split_size=batch_size):
                     sub_fb = tensor_cuda(sub_fb)
                     n_b = tensor_size(sub_fb, 0)
                     if n_a != n_b:

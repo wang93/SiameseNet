@@ -124,6 +124,17 @@ def tensor_size(data, dim):
         raise TypeError('type {0} is not supported'.format(type(data)))
 
 
+def tensor_memory(data):
+    if isinstance(data, Tensor):
+        return data.element_size() * data.nelement()
+    elif isinstance(data, (list, tuple)):
+        return sum([tensor_memory(d) for d in data])
+    elif isinstance(data, dict):
+        return sum([tensor_memory(v) for _, v in data.items()])
+    else:
+        raise TypeError('type {0} is not supported'.format(type(data)))
+
+
 def tensor_attr(data, attr):
     if isinstance(data, Tensor):
         return getattr(data, attr)

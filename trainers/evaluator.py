@@ -19,10 +19,11 @@ from collections import defaultdict
 from random import choice as randchoice
 from time import time as curtime
 
-from utils.tensor_section_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size, cat_tensors, \
+from utils.tensor_section_functions import tensor_cuda, tensor_repeat, tensor_size, cat_tensors, \
     split_tensor, tensor_attr, slice_tensor
 
-from utils.batchsize_optimizer import get_max_batchsize
+from utils.adaptive_batchsize import get_max_batchsize
+
 
 class ReIDEvaluator:
     def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, phase_num=1, minors_num=0,
@@ -187,47 +188,36 @@ class ReIDEvaluator:
         imgs, pids, camids = inputs
         return imgs.cuda(), pids, camids
 
-    def _compare_images(self, *inputs):
-        with torch.no_grad():
-            # fun = lambda i: self.model(*i, mode='normal')
-            # batch_size = get_max_batchsize(fun, tensor_cuda(slice_tensor(fa, [0])), tensor_cuda(slice_tensor(fb, [0])))
-            # batch_size = min(batch_size, l_b)
+    # def _compare_images(self, *inputs):
+    #     with torch.no_grad():
+    #         sample_num = tensor_size(inputs, dim=0)
+    #         fun = lambda i: self.model(*i, mode='normal')
+    #         batch_size = get_max_batchsize(fun, slice_tensor(inputs, [0]))
+    #         batch_size = min(batch_size, sample_num)
+    #
+    #         scores = [fun(tensor_cuda(sub)) for sub in split_tensor(inputs, dim=0, split_size=batch_size)]
+    #         scores = torch.cat(scores, dim=0)
+    #         #scores = self.model(*inputs, mode='normal')
+    #     return scores.cpu()
 
-            scores = self.model(*inputs, mode='normal')
-        return scores.cpu()
-
-    def _get_feature(self, dataloader):
-        with torch.no_grad():
-            features = [self._extract_feature(data) for data, _, _ in dataloader]
-            features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
-        return features
-
-    def _extract_feature(self, ims):
-        with torch.no_grad():
-            ims = ims.cuda()
-            features = self.model(ims, None, mode='extract')
-        return tensor_cpu(features)  # features.cpu()
-
-    def _compare_feature(self, fa, fb):
-        l_a = tensor_size(fa, 0)
-        l_b = tensor_size(fb, 0)
-        score_mat = torch.zeros(l_a, l_b, dtype=tensor_attr(fa, 'dtype'), device=tensor_attr(fa, 'device'))
-        # fa = tensor_cuda(fa)
-        # fb = tensor_cuda(fb)
+    def _compare(self, a, b, mode):
+        l_a = tensor_size(a, 0)
+        l_b = tensor_size(b, 0)
+        score_mat = torch.zeros(l_a, l_b, dtype=tensor_attr(a, 'dtype'), device=tensor_attr(a, 'device'))
         cur_idx_a = -1
 
         with torch.no_grad():
-            fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
-            batch_size = get_max_batchsize(fun, tensor_cuda(slice_tensor(fa, [0])), tensor_cuda(slice_tensor(fb, [0])))
+            fun = lambda a, b: self.model(a, b, mode=mode).view(-1)
+            batch_size = get_max_batchsize(fun, slice_tensor(a, [0]), slice_tensor(b, [0]))
             batch_size = min(batch_size, l_b)
             # print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
-            for sub_fa in split_tensor(fa, dim=0, split_size=1):
+            for sub_fa in split_tensor(a, dim=0, split_size=1):
                 cur_idx_a += 1
                 cur_idx_b = 0
                 sub_fa_s = tensor_repeat(sub_fa, dim=0, num=batch_size, interleave=True)
                 sub_fa_s = tensor_cuda(sub_fa_s)
                 n_a = batch_size
-                for sub_fb in split_tensor(fb, dim=0, split_size=batch_size):
+                for sub_fb in split_tensor(b, dim=0, split_size=batch_size):
                     sub_fb = tensor_cuda(sub_fb)
                     n_b = tensor_size(sub_fb, 0)
                     if n_a != n_b:
@@ -241,6 +231,24 @@ class ReIDEvaluator:
                     cur_idx_b += n_b
 
         return score_mat
+
+    def _get_feature(self, dataloader):
+        with torch.no_grad():
+            fun = lambda d: self.model(d, None, mode='extract')
+            batch_size = get_max_batchsize(fun, dataloader.dataset[0][0])
+            batch_size = min(batch_size, len(dataloader))
+            dataloader.batch_size = batch_size
+            dataloader.batch_sampler.batch_size = batch_size
+
+            features = [fun(tensor_cuda(data)).cpu() for data, _, _ in dataloader]
+            features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
+        return features
+
+    # def _extract_feature(self, ims):
+    #     with torch.no_grad():
+    #         ims = ims.cuda()
+    #         features = self.model(ims, None, mode='extract')
+    #     return tensor_cpu(features)  # features.cpu()
 
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
@@ -270,72 +278,22 @@ class ReIDEvaluator:
         with torch.no_grad():
 
             if self.phase_num == 1:
-                num_q, num_g = len(q_pids), len(g_pids)
-                q_g_similarity = torch.zeros((num_q, num_g))
                 galleries_all = [galleries for galleries, _, _ in self.galleryloader]
-                cur_query_index = -1
-                for queries in self.queryloader:
-                    q_features, _, _ = self._parse_data(queries)
-                    for q_feature in q_features:
-                        cur_query_index += 1
-                        cur_gallery_index = 0
-                        for galleries in galleries_all:
-                            g_features = galleries.cuda()
-                            e = cur_gallery_index + g_features.size(0)
-                            features_of_a_query = q_feature.expand_as(g_features)
-                            scores = self._compare_images(features_of_a_query, g_features).view(-1).cpu()
-                            q_g_similarity[cur_query_index, cur_gallery_index:e] = scores
-                            cur_gallery_index = e
+                queries_all = [queries for queries, _, _ in self.queryloader]
+
+                q_g_similarity = self._compare(queries_all, galleries_all, mode='normal')
 
                 if not eval_flip:
-                    del galleries_all
+                    del galleries_all, queries_all
                 else:
-                    cur_query_index = -1
-                    for queries in self.queryFliploader:
-                        q_features, _, _ = self._parse_data(queries)
-                        for q_feature in q_features:
-                            cur_query_index += 1
-                            cur_gallery_index = 0
-                            for galleries in galleries_all:
-                                g_features = galleries.cuda()
-                                e = cur_gallery_index + g_features.size(0)
-                                features_of_a_query = q_feature.expand_as(g_features)
-                                scores = self._compare_images(features_of_a_query, g_features).view(-1).cpu()
-                                q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
-                                cur_gallery_index = e
-
-                    del galleries_all
                     flip_galleries_all = [galleries for galleries, _, _ in self.galleryFliploader]
-
-                    cur_query_index = -1
-                    for queries in self.queryFliploader:
-                        q_features, _, _ = self._parse_data(queries)
-                        for q_feature in q_features:
-                            cur_query_index += 1
-                            cur_gallery_index = 0
-                            for galleries in flip_galleries_all:
-                                g_features = galleries.cuda()
-                                e = cur_gallery_index + g_features.size(0)
-                                features_of_a_query = q_feature.expand_as(g_features)
-                                scores = self._compare_images(features_of_a_query, g_features).view(-1).cpu()
-                                q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
-                                cur_gallery_index = e
-
-                    cur_query_index = -1
-                    for queries in self.queryloader:
-                        q_features, _, _ = self._parse_data(queries)
-                        for q_feature in q_features:
-                            cur_query_index += 1
-                            cur_gallery_index = 0
-                            for galleries in flip_galleries_all:
-                                g_features = galleries.cuda()
-                                e = cur_gallery_index + g_features.size(0)
-                                features_of_a_query = q_feature.expand_as(g_features)
-                                scores = self._compare_images(features_of_a_query, g_features).view(-1).cpu()
-                                q_g_similarity[cur_query_index, cur_gallery_index:e] += scores
-                                cur_gallery_index = e
-
-                    del flip_galleries_all
+                    q_g_similarity += self._compare(queries_all, flip_galleries_all, mode='normal')
+                    del queries_all
+                    flip_queries_all = [queries for queries, _, _ in self.queryFliploader]
+                    q_g_similarity += self._compare(flip_queries_all, galleries_all, mode='normal')
+                    del galleries_all
+                    q_g_similarity += self._compare(flip_queries_all, flip_galleries_all, mode='normal')
+                    del flip_queries_all, flip_galleries_all
                     q_g_similarity /= 4.0
 
             elif self.phase_num == 2:
@@ -344,28 +302,19 @@ class ReIDEvaluator:
                 gallery_features = self._get_feature(self.galleryloader)
 
                 '''phase two'''
-                q_g_similarity = self._compare_feature(query_features, gallery_features)
+                q_g_similarity = self._compare(query_features, gallery_features, 'metric')
 
                 if not eval_flip:
                     del gallery_features, query_features
-
                 else:
                     query_flip_features = self._get_feature(self.queryFliploader)
-
-                    q_g_similarity += self._compare_feature(query_flip_features, gallery_features)
-
+                    q_g_similarity += self._compare(query_flip_features, gallery_features, 'metric')
                     del gallery_features
-
                     gallery_flip_features = self._get_feature(self.galleryFliploader)
-
-                    q_g_similarity += self._compare_feature(query_flip_features, gallery_flip_features)
-
+                    q_g_similarity += self._compare(query_flip_features, gallery_flip_features, 'metric')
                     del query_flip_features
-
-                    q_g_similarity += self._compare_feature(query_features, gallery_flip_features)
-
+                    q_g_similarity += self._compare(query_features, gallery_flip_features, 'metric')
                     del gallery_flip_features, query_features
-
                     q_g_similarity /= 4.0
 
             else:

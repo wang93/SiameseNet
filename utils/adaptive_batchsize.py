@@ -1,9 +1,11 @@
 from torch import cuda
 
-from .tensor_section_functions import tensor_size, tensor_memory
+from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda
 
 
 def get_max_batchsize(fun, *samples):
+    samples = tensor_cuda(samples)
+
     gpu_num = cuda.device_count()
     sample_num = tensor_size(samples, dim=0)
 

@@ -20,7 +20,7 @@ from random import choice as randchoice
 from time import time as curtime
 
 from utils.tensor_section_functions import tensor_cuda, tensor_repeat, tensor_size, cat_tensors, \
-    split_tensor, tensor_attr, slice_tensor
+    split_tensor, tensor_attr, slice_tensor, tensor_cpu
 
 from utils.adaptive_batchsize import get_max_batchsize
 
@@ -243,7 +243,7 @@ class ReIDEvaluator:
             dataloader.batch_sampler.batch_size = batch_size
             dataloader._DataLoader__initialized = True
 
-            features = [fun(tensor_cuda(data)).cpu() for data, _, _ in dataloader]
+            features = [tensor_cpu(fun(tensor_cuda(data))) for data, _, _ in dataloader]
             features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
         return features
 

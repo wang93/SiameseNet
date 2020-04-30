@@ -189,12 +189,17 @@ class ReIDEvaluator:
 
     def _compare_images(self, *inputs):
         with torch.no_grad():
+            # fun = lambda i: self.model(*i, mode='normal')
+            # batch_size = get_max_batchsize(fun, tensor_cuda(slice_tensor(fa, [0])), tensor_cuda(slice_tensor(fb, [0])))
+            # batch_size = min(batch_size, l_b)
+
             scores = self.model(*inputs, mode='normal')
         return scores.cpu()
 
     def _get_feature(self, dataloader):
-        features = [self._extract_feature(data) for data, _, _ in dataloader]
-        features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
+        with torch.no_grad():
+            features = [self._extract_feature(data) for data, _, _ in dataloader]
+            features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
         return features
 
     def _extract_feature(self, ims):
@@ -214,7 +219,7 @@ class ReIDEvaluator:
         with torch.no_grad():
             fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
             batch_size = get_max_batchsize(fun, tensor_cuda(slice_tensor(fa, [0])), tensor_cuda(slice_tensor(fb, [0])))
-            batch_size = min(max(batch_size - 1, 1), l_b)
+            batch_size = min(batch_size, l_b)
             # print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
             for sub_fa in split_tensor(fa, dim=0, split_size=1):
                 cur_idx_a += 1

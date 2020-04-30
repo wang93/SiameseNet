@@ -151,6 +151,11 @@ class BraidCrossTrainer(BraidPairTrainer):
 
     def _compare_feature(self, features):
         # only compute the lower triangular of the distmat
+
+        # fun = lambda a, b: self.model(a,b,mode='metric').squeeze()
+        # sample = slice_tensor(features, [0])
+        # batch_size =
+
         n = tensor_size(features, dim=0)
         a_indices, b_indices = torch.tril_indices(n, n)
         scores_l = self.model(slice_tensor(features, a_indices),

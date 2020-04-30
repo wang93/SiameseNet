@@ -36,7 +36,7 @@ class ReIDEvaluator:
         self.phase_num = phase_num
         self.minors_num = minors_num
 
-        self.batch_size = self.queryloader.batch_size
+        # self.batch_size = self.queryloader.batch_size
 
     def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, savefig):
         os.makedirs(savefig, exist_ok=True)
@@ -214,7 +214,8 @@ class ReIDEvaluator:
         with torch.no_grad():
             fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
             batch_size = get_max_batchsize(fun, tensor_cuda(slice_tensor(fa, [0])), tensor_cuda(slice_tensor(fb, [0])))
-            print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
+            batch_size = min(max(batch_size - 1, 1), l_b)
+            # print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
             for sub_fa in split_tensor(fa, dim=0, split_size=1):
                 cur_idx_a += 1
                 cur_idx_b = 0
@@ -228,7 +229,8 @@ class ReIDEvaluator:
                         sub_fa_s = tensor_repeat(sub_fa, dim=0, num=n_b, interleave=True)
                         sub_fa_s = tensor_cuda(sub_fa_s)
 
-                    scores = self.model(sub_fa_s, sub_fb, mode='metric').view(-1).cpu()
+                    # scores = self.model(sub_fa_s, sub_fb, mode='metric').view(-1).cpu()
+                    scores = fun(sub_fa_s, sub_fb).cpu()
                     score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
 
                     cur_idx_b += n_b

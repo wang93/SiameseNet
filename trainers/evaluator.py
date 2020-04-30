@@ -238,10 +238,10 @@ class ReIDEvaluator:
             batch_size = get_max_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0]))
             batch_size = min(batch_size, len(dataloader))
 
-            dataloader.__initialized = False
+            dataloader._DataLoader__initialized = False
             dataloader.batch_size = batch_size
             dataloader.batch_sampler.batch_size = batch_size
-            dataloader.__initialized = True
+            dataloader._DataLoader__initialized = True
 
             features = [fun(tensor_cuda(data)).cpu() for data, _, _ in dataloader]
             features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)

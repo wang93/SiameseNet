@@ -21,7 +21,7 @@ def get_trainer(opt, evaluator, optimizer, best_rank1, best_epoch):
 
         from trainers.trainer import BraidPairTrainer
         reid_trainer = BraidPairTrainer(opt, evaluator, optimizer, lr_strategy, criterion,
-                                        summary_writer, best_rank1, best_epoch)
+                                        summary_writer, best_rank1, best_epoch, opt.train_phase_num)
 
     elif opt.train_mode == 'cross':
         if opt.loss == 'bce':
@@ -37,7 +37,7 @@ def get_trainer(opt, evaluator, optimizer, best_rank1, best_epoch):
 
         from trainers.trainer import BraidCrossTrainer
         reid_trainer = BraidCrossTrainer(opt, evaluator, optimizer, lr_strategy, criterion,
-                                         summary_writer, best_rank1, best_epoch)
+                                         summary_writer, best_rank1, best_epoch, opt.train_phase_num)
 
     else:
         raise NotImplementedError

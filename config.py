@@ -23,7 +23,7 @@ class DefaultConfig(object):
     max_epoch = 280
     iter_num_per_epoch = 500
     train_batch = 256
-    test_batch = 256
+    train_phase_num = 1  # 1 / 2
     train_mode = 'pair'  # 'pair' or 'cross'
     freeze_pretrained_untill = -1  # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
@@ -38,6 +38,7 @@ class DefaultConfig(object):
     savefig = None 
     re_ranking = False
     eval_step = 50
+    test_batch = 256
     eval_phase_num = 1  # 1 / 2
     test_pids_num = -1  # = <0 when don't change test set
     eval_minors_num = 100  # <=0 when evaluation on the whole test set one time

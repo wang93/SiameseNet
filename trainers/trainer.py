@@ -38,7 +38,6 @@ class Trainer:
         except AttributeError:
             print('the net does not have \'unlable_pretrained\' method')
 
-
         start = time.time()
         self.model.train()
         batch_time = AverageMeter()
@@ -151,7 +150,6 @@ class BraidCrossTrainer(BraidPairTrainer):
         self.target = pids.cuda()
 
     def _compare_feature(self, features):
-        """has been optimized to save half of the time"""
         # only compute the lower triangular of the distmat
         n = tensor_size(features, dim=0)
         a_indices, b_indices = torch.tril_indices(n, n)

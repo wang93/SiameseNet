@@ -209,6 +209,7 @@ class ReIDEvaluator:
         # fa = tensor_cuda(fa)
         # fb = tensor_cuda(fb)
         cur_idx_a = -1
+        # batch_size = 1
         with torch.no_grad():
             for sub_fa in split_tensor(fa, dim=0, split_size=1):
                 cur_idx_a += 1

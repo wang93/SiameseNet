@@ -235,7 +235,7 @@ class ReIDEvaluator:
     def _get_feature(self, dataloader):
         with torch.no_grad():
             fun = lambda d: self.model(d, None, mode='extract')
-            batch_size = get_max_batchsize(fun, dataloader.dataset[0][0])
+            batch_size = get_max_batchsize(fun, slice_tensor(next(iter(dataloader)), [0]))
             batch_size = min(batch_size, len(dataloader))
             dataloader.batch_size = batch_size
             dataloader.batch_sampler.batch_size = batch_size

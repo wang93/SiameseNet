@@ -13,6 +13,22 @@ def slice_tensor(data, indices):
         raise TypeError('type {0} is not supported'.format(type(data)))
 
 
+def split_tensor(data, dim, split_size):
+    if isinstance(data, Tensor):
+        return torch.split(data, split_size, dim)
+    elif isinstance(data, (list, tuple)):
+        return [*zip(*[split_tensor(d, dim, split_size) for d in data])]
+    elif isinstance(data, dict):
+        vss = [split_tensor(v, dim, split_size) for _, v in data.items()]
+        result = []
+        for vs in zip(*vss):
+            one_dict = {k: v for k, v in zip(data.keys(), vs)}
+            result.append(one_dict)
+        return result
+    else:
+        raise TypeError('type {0} is not supported'.format(type(data)))
+
+
 def cat_tensor_pair(a, b, dim):
     assert type(a) == type(b)
     if isinstance(a, Tensor):
@@ -104,5 +120,26 @@ def tensor_size(data, dim):
             return results[0]
         else:
             raise ValueError('sizes of tensors are not consistent in dim {0}'.format(dim))
+    else:
+        raise TypeError('type {0} is not supported'.format(type(data)))
+
+
+def tensor_attr(data, attr):
+    if isinstance(data, Tensor):
+        return getattr(data, attr)
+    elif isinstance(data, (list, tuple)):
+        results = [tensor_attr(d, attr) for d in data]
+        if _all_same(results):
+            return results[0]
+        else:
+            raise ValueError('{0} of tensors are not consistent!'.format(attr))
+
+    elif isinstance(data, dict):
+        results = [tensor_attr(v, attr) for _, v in data.items()]
+        if _all_same(results):
+            return results[0]
+        else:
+            raise ValueError('{0} of tensors are not consistent!'.format(attr))
+
     else:
         raise TypeError('type {0} is not supported'.format(type(data)))

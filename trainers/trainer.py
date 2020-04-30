@@ -6,7 +6,7 @@ import torch
 
 from utils.meters import AverageMeter
 from utils.serialization import save_best_model, save_current_status
-from utils.tensor_functions import slice_tensor
+from utils.tensor_section_functions import slice_tensor
 
 
 class cls_tripletTrainer:

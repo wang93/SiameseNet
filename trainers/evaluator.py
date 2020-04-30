@@ -19,7 +19,8 @@ from collections import defaultdict
 from random import choice as randchoice
 from time import time as curtime
 
-from utils.tensor_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size, cat_tensors
+from utils.tensor_section_functions import tensor_cpu, tensor_cuda, tensor_repeat, tensor_size, cat_tensors, \
+    split_tensor, tensor_attr
 
 class ResNetEvaluator:
     def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
@@ -403,6 +404,10 @@ class BraidEvaluator(ResNetEvaluator):
 
 
 class BraidEvaluator_2Phases(ResNetEvaluator):
+    def __init__(self, *args, **kwargs):
+        super(BraidEvaluator_2Phases, self).__init__(*args, **kwargs)
+        self.batch_size = self.queryloader.batch_size
+
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
         if eval_flip:
@@ -455,7 +460,7 @@ class BraidEvaluator_2Phases(ResNetEvaluator):
 
                 q_g_similarity += self._compare_feature(query_features, gallery_flip_features)
 
-                del gallery_flip_features
+                del gallery_flip_features, query_features
 
                 q_g_similarity /= 4.0
 
@@ -493,14 +498,29 @@ class BraidEvaluator_2Phases(ResNetEvaluator):
             features = self.model(ims, None, mode='extract')
         return tensor_cpu(features)  # features.cpu()
 
-    def _compare_feature(self, f_a, f_b):
-        n_a = tensor_size(f_a, 0)
-        n_b = tensor_size(f_b, 0)
+    def _compare_feature(self, fa, fb):
+        l_a = tensor_size(fa, 0)
+        l_b = tensor_size(fb, 0)
+        score_mat = torch.zeros(l_a, l_b, dtype=tensor_attr(fa, 'dtype'), device=tensor_attr(fa, 'device'))
+        # fa = tensor_cuda(fa)
+        # fb = tensor_cuda(fb)
+        cur_idx_a = -1
         with torch.no_grad():
-            f_a = tensor_cuda(f_a)
-            f_b = tensor_cuda(f_b)
-            score_mat = self.model(tensor_repeat(f_b, dim=0, num=n_a, interleave=False),
-                                   tensor_repeat(f_a, dim=0, num=n_b, interleave=True),
-                                   mode='metric').reshape(n_a, n_b)
+            for sub_fa in split_tensor(fa, dim=0, split_size=1):
+                cur_idx_a += 1
+                cur_idx_b = 0
+                sub_fa_s = tensor_repeat(sub_fa, dim=0, num=self.batch_size, interleave=True)
+                sub_fa_s = tensor_cuda(sub_fa_s)
+                n_a = self.batch_size
+                for sub_fb in split_tensor(fb, dim=0, split_size=self.batch_size):
+                    n_b = tensor_size(sub_fb, 0)
+                    if n_a != n_b:
+                        sub_fa_s = tensor_repeat(sub_fa, dim=0, num=n_b, interleave=True)
+                        sub_fa_s = tensor_cuda(sub_fa_s)
 
-        return score_mat.cpu()
+                    scores = self.model(sub_fa_s, sub_fb, mode='metric').view(-1).cpu()
+                    score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
+
+                    cur_idx_b += n_b
+
+        return score_mat

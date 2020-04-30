@@ -513,6 +513,7 @@ class BraidEvaluator_2Phases(ResNetEvaluator):
                 sub_fa_s = tensor_cuda(sub_fa_s)
                 n_a = self.batch_size
                 for sub_fb in split_tensor(fb, dim=0, split_size=self.batch_size):
+                    sub_fb = tensor_cuda(sub_fb)
                     n_b = tensor_size(sub_fb, 0)
                     if n_a != n_b:
                         sub_fa_s = tensor_repeat(sub_fa, dim=0, num=n_b, interleave=True)

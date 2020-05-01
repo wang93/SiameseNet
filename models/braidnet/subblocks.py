@@ -1,12 +1,11 @@
-import torch.nn as nn
 import torch
-from torch.nn import functional as F
-
+import torch.nn as nn
 from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
-#from torch.nn import BatchNorm3d as BatchNorm3d
-#from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
-#from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+from torch.nn import functional as F
+
+__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d',
+           'WBatchNorm1d', 'PartPool', 'PartPools']
 
 
 class WConv2d(nn.Conv2d):
@@ -194,12 +193,6 @@ class PartPools(nn.Module):
             result.append(torch.cat(sub_result, 1))
 
         return result
-
-
-class CatPooledVectors(nn.Module):
-    def forward(self, inputs):
-        raise NotImplementedError
-        sizes_num = len(inputs[0])
 
 
 

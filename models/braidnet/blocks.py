@@ -6,6 +6,9 @@ from torch.nn import BatchNorm2d as BatchNorm2d
 from utils.tensor_section_functions import cat_tensor_pair
 from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
+__all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
+           'CatBraidsGroups', 'BraidBlock', 'LinearBraidBlock', 'SumY',
+           'MinMaxY', 'FCBlock']
 
 def int2tuple(n):
     if isinstance(n, int):

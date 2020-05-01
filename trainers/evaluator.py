@@ -19,8 +19,7 @@ from collections import defaultdict
 from random import choice as randchoice
 from time import time as curtime
 
-from utils.tensor_section_functions import tensor_cuda, tensor_repeat, tensor_size, cat_tensors, \
-    split_tensor, tensor_attr, slice_tensor, tensor_cpu
+from utils.tensor_section_functions import *
 
 from utils.adaptive_batchsize import get_max_batchsize
 from datasets.samplers import PosNegPairSampler

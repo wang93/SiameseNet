@@ -1,10 +1,11 @@
 import copy
 
-from torch.nn import BatchNorm3d as BatchNorm3d
-from torch.optim import SGD, Adam
+import torch
+import torch.nn as nn
 from torchvision.models.resnet import resnet50, Bottleneck
 
 from .blocks import *
+from .braidproto import BraidProto, weights_init_kaiming
 from .subblocks import *
 
 
@@ -29,7 +30,7 @@ class MGN(nn.Module):
         res_g_conv5 = resnet.layer4
 
         res_p_conv5 = nn.Sequential(
-            Bottleneck(1024, 512, downsample=nn.Sequential(nn.Conv2d(1024, 2048, 1, bias=False), BatchNorm2d(2048))),
+            Bottleneck(1024, 512, downsample=nn.Sequential(nn.Conv2d(1024, 2048, 1, bias=False), nn.BatchNorm2d(2048))),
             Bottleneck(2048, 512),
             Bottleneck(2048, 512))
         res_p_conv5.load_state_dict(resnet.layer4.state_dict())
@@ -44,7 +45,7 @@ class MGN(nn.Module):
         self.pool_zp2 = PartPool(part_num=2, method='avg')
         self.pool_zp3 = PartPool(part_num=3, method='avg')
 
-        reduction = nn.Sequential(nn.Conv2d(2048, feats, 1, bias=False), BatchNorm2d(feats), nn.ReLU())
+        reduction = nn.Sequential(nn.Conv2d(2048, feats, 1, bias=False), nn.BatchNorm2d(feats), nn.ReLU())
 
         self._init_reduction(reduction)
         self.reduction_0 = copy.deepcopy(reduction)
@@ -108,29 +109,7 @@ class MGN(nn.Module):
         return fg, f0_p2, f1_p2, f0_p3, f1_p3, f2_p3
 
 
-def weights_init_kaiming(m: nn.Module):
-    #classname = m.__class__.__name__
-    if isinstance(m, (nn.Linear, WLinear)):
-        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
-        if m.bias is not None:
-            nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d, WConv2d)):
-        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
-        if m.bias is not None:
-            nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
-        if m.affine:
-            nn.init.constant_(m.weight, 1.0)
-            nn.init.constant_(m.bias, 0.0)
-    else:
-        for _, n in m._modules.items():
-            if n is None:
-                continue
-            weights_init_kaiming(n)
-
-
-class BraidMGN(nn.Module):
-
+class BraidMGN(BraidProto):
     reg_params = []
     noreg_params = []
     freeze_pretrained = True
@@ -179,7 +158,7 @@ class BraidMGN(nn.Module):
 
         self.correct_params()
 
-    def load_pretrained(self):
+    def load_pretrained(self, *args, **kwargs):
         pass
 
     def extract(self, ims):
@@ -219,16 +198,6 @@ class BraidMGN(nn.Module):
         else:
             return x
 
-    def correct_params(self):
-        for m in self.modules():
-            if isinstance(m, (WConv2d, WLinear)):
-                m.correct_params()
-
-    def correct_grads(self):
-        for m in self.modules():
-            if isinstance(m, (WConv2d, WLinear)):
-                m.correct_grads()
-
     def unlable_pretrained(self):
         self.freeze_pretrained = False
 
@@ -236,43 +205,6 @@ class BraidMGN(nn.Module):
         for model in [self.bi.backone, self.bi.p1, self.bi.p2, self.bi.p3]:
             for parameter in model.parameters():
                 parameter.requires_grad = not self.freeze_pretrained
-
-    def divide_params(self):
-        self.check_pretrained_params()
-        self.reg_params = []
-        self.noreg_params = []
-        for model in self.modules():
-            for k, v in model._parameters.items():
-                if v is None:
-                    continue
-                if k in ('weight', ) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
-                    self.noreg_params.append(v)
-                else:
-                    self.reg_params.append(v)
-
-    def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
-        self.divide_params()
-
-        if optim == "sgd":
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
-            optimizer = SGD(param_groups, **default)
-        elif optim == 'adam':
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'weight_decay': weight_decay}
-            optimizer = Adam(param_groups, **default,
-                             betas=(0.9, 0.999),
-                             eps=1e-8,
-                             amsgrad=False)
-        else:
-            raise NotImplementedError
-
-        for group in optimizer.param_groups:
-            group.setdefault('initial_lr', group['lr'])
-
-        return optimizer
 
     def train(self, mode=True):
         r"""Sets the module in training mode.
@@ -295,9 +227,3 @@ class BraidMGN(nn.Module):
             model.train(pretrained_training)
 
         return self
-
-
-if __name__ == '__main__':
-    mgn = MGN()
-    for name, param in mgn.named_parameters():
-        print('{0}.requires_grad = {1}'.format(name, param.requires_grad))

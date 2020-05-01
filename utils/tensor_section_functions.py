@@ -1,6 +1,10 @@
 import torch
 from torch import Tensor
 
+__all__ = ['slice_tensor', 'split_tensor', 'cat_tensor_pair', 'cat_tensors',
+           'tensor_cpu', 'tensor_cuda', 'tensor_repeat', 'tensor_size',
+           'tensor_memory', 'tensor_attr']
+
 
 def slice_tensor(data, indices):
     if isinstance(data, Tensor):

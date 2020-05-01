@@ -1,16 +1,9 @@
 # coding=utf-8
-#import torch.nn as nn
-#from optimizers import SGD2, Adam2
+import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-from torch.nn import BatchNorm3d as BatchNorm3d
-from torch.optim import SGD, Adam
 
-from .blocks import *  # Pair2Bi, BiBlock, Bi2Braid, BraidBlock, SumY, MaxY, SumMaxY, FCBlock
-from .subblocks import WConv2d, WBatchNorm2d
-
-# from sync_batchnorm import SynchronizedBatchNorm1d as BatchNorm1d
-# from sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
-# from sync_batchnorm import SynchronizedBatchNorm3d as BatchNorm3d
+from .blocks import *
+from .braidproto import BraidProto, weights_init_kaiming
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -21,28 +14,7 @@ model_urls = {
 }
 
 
-def weights_init_kaiming(m: nn.Module):
-    #classname = m.__class__.__name__
-    if isinstance(m, (nn.Linear, WLinear)):
-        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
-        if m.bias is not None:
-            nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d, WConv2d)):
-        nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
-        if m.bias is not None:
-            nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
-        if m.affine:
-            nn.init.constant_(m.weight, 1.0)
-            nn.init.constant_(m.bias, 0.0)
-    else:
-        for _, n in m._modules.items():
-            if n is None:
-                continue
-            weights_init_kaiming(n)
-
-
-class BraidNet(nn.Module):
+class BraidNet(BraidProto):
     resnet2in = {
         'conv1.weight': 'bi.0.conv.weight',
         'bn1.weight': 'bi.0.bn.weight',
@@ -53,7 +25,6 @@ class BraidNet(nn.Module):
 
     reg_params = []
     noreg_params = []
-    #pretrained_params = []
     has_resnet_stem = False
 
     def __init__(self, bi, braid, fc):
@@ -137,16 +108,6 @@ class BraidNet(nn.Module):
         else:
             return x
 
-    def correct_params(self):
-        for m in self.modules():
-            if isinstance(m, WConv2d):
-                m.correct_params()
-
-    def correct_grads(self):
-        for m in self.modules():
-            if isinstance(m, WConv2d):
-                m.correct_grads()
-
     def load_pretrained(self, resnet_name='resnet18'):
         resnet_state_dict = model_zoo.load_url(model_urls[resnet_name])
 
@@ -163,43 +124,6 @@ class BraidNet(nn.Module):
     def check_pretrained_params(self):
         for param in self.bi[0].parameters():
             param.requires_grad = not self.has_resnet_stem
-
-    def divide_params(self):
-        self.check_pretrained_params()
-        self.reg_params = []
-        self.noreg_params = []
-        for model in self.modules():
-            for k, v in model._parameters.items():
-                if v is None:
-                    continue
-                if k in ('weight', ) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
-                    self.noreg_params.append(v)
-                else:
-                    self.reg_params.append(v)
-
-    def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
-        self.divide_params()
-
-        if optim == "sgd":
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
-            optimizer = SGD(param_groups, **default)
-        elif optim == 'adam':
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'weight_decay': weight_decay}
-            optimizer = Adam(param_groups, **default,
-                             betas=(0.9, 0.999),
-                             eps=1e-8,
-                             amsgrad=False)
-        else:
-            raise NotImplementedError
-
-        for group in optimizer.param_groups:
-            group.setdefault('initial_lr', group['lr'])
-
-        return optimizer
 
     def train(self, mode=True):
         r"""Sets the module in training mode.

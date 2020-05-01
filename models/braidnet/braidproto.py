@@ -28,7 +28,7 @@ def weights_init_kaiming(m: nn.Module):
             weights_init_kaiming(n)
 
 
-class BraidProto(metaclass=ABCMeta, nn.Module):
+class BraidProto(nn.Module, metaclass=ABCMeta):
     def __init__(self):
         super(BraidProto, self).__init__()
         self.reg_params = []

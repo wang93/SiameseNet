@@ -9,7 +9,7 @@ def get_trainer(opt, evaluator, optimizer, best_rank1, best_epoch):
 
     summary_writer = SummaryWriter(path_join(opt.exp_dir, 'tensorboard_log'))
 
-    lr_strategy = get_lr_strategy(opt, optimizer)
+    lr_strategy = get_lr_strategy(opt)
 
     if opt.train_mode == 'pair':
         if opt.loss == 'bce':

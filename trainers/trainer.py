@@ -30,11 +30,10 @@ class Trainer:
             if epoch == self.opt.freeze_pretrained_untill:
                 print('no longer freeze pretrained params (if there were any pretrained params)!')
                 self.model.module.unlable_pretrained()
-                optimizer = self.model.module.get_optimizer(optim=self.opt.optim,
-                                                            lr=self.opt.lr,
-                                                            momentum=self.opt.momentum,
-                                                            weight_decay=self.opt.weight_decay)
-                self.optimizer = optimizer
+                self.optimizer = self.model.module.get_optimizer(optim=self.opt.optim,
+                                                                 lr=self.opt.lr,
+                                                                 momentum=self.opt.momentum,
+                                                                 weight_decay=self.opt.weight_decay)
         except AttributeError:
             print('the net does not have \'unlable_pretrained\' method')
 
@@ -43,7 +42,7 @@ class Trainer:
         batch_time = AverageMeter()
         data_time = AverageMeter()
         losses = AverageMeter()
-        self.lr_strategy(epoch)
+        self.lr_strategy(self.optimizer, epoch)
         for i, inputs in enumerate(data_loader):
             data_time.update(time.time() - start)
 

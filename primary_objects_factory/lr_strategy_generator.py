@@ -12,5 +12,5 @@ def MultiStepLR(optimizer, ep_from_1, gamma):
         p['lr'] = p['initial_lr'] * mul
 
 
-def get_lr_strategy(opt, optimizer):
-    return lambda e: MultiStepLR(optimizer, e, opt.gamma)
+def get_lr_strategy(opt):
+    return lambda o, e: MultiStepLR(o, e, opt.gamma)

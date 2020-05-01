@@ -63,15 +63,12 @@ def mkdir_if_missing(dir_path):
 
 
 def save_checkpoint(state, exp_dir, epoch, prefix: str):
-    if 'ep' in prefix:
-        raise ValueError('prefix {0} can not contain "ep"!'.format(prefix))
-
     save_dir = osp.join(exp_dir, CHECKPOINT_DIR)
     os.makedirs(save_dir, exist_ok=True)
 
     # delete previous checkpoints
     files_path = osp.join(save_dir, prefix + '*')
-    subprocess.call('rm {0}'.format(files_path), shell=True)
+    _ = subprocess.Popen('rm {0}'.format(files_path), shell=True)
     # os.system('rm {0} &>/dev/null'.format(files_path))
 
     # save current checkpoint

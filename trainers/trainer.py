@@ -9,7 +9,7 @@ from utils.serialization import save_best_model, save_current_status
 from utils.tensor_section_functions import slice_tensor, tensor_size
 
 
-class Trainer:
+class _Trainer:
     def __init__(self, opt, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1, best_epoch=0,
                  phase_num=1):
         self.opt = opt
@@ -45,7 +45,6 @@ class Trainer:
         self.lr_strategy(self.optimizer, epoch)
         for i, inputs in enumerate(data_loader):
             data_time.update(time.time() - start)
-
             # model optimizer
             self._parse_data(inputs)
             self._forward()
@@ -106,7 +105,7 @@ class Trainer:
         raise NotImplementedError
 
 
-class BraidPairTrainer(Trainer):
+class BraidPairTrainer(_Trainer):
     def __init__(self, *args, **kwargs):
         super(BraidPairTrainer, self).__init__(*args, **kwargs)
 
@@ -150,10 +149,6 @@ class BraidCrossTrainer(BraidPairTrainer):
 
     def _compare_feature(self, features):
         # only compute the lower triangular of the distmat
-
-        # fun = lambda a, b: self.model(a,b,mode='metric').squeeze()
-        # sample = slice_tensor(features, [0])
-        # batch_size =
 
         n = tensor_size(features, dim=0)
         a_indices, b_indices = torch.tril_indices(n, n)

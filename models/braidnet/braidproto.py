@@ -73,12 +73,12 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
 
     def correct_params(self):
         for m in self.modules():
-            if isinstance(m, WConv2d):
+            if isinstance(m, (WConv2d, WLinear)):
                 m.correct_params()
 
     def correct_grads(self):
         for m in self.modules():
-            if isinstance(m, WConv2d):
+            if isinstance(m, (WConv2d, WLinear)):
                 m.correct_grads()
 
     @abstractmethod

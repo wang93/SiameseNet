@@ -68,7 +68,7 @@ def save_checkpoint(state, exp_dir, epoch, prefix: str):
 
     # delete previous checkpoints
     files_path = osp.join(save_dir, prefix + '*')
-    _ = subprocess.Popen('rm {0}'.format(files_path), shell=True)
+    _ = subprocess.check_output('rm {0}'.format(files_path), shell=True)
     # os.system('rm {0} &>/dev/null'.format(files_path))
 
     # save current checkpoint

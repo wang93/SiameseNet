@@ -14,7 +14,7 @@ def get_model_with_optimizer(opt):
         model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=(1,))
     elif opt.model_name == 'braidmgn':
         from models.braidnet.braidmgn import BraidMGN
-        model = BraidMGN(feats=opt.feat, fc=(1,))
+        model = BraidMGN(feats=opt.feats, fc=(1,))
     else:
         raise NotImplementedError
 

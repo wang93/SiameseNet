@@ -7,6 +7,8 @@ from torch.nn import functional as F
 __all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d',
            'WBatchNorm1d', 'PartPool', 'PartPools']
 
+POOLS_DICT = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
+
 
 class WConv2d(nn.Conv2d):
     def __init__(self, in_channels=10, out_channels=10, kernel_size=3, stride=(1, 1),
@@ -162,8 +164,7 @@ class WBatchNorm1d(BatchNorm1d):
 class PartPool(nn.Module):
     def __init__(self, part_num=1, method='max'):
         super(PartPool, self).__init__()
-        pools_dict = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
-        self.pool = pools_dict[method]((part_num, 1))
+        self.pool = POOLS_DICT[method]((part_num, 1))
 
     def forward(self, input_):
         return self.pool(input_)
@@ -175,11 +176,10 @@ class PartPools(nn.Module):
         self.part_nums = part_nums
         self.methods = methods
         self.pools = nn.ModuleList()
-        pools_dict = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
         for part_num in part_nums:
             n_pools = nn.ModuleList()
             for m in methods:
-                n_pools.append(pools_dict[m]((part_num, 1)))
+                n_pools.append(POOLS_DICT[m]((part_num, 1)))
 
             self.pools.append(n_pools)
 

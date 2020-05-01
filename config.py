@@ -1,6 +1,5 @@
 # encoding: utf-8
 import warnings
-from os import getcwd
 from os.path import join
 from pprint import pprint
 
@@ -61,7 +60,7 @@ class DefaultConfig(object):
                 warnings.warn("Warning: opt does not have attribute %s" % k)
             setattr(self, k, v)
         # print(self.dataset)
-        self.exp_dir = join(getcwd(), 'exps', self.exp_name)
+        self.exp_dir = join('./exps', self.exp_name)
         self.savefig = join(self.exp_dir, 'visualize')
 
         if self.dataset[0] == '[':

@@ -62,19 +62,6 @@ class Bi2Braid(nn.Module):
             raise NotImplementedError
 
 
-# def _cat_tensors(a, b, dim):
-#     assert type(a) == type(b)
-#
-#     if isinstance(a, torch.Tensor):
-#         return torch.cat((a, b), dim=dim)
-#     elif isinstance(a, (list, tuple)):
-#         return [_cat_tensors(i, j, dim) for i, j in zip(a, b)]
-#     elif isinstance(a, dict):
-#         return {k: _cat_tensors(v, b[k], dim) for k, v in a.items()}
-#     else:
-#         raise TypeError('type {0} is not supported'.format(type(a)))
-
-
 class Pair2Bi(nn.Module):
     def forward(self, im_a, im_b):
         return cat_tensor_pair(im_a, im_b, dim=0)
@@ -87,7 +74,6 @@ class Pair2Braid(nn.Module):
 
 class CatBraids(nn.Module):
     """cat the braid-form feature maps from multiple PartPool operations"""
-
     def __init__(self):
         super(CatBraids, self).__init__()
 
@@ -168,16 +154,16 @@ class SumY(nn.Module):
         super(SumY, self).__init__()
         if linear:
             self.bn = BatchNorm1d(channel_in,
-                                     eps=1e-05,
-                                     momentum=0.1,
-                                     affine=True,
-                                     track_running_stats=True)
+                                  eps=1e-05,
+                                  momentum=0.1,
+                                  affine=True,
+                                  track_running_stats=True)
         else:
             self.bn = BatchNorm2d(channel_in,
-                                     eps=1e-05,
-                                     momentum=0.1,
-                                     affine=True,
-                                     track_running_stats=True)
+                                  eps=1e-05,
+                                  momentum=0.1,
+                                  affine=True,
+                                  track_running_stats=True)
 
     def forward(self, x_from_braid):
         y = torch.add(*torch.chunk(x_from_braid, 2, dim=1))

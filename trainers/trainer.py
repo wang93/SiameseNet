@@ -73,7 +73,7 @@ class _Trainer:
             start = time.time()
 
         param_group = self.optimizer.param_groups
-        print('Epoch: [{}]\tEpoch Time {:.3f} s\tLoss {:.3f}\t'
+        print('Epoch: [{}]\tEpoch Time {:.3f} s\tLoss {:.6f}\t'
               'Lr {:.2e}'
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 

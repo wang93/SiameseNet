@@ -1,5 +1,4 @@
 # encoding: utf-8
-import errno
 import os
 import os.path as osp
 import re
@@ -25,7 +24,7 @@ class Logger(object):
         self.console = sys.stdout
         self.file = None
         if fpath is not None:
-            mkdir_if_missing(os.path.dirname(fpath))
+            os.makedirs(os.path.dirname(fpath), exist_ok=True)
             self.file = open(fpath, 'a')
 
     def __del__(self):
@@ -54,27 +53,19 @@ class Logger(object):
             self.file.close()
 
 
-def mkdir_if_missing(dir_path):
-    try:
-        os.makedirs(dir_path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-
 def save_checkpoint(state, exp_dir, epoch, prefix: str):
     save_dir = osp.join(exp_dir, CHECKPOINT_DIR)
     os.makedirs(save_dir, exist_ok=True)
 
     # delete previous checkpoints
-    files_path = osp.join(save_dir, prefix + '*')
-    subprocess.call('rm {0}'.format(files_path), shell=True)
-    # os.system('rm {0} &>/dev/null'.format(files_path))
+    if epoch > 1:
+        files_path = osp.join(save_dir, prefix + '*')
+        subprocess.call('rm {0}'.format(files_path), shell=True)
+        # os.system('rm {0} &>/dev/null'.format(files_path))
 
     # save current checkpoint
     filename = '{0}_ep{1}.pth.tar'.format(prefix, epoch)
     fpath = osp.join(save_dir, filename)
-    mkdir_if_missing(save_dir)
     torch.save(state, fpath)
 
 

@@ -27,6 +27,7 @@ class DefaultConfig(object):
     freeze_pretrained_untill = -1  # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
     gamma = 0.5
+    warmup_till = -1  # <=1 when do not use warmup
     weight_decay = 5e-4
     momentum = 0.9
     margin = None
@@ -44,7 +45,7 @@ class DefaultConfig(object):
 
     # model options
     model_name = 'braidmgn'  # braidnet, braidmgn
-    feats = 256  # in braidmgn, pooled feature vector length in each part and each pooling method
+    feats = 256  # in braidmgn, pooled feature vector length in each part with one pooling method
     last_stride = 1
     pretrained_subparams = False
     pretrained_model = None

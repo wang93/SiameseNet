@@ -44,6 +44,7 @@ class DefaultConfig(object):
 
     # model options
     model_name = 'braidmgn'  # braidnet, braidmgn
+    feats = 256  # in braidmgn, pooled feature vector length in each part and each pooling method
     last_stride = 1
     pretrained_subparams = False
     pretrained_model = None

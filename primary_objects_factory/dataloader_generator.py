@@ -68,7 +68,7 @@ def get_dataloaders(opt, model_meta):
     )
 
     return {'trainloader': trainloader,
-            'queryloader':queryloader,
+            'queryloader': queryloader,
             'galleryloader': galleryloader,
             'queryFliploader': queryFliploader,
             'galleryFliploader': galleryFliploader}

@@ -23,6 +23,7 @@ from utils.tensor_section_functions import tensor_cuda, tensor_repeat, tensor_si
     split_tensor, tensor_attr, slice_tensor, tensor_cpu
 
 from utils.adaptive_batchsize import get_max_batchsize
+from datasets.samplers import PosNegPairSampler
 
 
 class ReIDEvaluator:
@@ -188,26 +189,14 @@ class ReIDEvaluator:
         imgs, pids, camids = inputs
         return imgs.cuda(), pids, camids
 
-    # def _compare_images(self, *inputs):
-    #     with torch.no_grad():
-    #         sample_num = tensor_size(inputs, dim=0)
-    #         fun = lambda i: self.model(*i, mode='normal')
-    #         batch_size = get_max_batchsize(fun, slice_tensor(inputs, [0]))
-    #         batch_size = min(batch_size, sample_num)
-    #
-    #         scores = [fun(tensor_cuda(sub)) for sub in split_tensor(inputs, dim=0, split_size=batch_size)]
-    #         scores = torch.cat(scores, dim=0)
-    #         #scores = self.model(*inputs, mode='normal')
-    #     return scores.cpu()
-
-    def _compare(self, a, b, mode):
+    def _compare_features(self, a, b):
         l_a = tensor_size(a, 0)
         l_b = tensor_size(b, 0)
         score_mat = torch.zeros(l_a, l_b, dtype=tensor_attr(a, 'dtype'), device=tensor_attr(a, 'device'))
         cur_idx_a = -1
 
         with torch.no_grad():
-            fun = lambda a, b: self.model(a, b, mode=mode).view(-1)
+            fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
             batch_size = get_max_batchsize(fun, slice_tensor(a, [0]), slice_tensor(b, [0]))
             batch_size = min(batch_size, l_b)
             # print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
@@ -232,26 +221,59 @@ class ReIDEvaluator:
 
         return score_mat
 
+    def _compare_images(self, loader_a, loader_b):
+        l_a = len(loader_a)
+        l_b = len(loader_b)
+        score_mat = torch.zeros(l_a, l_b)
+
+        with torch.no_grad():
+            fun = lambda a, b: self.model(a, b, mode='normal').view(-1)
+            one_ima = slice_tensor(next(iter(loader_a))[0], [0])
+            one_imb = slice_tensor(next(iter(loader_b))[0], [0])
+            batch_size = get_max_batchsize(fun, one_ima, one_imb)
+            batch_size = min(batch_size, l_b)
+            self._change_batchsize(loader_a, 1)
+            self._change_batchsize(loader_b, batch_size)
+
+            for cur_idx_a, (ima, _, _) in enumerate(loader_a):
+                cur_idx_b = 0
+                ima_s = tensor_repeat(ima, dim=0, num=batch_size, interleave=True)
+                ima_s = tensor_cuda(ima_s)
+                n_a = batch_size
+                for imb, _, _ in enumerate(loader_b):
+                    imb_s = tensor_cuda(imb_s)
+                    n_b = tensor_size(imb_s, 0)
+                    if n_a != n_b:
+                        ima_s = tensor_repeat(ima, dim=0, num=n_b, interleave=True)
+                        ima_s = tensor_cuda(ima_s)
+                        n_a = n_b
+
+                    scores = fun(ima_s, imb_s).cpu()
+                    score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
+
+                    cur_idx_b += n_b
+
+        return score_mat
+
+    @staticmethod
+    def _change_batchsize(dataloader, batch_size):
+        if isinstance(dataloader.sampler, PosNegPairSampler):
+            raise TypeError('can not change the batchsize of dataloader with pos_neg_pair_sampler')
+        dataloader._DataLoader__initialized = False
+        dataloader.batch_size = batch_size
+        dataloader.batch_sampler.batch_size = batch_size
+        dataloader._DataLoader__initialized = True
+
     def _get_feature(self, dataloader):
         with torch.no_grad():
             fun = lambda d: self.model(d, None, mode='extract')
             batch_size = get_max_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0]))
             batch_size = min(batch_size, len(dataloader))
-
-            dataloader._DataLoader__initialized = False
-            dataloader.batch_size = batch_size
-            dataloader.batch_sampler.batch_size = batch_size
-            dataloader._DataLoader__initialized = True
+            self._change_batchsize(dataloader, batch_size)
 
             features = [tensor_cpu(fun(tensor_cuda(data))) for data, _, _ in dataloader]
             features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
         return features
-
-    # def _extract_feature(self, ims):
-    #     with torch.no_grad():
-    #         ims = ims.cuda()
-    #         features = self.model(ims, None, mode='extract')
-    #     return tensor_cpu(features)  # features.cpu()
 
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
@@ -281,22 +303,12 @@ class ReIDEvaluator:
         with torch.no_grad():
 
             if self.phase_num == 1:
-                galleries_all = [galleries for galleries, _, _ in self.galleryloader]
-                queries_all = [queries for queries, _, _ in self.queryloader]
+                q_g_similarity = self._compare_images(self.queryloader, self.galleryloader)
 
-                q_g_similarity = self._compare(queries_all, galleries_all, mode='normal')
-
-                if not eval_flip:
-                    del galleries_all, queries_all
-                else:
-                    flip_galleries_all = [galleries for galleries, _, _ in self.galleryFliploader]
-                    q_g_similarity += self._compare(queries_all, flip_galleries_all, mode='normal')
-                    del queries_all
-                    flip_queries_all = [queries for queries, _, _ in self.queryFliploader]
-                    q_g_similarity += self._compare(flip_queries_all, galleries_all, mode='normal')
-                    del galleries_all
-                    q_g_similarity += self._compare(flip_queries_all, flip_galleries_all, mode='normal')
-                    del flip_queries_all, flip_galleries_all
+                if eval_flip:
+                    q_g_similarity += self._compare_images(self.queryloader, self.galleryFliploader)
+                    q_g_similarity += self._compare_images(self.queryFliploader, self.galleryloader)
+                    q_g_similarity += self._compare_images(self.queryFliploader, self.galleryFliploader)
                     q_g_similarity /= 4.0
 
             elif self.phase_num == 2:
@@ -305,18 +317,18 @@ class ReIDEvaluator:
                 gallery_features = self._get_feature(self.galleryloader)
 
                 '''phase two'''
-                q_g_similarity = self._compare(query_features, gallery_features, 'metric')
+                q_g_similarity = self._compare_features(query_features, gallery_features)
 
                 if not eval_flip:
                     del gallery_features, query_features
                 else:
                     query_flip_features = self._get_feature(self.queryFliploader)
-                    q_g_similarity += self._compare(query_flip_features, gallery_features, 'metric')
+                    q_g_similarity += self._compare_features(query_flip_features, gallery_features)
                     del gallery_features
                     gallery_flip_features = self._get_feature(self.galleryFliploader)
-                    q_g_similarity += self._compare(query_flip_features, gallery_flip_features, 'metric')
+                    q_g_similarity += self._compare_features(query_flip_features, gallery_flip_features)
                     del query_flip_features
-                    q_g_similarity += self._compare(query_features, gallery_flip_features, 'metric')
+                    q_g_similarity += self._compare_features(query_features, gallery_flip_features)
                     del gallery_flip_features, query_features
                     q_g_similarity /= 4.0
 

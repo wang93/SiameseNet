@@ -41,7 +41,7 @@ class DefaultConfig(object):
     test_batch = 4096  # can be very large, because of adaptive batchsize
     eval_phase_num = 1  # 1 / 2
     test_pids_num = -1  # = <0 when don't change test set
-    eval_minors_num = 100  # <=0 when evaluation on the whole test set one time
+    eval_minors_num = 0  # <=0 when evaluation on the whole test set one time
 
     # model options
     model_name = 'braidmgn'  # braidnet, braidmgn

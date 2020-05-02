@@ -86,7 +86,7 @@ class ReIDEvaluator:
             return mAP, cmc, eer, threshold
 
     def measure_scores_on_minors(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
-        print('****evaluate by averaging evaluation results on {0} testset minors****'.format(self.minors_num))
+        print('average evaluation results on {0} testset minors'.format(self.minors_num))
         qpid2index = defaultdict(list)
         gpid2index = defaultdict(list)
         q_pids_all = q_pids_all.tolist()

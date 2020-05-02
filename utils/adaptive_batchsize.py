@@ -1,6 +1,19 @@
+import pynvml
 from torch import cuda
 
 from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda
+
+
+def _get_free_memory_size(gpu_num):
+    pynvml.nvmlInit()
+
+    free_memory_size = 0
+    for i in range(gpu_num):
+        handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+        meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+        free_memory_size += meminfo.free - 1
+
+    return max(free_memory_size, 0)
 
 
 def get_max_batchsize(fun, *samples):
@@ -23,8 +36,8 @@ def get_max_batchsize(fun, *samples):
 
     calling_memory_per_sample = (max_used_memory_post - max_used_memory_pre) // sample_num + 1
 
-    total_memory = sum([cuda.memory_reserved(i) for i in range(gpu_num)])
-    used_memory = sum([cuda.memory_allocated(i) for i in range(gpu_num)])
+    total_memory = sum([cuda.memory_reserved(i) - 1 for i in range(gpu_num)]) + _get_free_memory_size(gpu_num)
+    used_memory = sum([cuda.memory_allocated(i) + 1 for i in range(gpu_num)])
     free_memory = total_memory - used_memory
 
     max_batchsize = free_memory // (memory_per_sample + calling_memory_per_sample) - 1

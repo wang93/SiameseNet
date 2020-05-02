@@ -86,7 +86,7 @@ class ReIDEvaluator:
             return mAP, cmc, eer, threshold
 
     def measure_scores_on_minors(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
-        print('****measure performance by averaging the performance scores on {0} testset minors****'.format(self.minors_num))
+        print('****evaluate by averaging evaluation results on {0} testset minors****'.format(self.minors_num))
         qpid2index = defaultdict(list)
         gpid2index = defaultdict(list)
         q_pids_all = q_pids_all.tolist()
@@ -121,12 +121,12 @@ class ReIDEvaluator:
         threshold = np.mean(thresholds)
         eer = np.mean(eers)
 
-        print("---------- Performance Report ----------")
+        print("---------- Evaluation Report ----------")
         print("mAP: {:.1%}".format(mAP))
         print("CMC curve")
         for r in self.ranks:
             print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
-        print("EER: {:.1%}, corresponding threshold: {:.3f}".format(eer, threshold))
+        print("EER: {:.1%}, with threshold: {:.3f}".format(eer, threshold))
         print("----------------------------------------")
 
         return cmc[0]

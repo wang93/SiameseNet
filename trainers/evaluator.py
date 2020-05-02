@@ -199,13 +199,14 @@ class ReIDEvaluator:
             batch_size = get_max_batchsize(fun, slice_tensor(a, [0]), slice_tensor(b, [0]))
             batch_size = min(batch_size, l_b)
             # print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
+            batches_fb = split_tensor(b, dim=0, split_size=batch_size)
             for sub_fa in split_tensor(a, dim=0, split_size=1):
                 cur_idx_a += 1
                 cur_idx_b = 0
                 sub_fa_s = tensor_repeat(sub_fa, dim=0, num=batch_size, interleave=True)
                 sub_fa_s = tensor_cuda(sub_fa_s)
                 n_a = batch_size
-                for sub_fb in split_tensor(b, dim=0, split_size=batch_size):
+                for sub_fb in batches_fb:
                     sub_fb = tensor_cuda(sub_fb)
                     n_b = tensor_size(sub_fb, 0)
                     if n_a != n_b:
@@ -234,12 +235,14 @@ class ReIDEvaluator:
             self._change_batchsize(loader_a, 1)
             self._change_batchsize(loader_b, batch_size)
 
+            batches_b = [batch for batch in loader_b]
+
             for cur_idx_a, (ima, _, _) in enumerate(loader_a):
                 cur_idx_b = 0
                 ima_s = tensor_repeat(ima, dim=0, num=batch_size, interleave=True)
                 ima_s = tensor_cuda(ima_s)
                 n_a = batch_size
-                for imb, _, _ in enumerate(loader_b):
+                for imb_s, _, _ in batches_b:
                     imb_s = tensor_cuda(imb_s)
                     n_b = tensor_size(imb_s, 0)
                     if n_a != n_b:

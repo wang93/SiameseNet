@@ -3,7 +3,7 @@ import os
 import pynvml
 from torch import cuda
 
-from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda, tensor_repeat, tensor_cpu
+from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda, tensor_repeat
 
 GPUS = [int(i) for i in os.environ['CUDA_VISIBLE_DEVICES'].split(',')]
 GPU_NUM = cuda.device_count()
@@ -40,17 +40,15 @@ def get_memory_cost(fun, *samples):
 
 
 def get_max_batchsize(fun, *samples):
-    samples = tensor_cpu(samples)
-
-    total_memory = sum([cuda.memory_reserved(i) - 1 for i in range(GPU_NUM)]) + get_free_memory_size() - 1
-    used_memory = sum([cuda.memory_allocated(i) + 1 for i in range(GPU_NUM)])
-    free_memory = total_memory - used_memory - 1
-
     samples = tensor_cuda(samples)
 
     sample_memory = tensor_memory(samples)
     sample_num = tensor_size(samples, dim=0)
     memory_per_sample = sample_memory / sample_num
+
+    total_memory = sum([cuda.memory_reserved(i) - 1 for i in range(GPU_NUM)]) + get_free_memory_size() - 1
+    used_memory = sum([cuda.memory_allocated(i) + 1 for i in range(GPU_NUM)])
+    free_memory = total_memory - used_memory + sample_memory - 1
 
     memory_cost = get_memory_cost(fun, *samples)
     memory_cost_2x = get_memory_cost(fun, *tensor_repeat(samples, 0, 2))

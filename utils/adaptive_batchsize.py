@@ -37,7 +37,7 @@ def get_max_batchsize(fun, *samples):
     calling_memory_per_sample = (max_used_memory_post - max_used_memory_pre) // sample_num + 1
 
     total_memory = sum([cuda.memory_reserved(i) - 1 for i in range(gpu_num)]) + _get_free_memory_size(gpu_num)
-    used_memory = sum([cuda.memory_allocated(i) + 1 for i in range(gpu_num)])
+    used_memory = sum([cuda.memory_allocated(i) + 1 for i in range(gpu_num)]) - samples_memory + 1
     free_memory = total_memory - used_memory
 
     max_batchsize = free_memory // (memory_per_sample + calling_memory_per_sample) - 1

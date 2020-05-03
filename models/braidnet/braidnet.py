@@ -90,7 +90,9 @@ class BraidNet(BraidProto):
         else:
             return x
 
-    def forward(self, a, b=None, mode='normal'):
+    def forward(self, a=None, b=None, mode='normal'):
+        if a is None:
+            return
         if mode == 'extract':
             return self.extract(a)
         elif mode == 'metric':

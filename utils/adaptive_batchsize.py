@@ -16,7 +16,7 @@ def get_free_memory_size():
     for i in GPUS:
         handle = pynvml.nvmlDeviceGetHandleByIndex(i)
         meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        print('free mem at gpu {0}: {1}'.format(i, meminfo.free))
+        # print('free mem at gpu {0}: {1}'.format(i, meminfo.free))
         free_memory_size += meminfo.free - 1
 
     return max(free_memory_size, 0)

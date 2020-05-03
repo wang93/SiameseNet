@@ -52,5 +52,5 @@ class DataParallel(Module):
         return parallel_apply(replicas, inputs, kwargs, self.device_ids[:len(replicas)])
 
     def gather(self, outputs, output_device):
-        outputs = filter(lambda v: v is not None, outputs)
+        outputs = tuple(filter(lambda v: v is not None, outputs))
         return gather(outputs, output_device, dim=self.dim)

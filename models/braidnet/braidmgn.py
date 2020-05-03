@@ -180,7 +180,7 @@ class BraidMGN(BraidProto):
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
-            return
+            return None
         if mode == 'extract':
             return self.extract(a)
         elif mode == 'metric':

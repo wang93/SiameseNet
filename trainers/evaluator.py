@@ -74,7 +74,7 @@ class ReIDEvaluator:
         threshold, eer = self.eer_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
 
         if immidiate:
-            print("---------- Performance Report ----------")
+            print("----------- Evaluation Report ----------")
             print("mAP: {:.1%}".format(mAP))
             print("CMC curve")
             for r in self.ranks:
@@ -192,32 +192,45 @@ class ReIDEvaluator:
         l_a = tensor_size(a, 0)
         l_b = tensor_size(b, 0)
         score_mat = torch.zeros(l_a, l_b, dtype=tensor_attr(a, 'dtype'), device=tensor_attr(a, 'device'))
-        cur_idx_a = -1
 
+        tasks = [np.arange(l_a).repeat(l_b), np.tile(np.arange(l_b), l_a)]
+
+        # cur_idx_a = -1
         with torch.no_grad():
             fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
             batch_size = get_max_batchsize(fun, slice_tensor(a, [0]), slice_tensor(b, [0]))
-            batch_size = min(batch_size, l_b)
-            # print('when comparing features in evaluator, the maximum batchsize is {0}'.format(batch_size))
-            batches_fb = split_tensor(b, dim=0, split_size=batch_size)
-            for sub_fa in split_tensor(a, dim=0, split_size=1):
-                cur_idx_a += 1
-                cur_idx_b = 0
-                sub_fa_s = tensor_repeat(sub_fa, dim=0, num=batch_size, interleave=True)
-                sub_fa_s = tensor_cuda(sub_fa_s)
-                n_a = batch_size
-                for sub_fb in batches_fb:
-                    sub_fb = tensor_cuda(sub_fb)
-                    n_b = tensor_size(sub_fb, 0)
-                    if n_a != n_b:
-                        sub_fa_s = tensor_repeat(sub_fa, dim=0, num=n_b, interleave=True)
-                        sub_fa_s = tensor_cuda(sub_fa_s)
+            # batch_size = min(batch_size, l_b)
 
-                    # scores = self.model(sub_fa_s, sub_fb, mode='metric').view(-1).cpu()
-                    scores = fun(sub_fa_s, sub_fb).cpu()
-                    score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
+            task_num = l_a * l_b
+            for start in range(0, task_num, batch_size):
+                end = min(start + batch_size, task_num)
+                a_indices = tasks[0][start:end]
+                b_indices = tasks[1][start:end]
+                sub_fa = slice_tensor(a, a_indices)
+                sub_fb = slice_tensor(b, b_indices)
+                sub_fa, sub_fb = tensor_cuda(sub_fa, sub_fb)
+                scores = fun(sub_fa, sub_fb).cpu()
+                score_mat[a_indices, b_indices] = scores
 
-                    cur_idx_b += n_b
+            # batches_fb = split_tensor(b, dim=0, split_size=batch_size)
+            # for sub_fa in split_tensor(a, dim=0, split_size=1):
+            #     cur_idx_a += 1
+            #     cur_idx_b = 0
+            #     sub_fa_s = tensor_repeat(sub_fa, dim=0, num=batch_size, interleave=True)
+            #     sub_fa_s = tensor_cuda(sub_fa_s)
+            #     n_a = batch_size
+            #     for sub_fb in batches_fb:
+            #         sub_fb = tensor_cuda(sub_fb)
+            #         n_b = tensor_size(sub_fb, 0)
+            #         if n_a != n_b:
+            #             sub_fa_s = tensor_repeat(sub_fa, dim=0, num=n_b, interleave=True)
+            #             sub_fa_s = tensor_cuda(sub_fa_s)
+            #
+            #         # scores = self.model(sub_fa_s, sub_fb, mode='metric').view(-1).cpu()
+            #         scores = fun(sub_fa_s, sub_fb).cpu()
+            #         score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
+            #
+            #         cur_idx_b += n_b
 
         return score_mat
 
@@ -346,13 +359,14 @@ class ReIDEvaluator:
         else:
             distmat = -q_g_similarity
 
+        if self.minors_num <= 0:
+            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
+        else:
+            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
+
         if savefig:
             print("Saving visualization fingures")
             self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(),
                                       q_camids.numpy(), savefig)
 
-        if self.minors_num <= 0:
-            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
-        else:
-            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
         return rank1

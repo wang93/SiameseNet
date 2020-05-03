@@ -34,15 +34,15 @@ class DefaultConfig(object):
     margin = None
     sync_bn = False
 
-    # evaluation options
+    # evaluation optionsgit
     evaluate = False
     savefig = None 
     re_ranking = False
     eval_step = 50
-    test_batch = 4096  # can be very large, because of adaptive batchsize
+    test_batch = 2
     eval_phase_num = 1  # 1 / 2
     test_pids_num = -1  # = <0 when don't change test set
-    eval_minors_num = 0  # <=0 when evaluation on the whole test set one time
+    eval_minors_num = 0  # <=0 when evaluation on the whole test set once
 
     # model options
     model_name = 'braidmgn'  # braidnet, braidmgn

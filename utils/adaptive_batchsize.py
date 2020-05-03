@@ -24,8 +24,7 @@ def get_free_memory_size():
 
 def get_memory_cost(fun, *samples):
     # warm up
-    for i in range(1):
-        fun(*samples)
+    fun(*samples)
 
     for i in range(GPU_NUM):
         cuda.reset_max_memory_cached(i)
@@ -60,6 +59,6 @@ def get_max_batchsize(fun, *samples):
     # print('used_mem: {0}'.format(used_memory))
     # print('calling memory base: {0}'.format(calling_memory_base))
     # print('{0} - {3}// ({1} + {2}) - 1'.format(free_memory, memory_per_sample, calling_memory_per_sample, calling_memory_base))
-    print(max_batchsize)
+    # print(max_batchsize)
 
     return int(max(max_batchsize, 1))

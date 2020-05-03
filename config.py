@@ -70,9 +70,6 @@ class DefaultConfig(object):
             self.dataset = eval(self.dataset)
             # print(self.dataset)
 
-        if isinstance(self.gpus, (tuple, list)):
-            self.gpus = ','.join(self.gpus)
-
         self.datatype = 'person'
 
     def state_dict_(self):

@@ -7,7 +7,7 @@ if os.path.exists(blended_path):
 os.makedirs(blended_path)
 
 datasets = ['cuhk-detect', 'dukemtmc', 'market1501']
-subfolders= ['bounding_box_test', 'bounding_box_train', 'query']
+subfolders = ['bounding_box_test', 'bounding_box_train', 'query']
 for i, data in enumerate(datasets):
     i_str = str(i)
     for subfolder in subfolders:

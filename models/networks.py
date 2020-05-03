@@ -90,6 +90,7 @@ class BatchCrop(nn.Module):
             x = x * mask
         return x
 
+
 class ResNetBuilder(nn.Module):
     in_planes = 2048
 
@@ -135,6 +136,7 @@ class ResNetBuilder(nn.Module):
             return [
                 {'params': base_param_group}
             ]
+
 
 class BFE(nn.Module):
     def __init__(self, num_classes, width_ratio=0.5, height_ratio=0.5):
@@ -231,6 +233,7 @@ class BFE(nn.Module):
             {'params': self.softmax.parameters()},
         ]
         return params
+
 
 class Resnet(nn.Module):
     def __init__(self, num_classes, resnet=None):

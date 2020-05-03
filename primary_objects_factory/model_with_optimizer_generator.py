@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-import torch.nn as nn
 
+from utils.data_parallel import DataParallel
 from utils.serialization import parse_checkpoints
 
 __all__ = ['get_model_with_optimizer', ]
@@ -45,12 +45,10 @@ def get_model_with_optimizer(opt):
         print('no longer freeze pretrained params')
         model.unlable_pretrained()
 
-    #model_meta = model.meta
-
-    model = nn.DataParallel(model).cuda()
+    model = DataParallel(model).cuda()  # nn.DataParallel(model).cuda()
 
     if opt.sync_bn:
-        from sync_batchnorm.batchnorm import convert_model
+        from utils.sync_batchnorm.batchnorm import convert_model
         model = convert_model(model)
 
     # get optimizer

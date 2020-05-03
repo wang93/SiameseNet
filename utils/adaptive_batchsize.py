@@ -30,7 +30,8 @@ def get_max_batchsize(fun, *samples):
     samples_memory = tensor_memory(samples)
     memory_per_sample = samples_memory // sample_num + 1
 
-    fun(*samples)  # warm up
+    for i in range(10):
+        fun(*samples)  # warm up
 
     for i in range(gpu_num):
         cuda.reset_max_memory_cached(i)

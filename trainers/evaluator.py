@@ -21,7 +21,7 @@ from time import time as curtime
 
 from utils.tensor_section_functions import *
 
-from utils.adaptive_batchsize import get_max_batchsize
+from utils.adaptive_batchsize import get_optimized_batchsize
 from datasets.samplers import PosNegPairSampler
 
 
@@ -198,7 +198,7 @@ class ReIDEvaluator:
         # cur_idx_a = -1
         with torch.no_grad():
             fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
-            batch_size = get_max_batchsize(fun, slice_tensor(a, [0]), slice_tensor(b, [0]))
+            batch_size = get_optimized_batchsize(fun, slice_tensor(a, [0]), slice_tensor(b, [0]))
             # batch_size = min(batch_size, l_b)
 
             task_num = l_a * l_b
@@ -226,7 +226,7 @@ class ReIDEvaluator:
             fun = lambda a, b: self.model(a, b, mode='normal').view(-1)
             one_ima = slice_tensor(next(iter(loader_a))[0], [0])
             one_imb = slice_tensor(next(iter(loader_b))[0], [0])
-            batch_size = get_max_batchsize(fun, one_ima, one_imb)
+            batch_size = get_optimized_batchsize(fun, one_ima, one_imb)
             self._change_batchsize(loader_a, batch_size)
             self._change_batchsize(loader_b, batch_size)
             self._change_sampler(loader_a, tasks[0])
@@ -297,7 +297,7 @@ class ReIDEvaluator:
     def _get_feature(self, dataloader):
         with torch.no_grad():
             fun = lambda d: self.model(d, None, mode='extract')
-            batch_size = get_max_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0]))
+            batch_size = get_optimized_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0]))
             batch_size = min(batch_size, len(dataloader))
             self._change_batchsize(dataloader, batch_size)
 

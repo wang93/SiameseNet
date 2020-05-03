@@ -208,7 +208,7 @@ class ReIDEvaluator:
                 b_indices = tasks[1][start:end]
                 sub_fa = slice_tensor(a, a_indices)
                 sub_fb = slice_tensor(b, b_indices)
-                sub_fa, sub_fb = tensor_cuda(sub_fa, sub_fb)
+                sub_fa, sub_fb = tensor_cuda((sub_fa, sub_fb))
                 scores = fun(sub_fa, sub_fb).cpu()
                 score_mat[a_indices, b_indices] = scores
 

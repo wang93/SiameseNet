@@ -191,7 +191,7 @@ class ReIDEvaluator:
     def _compare_features(self, a, b):
         l_a = tensor_size(a, 0)
         l_b = tensor_size(b, 0)
-        score_mat = torch.zeros(l_a, l_b, dtype=tensor_attr(a, 'dtype'), device=tensor_attr(a, 'device'))
+        score_mat = torch.zeros(l_a, l_b)
 
         tasks = [np.arange(l_a).repeat(l_b), np.tile(np.arange(l_b), l_a)]
 
@@ -212,26 +212,6 @@ class ReIDEvaluator:
                 scores = fun(sub_fa, sub_fb).cpu()
                 score_mat[a_indices, b_indices] = scores
 
-            # batches_fb = split_tensor(b, dim=0, split_size=batch_size)
-            # for sub_fa in split_tensor(a, dim=0, split_size=1):
-            #     cur_idx_a += 1
-            #     cur_idx_b = 0
-            #     sub_fa_s = tensor_repeat(sub_fa, dim=0, num=batch_size, interleave=True)
-            #     sub_fa_s = tensor_cuda(sub_fa_s)
-            #     n_a = batch_size
-            #     for sub_fb in batches_fb:
-            #         sub_fb = tensor_cuda(sub_fb)
-            #         n_b = tensor_size(sub_fb, 0)
-            #         if n_a != n_b:
-            #             sub_fa_s = tensor_repeat(sub_fa, dim=0, num=n_b, interleave=True)
-            #             sub_fa_s = tensor_cuda(sub_fa_s)
-            #
-            #         # scores = self.model(sub_fa_s, sub_fb, mode='metric').view(-1).cpu()
-            #         scores = fun(sub_fa_s, sub_fb).cpu()
-            #         score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
-            #
-            #         cur_idx_b += n_b
-
         return score_mat
 
     def _compare_images(self, loader_a, loader_b):
@@ -239,36 +219,61 @@ class ReIDEvaluator:
         l_b = len(loader_b)
         score_mat = torch.zeros(l_a, l_b)
 
+        tasks = [np.arange(l_a).repeat(l_b), np.tile(np.arange(l_b), l_a)]
+
+        # cur_idx_a = -1
         with torch.no_grad():
             fun = lambda a, b: self.model(a, b, mode='normal').view(-1)
             one_ima = slice_tensor(next(iter(loader_a))[0], [0])
             one_imb = slice_tensor(next(iter(loader_b))[0], [0])
             batch_size = get_max_batchsize(fun, one_ima, one_imb)
-            batch_size = min(batch_size, l_b)
-            self._change_batchsize(loader_a, 1)
+            self._change_batchsize(loader_a, batch_size)
             self._change_batchsize(loader_b, batch_size)
+            self._change_sampler(loader_a, tasks[0])
+            self._change_sampler(loader_b, tasks[1])
+            # batch_size = min(batch_size, l_b)
 
-            batches_b = [batch for batch in loader_b]
-
-            for cur_idx_a, (ima, _, _) in enumerate(loader_a):
-                cur_idx_b = 0
-                ima_s = tensor_repeat(ima, dim=0, num=batch_size, interleave=True)
-                ima_s = tensor_cuda(ima_s)
-                n_a = batch_size
-                for imb_s, _, _ in batches_b:
-                    imb_s = tensor_cuda(imb_s)
-                    n_b = tensor_size(imb_s, 0)
-                    if n_a != n_b:
-                        ima_s = tensor_repeat(ima, dim=0, num=n_b, interleave=True)
-                        ima_s = tensor_cuda(ima_s)
-                        n_a = n_b
-
-                    scores = fun(ima_s, imb_s).cpu()
-                    score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
-
-                    cur_idx_b += n_b
+            task_num = l_a * l_b
+            cur_idx = 0
+            for ima_s, imb_s in zip(loader_a, loader_b):
+                ima_s, imb_s = tensor_cuda((ima_s, imb_s))
+                scores = fun(ima_s, imb_s).cpu()
+                end = min(cur_idx + batch_size, task_num)
+                score_mat[tasks[0][cur_idx:end], tasks[1][cur_idx:end]] = scores
+                cur_idx = end
 
         return score_mat
+
+        # with torch.no_grad():
+        #     fun = lambda a, b: self.model(a, b, mode='normal').view(-1)
+        #     one_ima = slice_tensor(next(iter(loader_a))[0], [0])
+        #     one_imb = slice_tensor(next(iter(loader_b))[0], [0])
+        #     batch_size = get_max_batchsize(fun, one_ima, one_imb)
+        #     batch_size = min(batch_size, l_b)
+        #     self._change_batchsize(loader_a, 1)
+        #     self._change_batchsize(loader_b, batch_size)
+        #
+        #     batches_b = [batch for batch, _, _ in loader_b]
+        #
+        #     for cur_idx_a, (ima, _, _) in enumerate(loader_a):
+        #         cur_idx_b = 0
+        #         ima_s = tensor_repeat(ima, dim=0, num=batch_size, interleave=True)
+        #         ima_s = tensor_cuda(ima_s)
+        #         n_a = batch_size
+        #         for imb_s in batches_b:
+        #             imb_s = tensor_cuda(imb_s)
+        #             n_b = tensor_size(imb_s, 0)
+        #             if n_a != n_b:
+        #                 ima_s = tensor_repeat(ima, dim=0, num=n_b, interleave=True)
+        #                 ima_s = tensor_cuda(ima_s)
+        #                 n_a = n_b
+        #
+        #             scores = fun(ima_s, imb_s).cpu()
+        #             score_mat[cur_idx_a, cur_idx_b:cur_idx_b + n_b] = scores
+        #
+        #             cur_idx_b += n_b
+        #
+        # return score_mat
 
     @staticmethod
     def _change_batchsize(dataloader, batch_size):
@@ -277,6 +282,16 @@ class ReIDEvaluator:
         dataloader._DataLoader__initialized = False
         dataloader.batch_size = batch_size
         dataloader.batch_sampler.batch_size = batch_size
+        dataloader._DataLoader__initialized = True
+
+    @staticmethod
+    def _change_sampler(dataloader, sampler: list):
+        if isinstance(dataloader.sampler, PosNegPairSampler):
+            raise TypeError('can not change the sampler of dataloader with pos_neg_pair_sampler')
+        dataloader._DataLoader__initialized = False
+        dataloader.sampler = sampler
+        dataloader.batch_sampler.sampler = sampler
+        dataloader.batch_sampler.drop_last = False
         dataloader._DataLoader__initialized = True
 
     def _get_feature(self, dataloader):

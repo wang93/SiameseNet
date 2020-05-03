@@ -90,7 +90,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def forward(self, a=None, b=None, mode='normal'):
+    def forward(self, a, b=None, mode='normal'):
         pass
 
     @abstractmethod

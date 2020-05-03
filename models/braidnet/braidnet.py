@@ -1,5 +1,4 @@
 # coding=utf-8
-import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
@@ -93,7 +92,7 @@ class BraidNet(BraidProto):
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
-            return torch.tensor([0., ])
+            return self._default_output
         if mode == 'extract':
             return self.extract(a)
         elif mode == 'metric':

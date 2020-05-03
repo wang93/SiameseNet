@@ -1,6 +1,7 @@
 # coding=utf-8
 from abc import ABCMeta, abstractmethod
 
+import torch
 import torch.nn as nn
 from torch.nn import BatchNorm3d, BatchNorm2d, BatchNorm1d
 from torch.optim import SGD, Adam
@@ -80,6 +81,10 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
         for m in self.modules():
             if isinstance(m, (WConv2d, WLinear)):
                 m.correct_grads()
+
+    @property
+    def _default_output(self):
+        return torch.tensor([0., ]).cuda()
 
     @abstractmethod
     def extract(self, ims):

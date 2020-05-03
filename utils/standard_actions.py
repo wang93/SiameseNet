@@ -22,6 +22,8 @@ def _random_seed(seed):
 def prepare_running(**kwargs):
     opt.parse_(kwargs)
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus
+
     if not torch.cuda.is_available():
         raise NotImplementedError('This project must be implemented with CUDA!')
 

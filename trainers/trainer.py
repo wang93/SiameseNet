@@ -77,8 +77,6 @@ class _Trainer:
               'Lr {:.2e}'
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 
-        save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch)
-
         if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
             savefig = join(self.opt.savefig, 'origin') if epoch == self.opt.max_epoch else None
             rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=savefig)
@@ -88,6 +86,8 @@ class _Trainer:
                 save_best_model(self.model, exp_dir=self.opt.exp_dir, epoch=epoch, rank1=rank1)
                 self.best_rank1 = rank1
                 self.best_epoch = epoch
+
+        save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch)
 
     def _parse_data(self, inputs):
         raise NotImplementedError

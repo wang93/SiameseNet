@@ -25,7 +25,7 @@ def get_model_with_optimizer(opt):
 
     if opt.zero_tail_weight:
         'Weights in the classifier are initialized to zero'
-        nn.init.constant_(model.fc[-1].weight, 0.0)
+        nn.init.constant_(model.fc[-1].fc.weight, 0.0)
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']

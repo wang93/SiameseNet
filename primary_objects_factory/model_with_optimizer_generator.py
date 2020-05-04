@@ -46,8 +46,8 @@ def get_model_with_optimizer(opt):
             print('net comes to the state after epoch {0}'.format(start_epoch))
             model.load_state_dict(state_dict, True)
 
-    if opt.pretrained_subparams and start_epoch + 1 >= opt.freeze_pretrained_untill:
-        print('no longer freeze pretrained params')
+    if start_epoch + 1 >= opt.freeze_pretrained_untill:
+        print('no longer freeze pretrained params (if there are any pretrained params)')
         model.unlable_pretrained()
 
     model = DataParallel(model).cuda()  # nn.DataParallel(model).cuda()

@@ -7,7 +7,7 @@ from torch import cuda
 from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda, tensor_repeat
 
 GPUS = [int(i) for i in os.environ['CUDA_VISIBLE_DEVICES'].split(',')]
-GPU_NUM = cuda.device_count()
+GPU_NUM = len(GPUS)
 
 
 def get_free_memory_size():

@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torch import nn
 
 from utils.data_parallel import DataParallel
 from utils.serialization import parse_checkpoints
@@ -21,6 +22,10 @@ def get_model_with_optimizer(opt):
     if opt.pretrained_subparams:
         print('use pretrained params')
         model.load_pretrained()
+
+    if opt.zero_tail_weight:
+        'Weights in the classifier are initialized to zero'
+        nn.init.constant_(model.fc[-1].weight, 1.0)
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']

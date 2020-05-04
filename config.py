@@ -51,6 +51,7 @@ class DefaultConfig(object):
     pretrained_subparams = False
     pretrained_model = None
     disable_resume = False
+    zero_tail_weight = False
     
     # miscs
     print_freq = 30

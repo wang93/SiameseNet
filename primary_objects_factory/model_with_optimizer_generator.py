@@ -24,7 +24,7 @@ def get_model_with_optimizer(opt):
         model.load_pretrained()
 
     if opt.zero_tail_weight:
-        'Weights in the classifier are initialized to zero'
+        'Weights in the final fc layer are initialized to zero'
         nn.init.constant_(model.fc[-1].fc.weight, 0.0)
 
     if opt.pretrained_model:

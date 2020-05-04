@@ -73,6 +73,9 @@ class DefaultConfig(object):
 
         self.datatype = 'person'
 
+        if self.model_name == 'braidmgn':
+            self.pretrained_subparams = True
+
     def state_dict_(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
                 if not k.endswith('_')}

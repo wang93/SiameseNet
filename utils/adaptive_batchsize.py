@@ -42,7 +42,7 @@ def get_memory_cost(fun, *samples):
     fun(*samples)
 
     for i in range(GPU_NUM):
-        cuda.reset_max_memory_cached(i)
+        cuda.reset_max_memory_allocated(i)
 
     max_used_memory_pre = sum([cuda.max_memory_allocated(i) for i in range(GPU_NUM)])
     fun(*samples)

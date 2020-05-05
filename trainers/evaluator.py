@@ -236,7 +236,8 @@ class ReIDEvaluator:
             task_num = l_a * l_b
             cur_idx = 0
             for ima_s, imb_s in zip(loader_a, loader_b):
-                ima_s, imb_s = tensor_cuda((ima_s, imb_s))
+                ima_s = tensor_cuda(ima_s)
+                imb_s = tensor_cuda(imb_s)
                 scores = fun(ima_s, imb_s).cpu()
                 end = min(cur_idx + batch_size, task_num)
                 score_mat[tasks[0][cur_idx:end], tasks[1][cur_idx:end]] = scores

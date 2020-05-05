@@ -70,11 +70,6 @@ def get_max_batchsize(fun, *samples):
     calling_memory_base = max(memory_cost * 2 - memory_cost_2x, 1)
 
     max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample) - 1
-    # print('total_mem: {0}'.format(total_memory))
-    # print('used_mem: {0}'.format(used_memory))
-    # print('calling memory base: {0}'.format(calling_memory_base))
-    # print('{0} - {3}// ({1} + {2}) - 1'.format(free_memory, memory_per_sample, calling_memory_per_sample, calling_memory_base))
-    # print(max_batchsize)
 
     return int(max(max_batchsize, 1))
 

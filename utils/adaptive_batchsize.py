@@ -2,6 +2,7 @@ import math
 import os
 
 import pynvml
+import torch
 from torch import cuda
 
 from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda, tensor_repeat
@@ -75,6 +76,9 @@ def get_max_batchsize(fun, *samples):
 
 
 def get_max_equal_batchsize(fun, *samples):
+    benchmark = torch.backends.cudnn.benchmark
+    torch.backends.cudnn.benchmark = False
+
     samples = tensor_cuda(samples)
 
     sample_memory = tensor_memory(samples)
@@ -96,7 +100,9 @@ def get_max_equal_batchsize(fun, *samples):
 
     max_batchsize = (max_batchsize // GPU_NUM) * GPU_NUM
 
-    return int(max(max_batchsize // 2, 1))
+    torch.backends.cudnn.benchmark = benchmark
+
+    return int(max(max_batchsize // 2 - 1, 1))
 
 
 def get_optimized_batchsize(fun, *samples):

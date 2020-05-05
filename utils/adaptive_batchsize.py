@@ -41,6 +41,8 @@ def get_equal_free_memory_size():
 def get_memory_cost(fun, *samples):
     # warm up
     # fun(*samples)
+    benchmark = torch.backends.cudnn.benchmark
+    torch.backends.cudnn.benchmark = False  # conservatively estimate to avoid out of memory in the first calling
 
     for i in range(GPU_NUM):
         cuda.reset_max_memory_allocated(i)
@@ -50,6 +52,8 @@ def get_memory_cost(fun, *samples):
     max_used_memory_post = sum([cuda.max_memory_allocated(i) for i in range(GPU_NUM)])
 
     memory_cost = max_used_memory_post - max_used_memory_pre
+
+    torch.backends.cudnn.benchmark = benchmark
 
     return max(memory_cost, 1)
 
@@ -76,9 +80,6 @@ def get_max_batchsize(fun, *samples):
 
 
 def get_max_equal_batchsize(fun, *samples):
-    benchmark = torch.backends.cudnn.benchmark
-    torch.backends.cudnn.benchmark = False  # conservatively estimate to avoid out of memory in the first calling
-
     samples = tensor_cuda(samples)
 
     sample_memory = tensor_memory(samples)
@@ -99,8 +100,6 @@ def get_max_equal_batchsize(fun, *samples):
     #         .format(max_batchsize, free_memory, calling_memory_base, memory_per_sample, calling_memory_per_sample))
 
     max_batchsize = (max_batchsize // GPU_NUM - 8) * GPU_NUM
-
-    torch.backends.cudnn.benchmark = benchmark
 
     return int(max(max_batchsize, 1))
 

@@ -40,7 +40,7 @@ def get_equal_free_memory_size():
 
 def get_memory_cost(fun, *samples):
     # warm up
-    fun(*samples)
+    # fun(*samples)
 
     for i in range(GPU_NUM):
         cuda.reset_max_memory_allocated(i)
@@ -98,11 +98,11 @@ def get_max_equal_batchsize(fun, *samples):
         'max_batchsize{0} = (free_memory{1} - calling_memory_base{2}) // (memory_per_sample{3} + calling_memory_per_sample{4}) - 1'
             .format(max_batchsize, free_memory, calling_memory_base, memory_per_sample, calling_memory_per_sample))
 
-    max_batchsize = (max_batchsize // GPU_NUM) * GPU_NUM
+    max_batchsize = (max_batchsize // GPU_NUM - 1) * GPU_NUM
 
     torch.backends.cudnn.benchmark = benchmark
 
-    return int(max(max_batchsize - 1, 1))
+    return int(max(max_batchsize, 1))
 
 
 def get_optimized_batchsize(fun, *samples):

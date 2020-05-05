@@ -227,6 +227,7 @@ class ReIDEvaluator:
             one_ima = slice_tensor(next(iter(loader_a))[0], [0])
             one_imb = slice_tensor(next(iter(loader_b))[0], [0])
             batch_size = get_max_equal_batchsize(fun, one_ima, one_imb)
+            del one_ima, one_imb
             self._change_batchsize(loader_a, batch_size)
             self._change_batchsize(loader_b, batch_size)
             self._change_sampler(loader_a, tasks[0])

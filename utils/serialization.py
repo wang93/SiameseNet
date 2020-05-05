@@ -2,7 +2,6 @@
 import os
 import os.path as osp
 import re
-import subprocess
 import sys
 
 import numpy as np
@@ -58,10 +57,12 @@ def save_checkpoint(state, exp_dir, epoch, prefix: str):
     os.makedirs(save_dir, exist_ok=True)
 
     # delete previous checkpoints
-    if epoch > 1:
-        files_path = osp.join(save_dir, prefix + '*')
-        subprocess.call('rm {0}'.format(files_path), shell=True)
-        # os.system('rm {0} &>/dev/null'.format(files_path))
+    # if epoch > 1:
+    #     files_path = osp.join(save_dir, prefix + '*')
+    #     subprocess.call('rm {0}'.format(files_path), shell=True)
+    if epoch > 1 and (epoch - 1) % 10 != 0:
+        previous_file_name = '{0}_ep{1}.pth.tar'.format(prefix, epoch - 1)
+        os.remove(osp.join(save_dir, previous_file_name))
 
     # save current checkpoint
     filename = '{0}_ep{1}.pth.tar'.format(prefix, epoch)

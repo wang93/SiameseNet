@@ -90,6 +90,9 @@ def get_max_equal_batchsize(fun, *samples):
     calling_memory_base = max(memory_cost * 2 - memory_cost_2x + 1, 1)
 
     max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample) - 1
+    print(
+        'max_batchsize{0} = (free_memory{1} - calling_memory_base{2}) // (memory_per_sample{3} + calling_memory_per_sample{4}) - 1'
+        .format(max_batchsize, free_memory, calling_memory_base, memory_per_sample, calling_memory_per_sample))
 
     max_batchsize = (max_batchsize // GPU_NUM) * GPU_NUM
 

@@ -77,7 +77,7 @@ def get_max_batchsize(fun, *samples):
 
 def get_max_equal_batchsize(fun, *samples):
     benchmark = torch.backends.cudnn.benchmark
-    torch.backends.cudnn.benchmark = False  # conservative estimate
+    torch.backends.cudnn.benchmark = False  # conservatively estimate to avoid out of memory in the first calling
 
     samples = tensor_cuda(samples)
 
@@ -94,9 +94,9 @@ def get_max_equal_batchsize(fun, *samples):
     calling_memory_base = max(memory_cost * 2 - memory_cost_2x + 1, 1)
 
     max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample) - 1
-    print(
-        'max_batchsize{0} = (free_memory{1} - calling_memory_base{2}) // (memory_per_sample{3} + calling_memory_per_sample{4}) - 1'
-            .format(max_batchsize, free_memory, calling_memory_base, memory_per_sample, calling_memory_per_sample))
+    # print(
+    #     'max_batchsize{0} = (free_memory{1} - calling_memory_base{2}) // (memory_per_sample{3} + calling_memory_per_sample{4}) - 1'
+    #         .format(max_batchsize, free_memory, calling_memory_base, memory_per_sample, calling_memory_per_sample))
 
     max_batchsize = (max_batchsize // GPU_NUM - 8) * GPU_NUM
 

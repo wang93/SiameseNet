@@ -73,6 +73,9 @@ class DefaultConfig(object):
 
         self.datatype = 'person'
 
+        if isinstance(self.gpus, int):
+            self.gpus = (self.gpus,)
+
         if self.model_name == 'braidmgn':
             self.pretrained_subparams = True
 

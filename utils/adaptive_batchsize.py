@@ -77,7 +77,7 @@ def get_max_batchsize(fun, *samples):
 
 def get_max_equal_batchsize(fun, *samples):
     benchmark = torch.backends.cudnn.benchmark
-    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.benchmark = False  # conservative estimate
 
     samples = tensor_cuda(samples)
 
@@ -102,7 +102,7 @@ def get_max_equal_batchsize(fun, *samples):
 
     torch.backends.cudnn.benchmark = benchmark
 
-    return int(max(max_batchsize, 1))
+    return int(max(max_batchsize - 1, 1))
 
 
 def get_optimized_batchsize(fun, *samples):

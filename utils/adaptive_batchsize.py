@@ -102,7 +102,7 @@ def get_max_equal_batchsize(fun, *samples):
 
     torch.backends.cudnn.benchmark = benchmark
 
-    return int(max(max_batchsize // 2 - 1, 1))
+    return int(max(max_batchsize, 1))
 
 
 def get_optimized_batchsize(fun, *samples):

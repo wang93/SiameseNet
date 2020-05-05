@@ -81,6 +81,9 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
             if isinstance(m, (WConv2d, WLinear)):
                 m.correct_grads()
 
+    def zero_tail_weight(self):
+        nn.init.constant_(self.fc[-1].fc.weight, 0.0)
+
     @property
     def _default_output(self):
         return None  # torch.tensor([0., ]).cuda()

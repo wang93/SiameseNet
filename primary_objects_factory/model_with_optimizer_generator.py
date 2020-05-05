@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from torch import nn
 
 from utils.data_parallel import DataParallel
 from utils.serialization import parse_checkpoints
@@ -25,7 +24,7 @@ def get_model_with_optimizer(opt):
 
     if opt.zero_tail_weight:
         'Weights in the final fc layer are initialized to zero'
-        nn.init.constant_(model.fc[-1].fc.weight, 0.0)
+        model.zero_tail_weight()
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']

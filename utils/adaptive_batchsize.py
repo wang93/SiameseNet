@@ -77,12 +77,12 @@ def get_max_batchsize(fun, *samples):
 def get_max_equal_batchsize(fun, *samples):
     samples = tensor_cuda(samples)
 
-    sample_memory = tensor_memory(samples) * 2
+    sample_memory = tensor_memory(samples)
     sample_num = tensor_size(samples, dim=0)
     memory_per_sample = sample_memory / sample_num
 
     cuda.empty_cache()
-    free_memory = get_equal_free_memory_size() + sample_memory - 1
+    free_memory = get_equal_free_memory_size() - 1
 
     memory_cost = get_memory_cost(fun, *samples)
     memory_cost_2x = get_memory_cost(fun, *tensor_repeat(samples, 0, 2))

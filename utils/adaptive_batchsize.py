@@ -50,7 +50,7 @@ def get_memory_cost(fun, *samples):
 
     memory_cost = max_used_memory_post - max_used_memory_pre
 
-    return memory_cost
+    return max(memory_cost, 1)
 
 
 def get_max_batchsize(fun, *samples):
@@ -66,7 +66,7 @@ def get_max_batchsize(fun, *samples):
 
     memory_cost = get_memory_cost(fun, *samples)
     memory_cost_2x = get_memory_cost(fun, *tensor_repeat(samples, 0, 2))
-    calling_memory_per_sample = (memory_cost_2x - memory_cost) // sample_num + 1
+    calling_memory_per_sample = max((memory_cost_2x - memory_cost) // sample_num + 1, 1)
     calling_memory_base = max(memory_cost * 2 - memory_cost_2x, 1)
 
     max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample) - 1

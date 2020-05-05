@@ -39,7 +39,7 @@ def get_equal_free_memory_size():
 
 def get_memory_cost(fun, *samples):
     # warm up
-    # fun(*samples)
+    fun(*samples)
 
     for i in range(GPU_NUM):
         cuda.reset_max_memory_allocated(i)
@@ -96,7 +96,7 @@ def get_max_equal_batchsize(fun, *samples):
 
     max_batchsize = (max_batchsize // GPU_NUM) * GPU_NUM
 
-    return int(max(max_batchsize, 1))
+    return int(max(max_batchsize // 2, 1))
 
 
 def get_optimized_batchsize(fun, *samples):

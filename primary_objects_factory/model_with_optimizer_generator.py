@@ -23,13 +23,14 @@ def get_model_with_optimizer(opt):
         model.load_pretrained()
 
     if opt.zero_tail_weight:
-        'Weights in the final fc layer are initialized to zero'
+        print('weights in the final fc layer are initialized to zero')
         model.zero_tail_weight()
 
     if opt.pretrained_model:
         state_dict = torch.load(opt.pretrained_model)['state_dict']
         model.load_state_dict(state_dict, False)
         print('load pretrained model ' + opt.pretrained_model)
+
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
     start_epoch = 0

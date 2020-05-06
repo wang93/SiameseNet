@@ -143,7 +143,7 @@ class TripletLoss4Braid(object):
         return loss  # dist_ap, dist_an
 
 
-class CrossSimilartyBCELoss(object):
+class CrossSimilarityBCELoss(object):
     def __init__(self):
         self.bce_loss = nn.BCELoss()
 

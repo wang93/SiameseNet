@@ -42,7 +42,8 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
             for k, v in model._parameters.items():
                 if v is None:
                     continue
-                if k in ('weight',) and isinstance(model, (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d)):
+                if k in ('weight',) and isinstance(model,
+                                                   (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d, WBatchNorm1d)):
                     self.noreg_params.append(v)
                 else:
                     self.reg_params.append(v)

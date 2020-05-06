@@ -25,8 +25,8 @@ def get_trainer(opt, evaluator, optimizer, best_rank1, best_epoch):
 
     elif opt.train_mode == 'cross':
         if opt.loss == 'bce':
-            from utils.loss import CrossSimilartyBCELoss
-            criterion = CrossSimilartyBCELoss()
+            from utils.loss import CrossSimilarityBCELoss
+            criterion = CrossSimilarityBCELoss()
 
         elif opt.loss == 'triplet':
             from utils.loss import TripletLoss4Braid

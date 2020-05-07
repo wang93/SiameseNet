@@ -42,14 +42,20 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
             for k, v in model._parameters.items():
                 if v is None:
                     continue
-                if k in ('bias',):
-                    self.noreg_params.append(v)
-                elif k in ('weight',) and isinstance(model,
-                                                     (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d,
-                                                      WBatchNorm1d)):
-                    self.noreg_params.append(v)
-                else:
+
+                if k in ('weight',) and isinstance(model, (WConv2d, WLinear, nn.Conv2d, nn.Linear, nn.Conv3d)):
                     self.reg_params.append(v)
+                else:
+                    self.noreg_params.append(v)
+
+                # if k in ('bias',):
+                #     self.noreg_params.append(v)
+                # elif k in ('weight',) and isinstance(model,
+                #                                      (BatchNorm2d, BatchNorm1d, BatchNorm3d, WBatchNorm2d,
+                #                                       WBatchNorm1d)):
+                #     self.noreg_params.append(v)
+                # else:
+                #     self.reg_params.append(v)
 
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
         self.divide_params()

@@ -36,7 +36,7 @@ class DefaultConfig(object):
 
     # evaluation optionsgit
     evaluate = False
-    savefig = None 
+    savefig = False
     re_ranking = False
     eval_step = 50
     test_batch = 2
@@ -58,6 +58,8 @@ class DefaultConfig(object):
     exp_name = 'test'
     exp_dir = './exps/test'
 
+    # fig_dir = None
+
     def parse_(self, kwargs):
         for k, v in kwargs.items():
             if not hasattr(self, k):
@@ -65,7 +67,7 @@ class DefaultConfig(object):
             setattr(self, k, v)
         # print(self.dataset)
         self.exp_dir = join('./exps', self.exp_name)
-        self.savefig = join(self.exp_dir, 'visualize')
+        #self.fig_dir = join(self.exp_dir, 'visualize')
 
         if self.dataset[0] == '[':
             self.dataset = eval(self.dataset)

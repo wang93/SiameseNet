@@ -10,9 +10,11 @@ from utils.tensor_section_functions import slice_tensor, tensor_size
 
 
 class _Trainer:
-    def __init__(self, opt, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1, best_epoch=0,
+    def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1,
+                 best_epoch=0,
                  phase_num=1):
         self.opt = opt
+        self.train_loader = train_loader
         self.evaluator = evaluator
         self.model = evaluator.model
         self.optimizer = optimzier
@@ -23,7 +25,7 @@ class _Trainer:
         self.best_epoch = best_epoch
         self.phase_num = phase_num
 
-    def train(self, epoch, data_loader):
+    def train(self, epoch):
         """Note: epoch should start with 1"""
 
         try:
@@ -43,7 +45,7 @@ class _Trainer:
         data_time = AverageMeter()
         losses = AverageMeter()
         self.lr_strategy(self.optimizer, epoch)
-        for i, inputs in enumerate(data_loader):
+        for i, inputs in enumerate(self.train_loader):
             data_time.update(time.time() - start)
             # model optimizer
             self._parse_data(inputs)
@@ -55,7 +57,7 @@ class _Trainer:
             losses.update(self.loss.item())
 
             # tensorboard
-            global_step = (epoch - 1) * len(data_loader) + i
+            global_step = (epoch - 1) * len(self.train_loader) + i
             self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
             self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
@@ -64,7 +66,7 @@ class _Trainer:
                       'Batch Time {:.3f} ({:.3f})\t'
                       'Data Time {:.3f} ({:.3f})\t'
                       'Loss {:.3f} ({:.3f})\t'
-                      .format(epoch, i + 1, len(data_loader),
+                      .format(epoch, i + 1, len(self.train_loader),
                               batch_time.val, batch_time.mean,
                               data_time.val, data_time.mean,
                               losses.val, losses.mean))

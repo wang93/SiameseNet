@@ -5,6 +5,7 @@ def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galle
 
     from trainers.evaluator import ReIDEvaluator
     reid_evaluator = ReIDEvaluator(model,
+                                   opt.exp_dir,
                                    queryloader=queryloader,
                                    galleryloader=galleryloader,
                                    queryFliploader=queryFliploader,

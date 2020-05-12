@@ -26,9 +26,11 @@ from datasets.samplers import PosNegPairSampler
 
 
 class ReIDEvaluator:
-    def __init__(self, model, queryloader, galleryloader, queryFliploader, galleryFliploader, phase_num=1, minors_num=0,
+    def __init__(self, model, exp_dir, queryloader, galleryloader, queryFliploader, galleryFliploader, phase_num=1,
+                 minors_num=0,
                  ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
         self.model = model
+        self.fig_dir = os.path.join(exp_dir, 'visualize')
         self.queryloader = queryloader
         self.galleryloader = galleryloader
         self.queryFliploader = queryFliploader
@@ -39,8 +41,8 @@ class ReIDEvaluator:
 
         # self.batch_size = self.queryloader.batch_size
 
-    def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, savefig):
-        os.makedirs(savefig, exist_ok=True)
+    def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, fig_dir):
+        os.makedirs(fig_dir, exist_ok=True)
         self.model.eval()
         query_indices = np.argsort(q_pids, axis=0)
         q_pids = q_pids[query_indices]
@@ -89,7 +91,7 @@ class ReIDEvaluator:
                 axes[j + 1].set_axis_off()
                 axes[j + 1].imshow(img)
 
-            fig.savefig(os.path.join(savefig, '%d.png' % q_pids[i]))
+            fig.savefig(os.path.join(fig_dir, '%d.png' % q_pids[i]))
             plt.close(fig)
 
     def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True):
@@ -332,6 +334,7 @@ class ReIDEvaluator:
 
     def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
         self.model.eval()
+
         if eval_flip:
             print('**** evaluate with flip images ****')
 
@@ -405,8 +408,9 @@ class ReIDEvaluator:
             rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
 
         if savefig:
-            print("Saving visualization fingures")
+            print("Saving visualization figures")
+            fig_dir = os.path.join(self.fig_dir, 'fused' if eval_flip else 'origin')
             self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(),
-                                      q_camids.numpy(), savefig)
+                                      q_camids.numpy(), fig_dir)
 
         return rank1

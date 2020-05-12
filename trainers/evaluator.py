@@ -60,19 +60,24 @@ class ReIDEvaluator:
             axes[0].set_title(q_pids[i])
             axes[0].imshow(img)
             axes[0].set_axis_off()
-            cur_loc = 0
+            # cur_loc = 0
+
+            indices = []
             for gallery_index in indices[i]:
                 if g_camids[gallery_index] == q_camids[i] and g_pids[gallery_index] == q_pids[i]:
                     continue
-                cur_loc += 1
-                # gallery_index = indices[i][j]
-                img = self.galleryloader.dataset.dataset[gallery_index][0]
-                img = Image.open(img).convert('RGB')
-                axes[cur_loc].set_title(g_pids[gallery_index])
-                axes[cur_loc].set_axis_off()
-                axes[cur_loc].imshow(img)
-                if cur_loc == 10:
+                indices.append(gallery_index)
+                if len(indices) >= 10:
                     break
+                # cur_loc += 1
+                # gallery_index = indices[i][j]
+            imgs = self.galleryloader.dataset.dataset[indices][0]
+            # img = self.galleryloader.dataset.dataset[gallery_index][0]
+            for j, img in enumerate(imgs):
+                img = Image.open(img).convert('RGB')
+                axes[j + 1].set_title(g_pids[gallery_index])
+                axes[j + 1].set_axis_off()
+                axes[j + 1].imshow(img)
 
             fig.savefig(os.path.join(savefig, '%d.png' % q_pids[i]))
             plt.close(fig)

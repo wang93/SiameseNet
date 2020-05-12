@@ -1,18 +1,18 @@
 from __future__ import print_function, absolute_import
 
-#import glob
-import re
-from os import path as osp
 import os
 import random
+# import glob
+import re
 from abc import abstractmethod
 from collections import defaultdict
-
+from os import path as osp
 
 """Dataset classes"""
 '''Note: relabel is not necessary, so retruned non-combined dataset may have not been relabeled'''
 
 ROOT = '/data/home/wyc/wyc-datasets/Person'
+
 
 class __Dataset(object):
     dataset_dir = ''
@@ -425,6 +425,7 @@ def init_united_datasets(names, mode):
 
     del query_sets, gallery_sets, datasets
 
+    dataset_keep.dataset_dir = '+'.join(names)
     dataset_keep.train = train
     dataset_keep.query = query
     dataset_keep.gallery = gallery

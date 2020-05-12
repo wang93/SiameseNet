@@ -60,7 +60,7 @@ class ReIDEvaluator:
             axes[0].set_title(q_pids[i])
             axes[0].imshow(img)
             axes[0].set_axis_off()
-            cur_loc = 1
+            cur_loc = 0
             for gallery_index in indices[i]:
                 if g_camids[gallery_index] == q_camids[i] and g_pids[gallery_index] == q_pids[i]:
                     continue
@@ -71,7 +71,7 @@ class ReIDEvaluator:
                 axes[cur_loc].set_title(g_pids[gallery_index])
                 axes[cur_loc].set_axis_off()
                 axes[cur_loc].imshow(img)
-                if cur_loc == 11:
+                if cur_loc == 10:
                     break
 
             fig.savefig(os.path.join(savefig, '%d.png' % q_pids[i]))

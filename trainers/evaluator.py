@@ -55,7 +55,7 @@ class ReIDEvaluator:
             # if g_pids[index] == q_pids[i]:
             #     continue
             fig, axes = plt.subplots(1, 11, figsize=(12, 8))
-            img = self.queryloader.dataset.dataset[i][0]
+            img = self.queryloader.dataset[i][0]
             img = Image.open(img).convert('RGB')
             axes[0].set_title(q_pids[i])
             axes[0].imshow(img)
@@ -71,7 +71,7 @@ class ReIDEvaluator:
                     break
                 # cur_loc += 1
                 # gallery_index = indices[i][j]
-            imgs = self.galleryloader.dataset.dataset[gallery_indices][0]
+            imgs = self.galleryloader.dataset[gallery_indices][0]
             # img = self.galleryloader.dataset.dataset[gallery_index][0]
             for j, img in enumerate(imgs):
                 img = Image.open(img).convert('RGB')

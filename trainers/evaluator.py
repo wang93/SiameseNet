@@ -75,7 +75,7 @@ class ReIDEvaluator:
             # img = self.galleryloader.dataset.dataset[gallery_index][0]
             for j, img in enumerate(imgs):
                 img = Image.open(img).convert('RGB')
-                axes[j + 1].set_title(g_pids[gallery_index])
+                axes[j + 1].set_title(g_pids[indices[j]])
                 axes[j + 1].set_axis_off()
                 axes[j + 1].imshow(img)
 

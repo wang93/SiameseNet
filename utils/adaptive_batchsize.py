@@ -7,7 +7,7 @@ from torch import cuda
 
 from .tensor_section_functions import tensor_size, tensor_memory, tensor_cuda, tensor_repeat
 
-GPUS = [int(i) for i in os.environ['CUDA_VISIBLE_DEVICES'].split(',')]
+GPUS = [int(i) for i in os.environ['CUDA_VISIBLE_DEVICES'].split(',') if i]
 GPU_NUM = len(GPUS)
 
 

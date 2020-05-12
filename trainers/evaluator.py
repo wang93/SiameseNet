@@ -71,7 +71,7 @@ class ReIDEvaluator:
                     break
                 # cur_loc += 1
                 # gallery_index = indices[i][j]
-            imgs = [self.galleryloader.dataset.dataset[k] for k in gallery_indices]
+            imgs = [self.galleryloader.dataset.dataset[k][0] for k in gallery_indices]
             # img = self.galleryloader.dataset.dataset[gallery_index][0]
             for j, img in enumerate(imgs):
                 img = Image.open(img).convert('RGB')

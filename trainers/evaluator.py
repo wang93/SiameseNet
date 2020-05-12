@@ -45,6 +45,7 @@ class ReIDEvaluator:
         m = distmat.shape[0]
         indices = np.argsort(distmat, axis=1)
         for i in range(m):
+            print('visualizing retrieval results, {0}/{1}'.format(i + 1, m))
             # for j in range(10):
             #     index = indices[i][j]
             #     if g_camids[index] == q_camids[i] and g_pids[index] == q_pids[i]:

@@ -42,6 +42,10 @@ class ReIDEvaluator:
     def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, savefig):
         os.makedirs(savefig, exist_ok=True)
         self.model.eval()
+        query_indices = np.argsort(q_pids, axis=0)
+        q_pids = q_pids[query_indices]
+        distmat = distmat[query_indices]
+
         m = distmat.shape[0]
         indices = np.argsort(distmat, axis=1)
         cur_qid = ''

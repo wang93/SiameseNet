@@ -46,16 +46,17 @@ class ReIDEvaluator:
         self.model.eval()
         query_indices = np.argsort(q_pids, axis=0)
         q_pids = q_pids[query_indices]
+        q_camids = q_camids[query_indices]
         distmat = distmat[query_indices]
 
         m = distmat.shape[0]
         indices = np.argsort(distmat, axis=1)
         cur_qid = ''
         for i in range(m):
-            print('visualizing retrieval results, {0}/{1}'.format(i + 1, m))
             if q_pids[i] == cur_qid:
                 continue
             else:
+                print('visualizing retrieval results, {0}/{1}'.format(i + 1, m))
                 cur_qid = q_pids[i]
             # for j in range(10):
             #     index = indices[i][j]
@@ -83,11 +84,12 @@ class ReIDEvaluator:
                     break
                 # cur_loc += 1
                 # gallery_index = indices[i][j]
-            imgs = [self.galleryloader.dataset.dataset[k][0] for k in gallery_indices]
+            # imgs = [self.galleryloader.dataset.dataset[k][0] for k in gallery_indices]
             # img = self.galleryloader.dataset.dataset[gallery_index][0]
-            for j, img in enumerate(imgs):
+            for j, index in gallery_indices:
+                img = self.galleryloader.dataset.dataset[index][0]
                 img = Image.open(img).convert('RGB')
-                axes[j + 1].set_title(g_pids[gallery_indices[j]])
+                axes[j + 1].set_title(g_pids[indices])
                 axes[j + 1].set_axis_off()
                 axes[j + 1].imshow(img)
 

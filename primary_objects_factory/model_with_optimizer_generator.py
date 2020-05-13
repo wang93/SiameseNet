@@ -66,4 +66,4 @@ def get_model_with_optimizer(opt):
         print('optimizer comes to the state after epoch {0}'.format(start_epoch))
         optimizer.load_state_dict(optimizer_state_dict)
 
-    return model, optimizer, start_epoch, best_rank1, best_epoch
+    return model, optimizer, start_epoch  # , best_rank1, best_epoch

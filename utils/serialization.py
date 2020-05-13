@@ -92,6 +92,21 @@ def save_best_model(model, exp_dir, epoch, rank1):
     torch.save(state, fpath)
 
 
+def get_best_model(exp_dir):
+    f_path = osp.join(exp_dir, CHECKPOINT_DIR, BEST_MODEL_NAME)
+    if os.path.exists(f_path):
+        best_params = torch.load(f_path)
+        best_state_dict = best_params['state_dict']
+        best_epoch = best_params['epcoh']
+        best_rank1 = best_params['rank1']
+    else:
+        best_state_dict = None
+        best_epoch = -1
+        best_rank1 = 0
+
+    return best_state_dict, best_epoch, best_rank1
+
+
 def parse_checkpoints(exp_dir):
     load_dir = osp.join(exp_dir, CHECKPOINT_DIR)
     os.makedirs(load_dir, exist_ok=True)

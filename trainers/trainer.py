@@ -4,14 +4,12 @@ import time
 import torch
 
 from utils.meters import AverageMeter
-from utils.serialization import save_best_model, save_current_status
+from utils.serialization import save_best_model, save_current_status, get_best_model
 from utils.tensor_section_functions import slice_tensor, tensor_size
 
 
 class _Trainer:
-    def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy, criterion, summary_writer, best_rank1=-1,
-                 best_epoch=0,
-                 phase_num=1):
+    def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy, criterion, summary_writer, phase_num=1):
         self.opt = opt
         self.train_loader = train_loader
         self.evaluator = evaluator
@@ -20,6 +18,7 @@ class _Trainer:
         self.lr_strategy = lr_strategy
         self.criterion = criterion
         self.summary_writer = summary_writer
+        _, best_epoch, best_rank1 = get_best_model(self.opt.exp_dir)
         self.best_rank1 = best_rank1
         self.best_epoch = best_epoch
         self.phase_num = phase_num
@@ -28,7 +27,10 @@ class _Trainer:
         for epoch in range(done_epoch + 1, self.opt.max_epoch + 1):
             self.train(epoch)
 
-        print('Best rank-1 {:.1%}, achieved at epoch {}'.format(self.best_rank1, self.best_epoch))
+        best_state_dict, best_epoch, best_rank1 = get_best_model(self.opt.exp_dir)
+        print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
+        self.model.module.load_state_dict(best_state_dict)
+        self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=False)
         self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
 
     def train(self, epoch):
@@ -86,9 +88,7 @@ class _Trainer:
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 
         if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
-            # savefig = join(self.opt.fig_dir, 'origin') if epoch == self.opt.max_epoch else None
-            savefig = True if epoch == self.opt.max_epoch else False
-            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=savefig, eval_flip=False)
+            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=False, eval_flip=False)
 
             if rank1 > self.best_rank1:
                 save_best_model(self.model, exp_dir=self.opt.exp_dir, epoch=epoch, rank1=rank1)

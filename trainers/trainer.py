@@ -24,6 +24,10 @@ class _Trainer:
         self.best_epoch = best_epoch
         self.phase_num = phase_num
 
+    def train_from(self, done_epoch):
+        for epoch in range(done_epoch + 1, self.opt.max_epoch + 1):
+            self.train(epoch)
+
     def train(self, epoch):
         """Note: epoch should start with 1"""
 

@@ -280,3 +280,53 @@ class DenseBraidMGN(BraidMGN):
             weights_init_kaiming(m)
 
         self.correct_params()
+
+
+class ResBraidMGN(BraidMGN):
+    reg_params = []
+    noreg_params = []
+    freeze_pretrained = True
+
+    def __init__(self, feats=256, fc=(1,)):
+        super(ResBraidMGN, self).__init__()
+
+        self.meta = {'mean': [0.485, 0.456, 0.406],
+                     'std': [0.229, 0.224, 0.225],
+                     'imageSize': [384, 128]
+                     }
+
+        self.pair2bi = Pair2Bi()
+
+        self.pair2braid = Pair2Braid()
+
+        self.bi = MGN(feats=feats)
+
+        self.bi2braid = Bi2Braid()
+
+        channel_ins = [feats * 3, feats, feats, feats, feats, feats]
+        self.part_braids = nn.ModuleList()
+        for channel_in in channel_ins:
+            self.part_braids.append(ResLinearBraidBlock(channel_in, channel_in))
+
+        self.braids2braid = CatBraids()
+        channel_in = sum(channel_ins)
+
+        self.final_braid = ResLinearBraidBlock(channel_in, channel_in)
+
+        self.y = MinMaxY(channel_in, linear=True)
+        channel_in *= 2
+
+        fc_blocks = []
+        for i, sub_fc in enumerate(fc):
+            is_tail = (i + 1 == len(fc))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
+            channel_in = sub_fc
+        self.fc = nn.Sequential(*fc_blocks)
+
+        self.score2prob = nn.Sigmoid()
+
+        # initialize parameters
+        for m in [self.part_braids, self.final_braid, self.fc]:
+            weights_init_kaiming(m)
+
+        self.correct_params()

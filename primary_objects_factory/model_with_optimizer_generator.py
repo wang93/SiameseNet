@@ -17,6 +17,9 @@ def get_model_with_optimizer(opt):
     elif opt.model_name == 'densebraidmgn':
         from models.braidnet.braidmgn import DenseBraidMGN
         model = DenseBraidMGN(feats=opt.feats, fc=(1,))
+    elif opt.model_name == 'resbraidmgn':
+        from models.braidnet.braidmgn import ResBraidMGN
+        model = ResBraidMGN(feats=opt.feats, fc=(1,))
     else:
         raise NotImplementedError
 

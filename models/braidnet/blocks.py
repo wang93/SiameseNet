@@ -8,7 +8,7 @@ from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
            'CatBraidsGroups', 'BraidBlock', 'LinearBraidBlock', 'SumY',
-           'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock']
+           'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock']
 
 def int2tuple(n):
     if isinstance(n, int):
@@ -166,6 +166,25 @@ class DenseLinearBraidBlock(nn.Module):
         y = self.wbn(y)
         y = self.relu(y)
         z = self.cat([x, y])
+        return z
+
+
+class ResLinearBraidBlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(ResLinearBraidBlock, self).__init__()
+        self.wlinear = WLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        y = self.wlinear(x)
+        y = self.wbn(y)
+        y = self.relu(y)
+        z = x + y
         return z
 
 

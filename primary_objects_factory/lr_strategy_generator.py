@@ -1,9 +1,9 @@
 def MultiStepLR(optimizer, ep_from_1, gamma):
     ep_from_0 = ep_from_1 - 1
-    if ep_from_0 < 100:
+    if ep_from_0 < 200:
         mul = 1.
     else:
-        mul = gamma ** ((ep_from_0 - 100) // 20 + 1)
+        mul = gamma ** ((ep_from_0 - 200) // 20 + 1)
 
     for p in optimizer.param_groups:
         p['lr'] = p['initial_lr'] * mul
@@ -14,10 +14,10 @@ def MultiStepLR_LinearWarmUp(optimizer, ep_from_1, gamma, warmup_till):
     warmup_till -= 1
     if ep_from_0 < warmup_till:
         mul = float(ep_from_0 + 1) / float(warmup_till + 1)
-    elif ep_from_0 < 100:
+    elif ep_from_0 < 200:
         mul = 1.
     else:
-        mul = gamma ** ((ep_from_0 - 100) // 20 + 1)
+        mul = gamma ** ((ep_from_0 - 200) // 20 + 1)
 
     for p in optimizer.param_groups:
         p['lr'] = p['initial_lr'] * mul

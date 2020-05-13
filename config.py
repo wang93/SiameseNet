@@ -45,7 +45,7 @@ class DefaultConfig(object):
     eval_minors_num = 0  # <=0 when evaluation on the whole test set once
 
     # model options
-    model_name = 'braidmgn'  # braidnet, braidmgn
+    model_name = 'braidmgn'  # braidnet, braidmgn, densebraidmgn
     feats = 256  # in braidmgn, pooled feature vector length in each part with one pooling method
     last_stride = 1
     pretrained_subparams = False

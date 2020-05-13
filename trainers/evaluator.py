@@ -57,22 +57,13 @@ class ReIDEvaluator:
             else:
                 print('visualizing retrieval results, {0}/{1}'.format(i + 1, m))
                 cur_qid = q_pids[i]
-            # for j in range(10):
-            #     index = indices[i][j]
-            #     if g_camids[index] == q_camids[i] and g_pids[index] == q_pids[i]:
-            #         continue
-            #     else:
-            #         break
 
-            # if g_pids[index] == q_pids[i]:
-            #     continue
             fig, axes = plt.subplots(1, 11, figsize=(12, 8))
             img = self.queryloader.dataset.dataset[query_indices[i]][0]
             img = Image.open(img).convert('RGB')
-            axes[0].set_title(q_pids[i])
+            axes[0].set_title(int(q_pids[i]))
             axes[0].imshow(img)
             axes[0].set_axis_off()
-            # cur_loc = 0
 
             gallery_indices = []
             for gallery_index in indices[i]:
@@ -81,14 +72,11 @@ class ReIDEvaluator:
                 gallery_indices.append(gallery_index)
                 if len(gallery_indices) >= 10:
                     break
-                # cur_loc += 1
-                # gallery_index = indices[i][j]
-            # imgs = [self.galleryloader.dataset.dataset[k][0] for k in gallery_indices]
-            # img = self.galleryloader.dataset.dataset[gallery_index][0]
+
             for j, index in enumerate(gallery_indices):
                 img = self.galleryloader.dataset.dataset[index][0]
                 img = Image.open(img).convert('RGB')
-                axes[j + 1].set_title(g_pids[indices])
+                axes[j + 1].set_title(int(g_pids[indices]))
                 axes[j + 1].set_axis_off()
                 axes[j + 1].imshow(img)
 

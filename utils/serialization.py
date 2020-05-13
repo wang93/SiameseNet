@@ -97,7 +97,7 @@ def get_best_model(exp_dir):
     if os.path.exists(f_path):
         best_params = torch.load(f_path)
         best_state_dict = best_params['state_dict']
-        best_epoch = best_params['epcoh']
+        best_epoch = best_params['epoch']
         best_rank1 = best_params['rank1']
     else:
         best_state_dict = None

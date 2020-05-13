@@ -55,8 +55,9 @@ class ReIDEvaluator:
             if q_pids[i] == cur_qid:
                 continue
             else:
-                print('visualizing retrieval results, {0}/{1}'.format(i + 1, m))
                 cur_qid = q_pids[i]
+                if not (i + 1) % 100:
+                    print('visualizing retrieval results, {0}/{1}'.format(i + 1, m))
 
             fig, axes = plt.subplots(1, 11, figsize=(12, 8))
             img = self.queryloader.dataset.dataset[query_indices[i]][0]

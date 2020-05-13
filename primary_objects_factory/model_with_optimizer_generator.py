@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 
 from utils.data_parallel import DataParallel
@@ -15,6 +14,9 @@ def get_model_with_optimizer(opt):
     elif opt.model_name == 'braidmgn':
         from models.braidnet.braidmgn import BraidMGN
         model = BraidMGN(feats=opt.feats, fc=(1,))
+    elif opt.model_name == 'densebraidmgn':
+        from models.braidnet.braidmgn import DenseBraidMGN
+        model = DenseBraidMGN(feats=opt.feats, fc=(1,))
     else:
         raise NotImplementedError
 
@@ -34,8 +36,8 @@ def get_model_with_optimizer(opt):
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
     start_epoch = 0
-    best_rank1 = -np.inf
-    best_epoch = 0
+    # best_rank1 = -np.inf
+    # best_epoch = 0
     optimizer_state_dict = None
     if not opt.disable_resume:
         start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.exp_dir)

@@ -28,6 +28,9 @@ class _Trainer:
         for epoch in range(done_epoch + 1, self.opt.max_epoch + 1):
             self.train(epoch)
 
+        print('Best rank-1 {:.1%}, achieved at epoch {}'.format(self.best_rank1, self.best_epoch))
+        self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
+
     def train(self, epoch):
         """Note: epoch should start with 1"""
 
@@ -94,9 +97,6 @@ class _Trainer:
 
         save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch)
 
-        if epoch == self.opt.max_epoch:
-            print('Best rank-1 {:.1%}, achieved at epoch {}'.format(self.best_rank1, self.best_epoch))
-            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
 
     def _parse_data(self, inputs):
         raise NotImplementedError

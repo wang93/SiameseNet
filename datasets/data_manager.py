@@ -425,7 +425,7 @@ def init_united_datasets(names, mode):
 
     del query_sets, gallery_sets, datasets
 
-    dataset_keep.dataset_dir = '+'.join(names)
+    dataset_keep.dataset_dir = ' + '.join(names)
     dataset_keep.train = train
     dataset_keep.query = query
     dataset_keep.gallery = gallery

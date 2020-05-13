@@ -27,8 +27,7 @@ from datasets.samplers import PosNegPairSampler
 
 class ReIDEvaluator:
     def __init__(self, model, exp_dir, queryloader, galleryloader, queryFliploader, galleryFliploader, phase_num=1,
-                 minors_num=0,
-                 ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
+                 minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
         self.model = model
         self.fig_dir = os.path.join(exp_dir, 'visualize')
         self.queryloader = queryloader
@@ -86,7 +85,7 @@ class ReIDEvaluator:
                 # gallery_index = indices[i][j]
             # imgs = [self.galleryloader.dataset.dataset[k][0] for k in gallery_indices]
             # img = self.galleryloader.dataset.dataset[gallery_index][0]
-            for j, index in gallery_indices:
+            for j, index in enumerate(gallery_indices):
                 img = self.galleryloader.dataset.dataset[index][0]
                 img = Image.open(img).convert('RGB')
                 axes[j + 1].set_title(g_pids[indices])

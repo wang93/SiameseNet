@@ -27,12 +27,13 @@ class _Trainer:
         for epoch in range(done_epoch + 1, self.opt.max_epoch + 1):
             self.train(epoch)
 
-        best_state_dict, best_epoch, best_rank1 = get_best_model(self.opt.exp_dir)
-        print('Visualization based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
-              .format(best_rank1, best_epoch))
-        self.model.module.load_state_dict(best_state_dict)
-        self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=False)
-        self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
+        if self.opt.savefig:
+            best_state_dict, best_epoch, best_rank1 = get_best_model(self.opt.exp_dir)
+            print('visualization based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
+                  .format(best_rank1, best_epoch))
+            self.model.module.load_state_dict(best_state_dict)
+            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=False)
+            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
 
     def train(self, epoch):
         """Note: epoch should start with 1"""

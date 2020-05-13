@@ -1,6 +1,5 @@
 # encoding: utf-8
 import time
-from os.path import join
 
 import torch
 
@@ -80,16 +79,20 @@ class _Trainer:
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 
         if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
-            savefig = join(self.opt.savefig, 'origin') if epoch == self.opt.max_epoch else None
-            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=savefig)
+            # savefig = join(self.opt.fig_dir, 'origin') if epoch == self.opt.max_epoch else None
+            savefig = True if epoch == self.opt.max_epoch else False
+            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=savefig, eval_flip=False)
 
-            is_best = rank1 > self.best_rank1
-            if is_best:
+            if rank1 > self.best_rank1:
                 save_best_model(self.model, exp_dir=self.opt.exp_dir, epoch=epoch, rank1=rank1)
                 self.best_rank1 = rank1
                 self.best_epoch = epoch
 
         save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch)
+
+        if epoch == self.opt.max_epoch:
+            print('Best rank-1 {:.1%}, achieved at epoch {}'.format(self.best_rank1, self.best_epoch))
+            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
 
     def _parse_data(self, inputs):
         raise NotImplementedError

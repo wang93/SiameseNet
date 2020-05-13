@@ -22,8 +22,6 @@ def train(**kwargs):
     for epoch in range(start_epoch + 1, opt.max_epoch + 1):
         reid_trainer.train(epoch)
 
-    print('Best rank-1 {:.1%}, achieved at epoch {}'.format(reid_trainer.best_rank1, reid_trainer.best_epoch))
-    reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig, eval_flip=True)
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
 

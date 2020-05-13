@@ -28,7 +28,8 @@ class _Trainer:
             self.train(epoch)
 
         best_state_dict, best_epoch, best_rank1 = get_best_model(self.opt.exp_dir)
-        print('Best rank-1 {:.1%}, achieved at epoch {}'.format(best_rank1, best_epoch))
+        print('Visualization based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
+              .format(best_rank1, best_epoch))
         self.model.module.load_state_dict(best_state_dict)
         self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=False)
         self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)

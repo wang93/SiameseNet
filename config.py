@@ -6,7 +6,7 @@ from pprint import pprint
 
 class DefaultConfig(object):
     seed = 0
-    gpus = '0,1'
+    gpus = [0, 1]
 
     # dataset options
     dataset = 'market1501'

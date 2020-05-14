@@ -6,11 +6,9 @@ from utils.standard_actions import prepare_running
 @prepare_running
 def train(opt):
     reid_trainer = get_trainer(opt)
-
     if opt.evaluate:
         reid_trainer.evaluate_best()
         return
-
     reid_trainer.continue_train()
 
 

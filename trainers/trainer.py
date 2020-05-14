@@ -126,7 +126,8 @@ class _Trainer:
             self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=False)
             self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=True)
         else:
-            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=eval_flip)
+            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=eval_flip)
+            return rank1
 
     def _parse_data(self, inputs):
         raise NotImplementedError

@@ -97,7 +97,7 @@ class _Trainer:
                 self.best_rank1 = rank1
                 self.best_epoch = epoch
 
-        save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch)
+        save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch, self.opt.eval_step)
 
 
     def _parse_data(self, inputs):

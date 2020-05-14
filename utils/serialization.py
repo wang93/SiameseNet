@@ -52,15 +52,12 @@ class Logger(object):
             self.file.close()
 
 
-def save_checkpoint(state, exp_dir, epoch, prefix: str):
+def save_checkpoint(state, exp_dir, epoch, prefix: str, eval_step=10):
     save_dir = osp.join(exp_dir, CHECKPOINT_DIR)
     os.makedirs(save_dir, exist_ok=True)
 
     # delete previous checkpoints
-    # if epoch > 1:
-    #     files_path = osp.join(save_dir, prefix + '*')
-    #     subprocess.call('rm {0}'.format(files_path), shell=True)
-    if epoch > 1 and (epoch - 1) % 10 != 0:
+    if epoch > 1 and (epoch - 1) % eval_step != 0:
         previous_file_name = '{0}_ep{1}.pth.tar'.format(prefix, epoch - 1)
         os.remove(osp.join(save_dir, previous_file_name))
 
@@ -70,15 +67,17 @@ def save_checkpoint(state, exp_dir, epoch, prefix: str):
     torch.save(state, fpath)
 
 
-def save_current_status(model, optimizer, exp_dir, epoch):
+def save_current_status(model, optimizer, exp_dir, epoch, eval_step):
     model_state_dict = model.module.state_dict()
     optimizer_state_dict = optimizer.state_dict()
 
     save_checkpoint({'state_dict': model_state_dict, 'epoch': epoch},
-                    exp_dir=exp_dir, epoch=epoch, prefix=PREFIX_MODEL)
+                    exp_dir=exp_dir, epoch=epoch,
+                    prefix=PREFIX_MODEL, eval_step=eval_step)
 
     save_checkpoint({'state_dict': optimizer_state_dict, 'epoch': epoch},
-                    exp_dir=exp_dir, epoch=epoch, prefix=PREFIX_OPTIMIZER)
+                    exp_dir=exp_dir, epoch=epoch,
+                    prefix=PREFIX_OPTIMIZER, eval_step=eval_step)
 
 
 def save_best_model(model, exp_dir, epoch, rank1):

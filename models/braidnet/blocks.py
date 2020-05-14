@@ -172,6 +172,9 @@ class DenseLinearBraidBlock(nn.Module):
 class ResLinearBraidBlock(nn.Module):
     def __init__(self, channel_in, channel_out):
         super(ResLinearBraidBlock, self).__init__()
+        if channel_in != channel_out:
+            raise NotImplementedError
+
         self.wlinear = WLinear(channel_in, channel_out, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
@@ -183,8 +186,9 @@ class ResLinearBraidBlock(nn.Module):
     def forward(self, x):
         y = self.wlinear(x)
         y = self.wbn(y)
-        y = self.relu(y)
         z = x + y
+        z = self.relu(z)
+
         return z
 
 

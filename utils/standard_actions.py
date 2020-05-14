@@ -34,3 +34,15 @@ def prepare_running(**kwargs):
     torch.backends.cudnn.benchmark = True
 
     return opt
+
+
+def print_time(func):
+    import time
+
+    def wrapper(*args, **kwargs):
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        func_return = func(*args, **kwargs)
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        return func_return
+
+    return wrapper

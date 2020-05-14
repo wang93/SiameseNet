@@ -43,7 +43,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                 if v is None:
                     continue
 
-                if k in ('weight',) and isinstance(model, (WConv2d, WLinear, nn.Conv2d, nn.Linear, nn.Conv3d)):
+                if k in ('weight', 'bias') and isinstance(model, (WConv2d, WLinear, nn.Conv2d, nn.Linear, nn.Conv3d)):
                     self.reg_params.append(v)
                 else:
                     self.noreg_params.append(v)

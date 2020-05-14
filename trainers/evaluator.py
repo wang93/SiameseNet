@@ -83,7 +83,7 @@ class ReIDEvaluator:
                 axes[j + 1].set_axis_off()
                 axes[j + 1].imshow(img)
 
-            fig.savefig(os.path.join(fig_dir, '%d.png' % q_pids[i]))
+            fig.savefig(os.path.join(fig_dir, '%d.png' % q_pids[i]), bbox_inches='tight')
             plt.close(fig)
 
     def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True):

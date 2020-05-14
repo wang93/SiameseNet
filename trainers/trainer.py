@@ -32,8 +32,8 @@ class _Trainer:
             print('visualization based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
                   .format(best_rank1, best_epoch))
             self.model.module.load_state_dict(best_state_dict)
-            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=False)
-            self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=True, eval_flip=True)
+            self.evaluator.visualize(re_ranking=self.opt.re_ranking, eval_flip=False)
+            self.evaluator.visualize(re_ranking=self.opt.re_ranking, eval_flip=True)
 
     def train(self, epoch):
         """Note: epoch should start with 1"""
@@ -90,7 +90,7 @@ class _Trainer:
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 
         if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
-            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, savefig=False, eval_flip=False)
+            rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=False)
 
             if rank1 > self.best_rank1:
                 save_best_model(self.model, exp_dir=self.opt.exp_dir, epoch=epoch, rank1=rank1)

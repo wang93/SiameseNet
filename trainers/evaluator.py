@@ -40,7 +40,9 @@ class ReIDEvaluator:
 
         # self.batch_size = self.queryloader.batch_size
 
-    def save_incorrect_pairs(self, distmat, g_pids, q_pids, g_camids, q_camids, fig_dir):
+    def _save_top10_results(self, distmat, g_pids, q_pids, g_camids, q_camids, fig_dir):
+        print("Saving visualization figures")
+
         os.makedirs(fig_dir, exist_ok=True)
         self.model.eval()
         query_indices = np.argsort(q_pids, axis=0)
@@ -289,12 +291,77 @@ class ReIDEvaluator:
             features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
         return features
 
-    def evaluate(self, eval_flip=False, re_ranking=False, savefig=False):
+    def evaluate(self, eval_flip=False, re_ranking=False):
+        q_pids, q_camids, g_pids, g_camids = self._get_labels()
+        distmat = self._get_dist_matrix(flip_fuse=eval_flip, re_ranking=re_ranking)
+
+        if self.minors_num <= 0:
+            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
+        else:
+            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
+
+        return rank1
+
+    def visualize(self, eval_flip=False, re_ranking=False):
+        q_pids, q_camids, g_pids, g_camids = self._get_labels()
+        distmat = self._get_dist_matrix(flip_fuse=eval_flip, re_ranking=re_ranking)
+
+        fig_dir = os.path.join(self.fig_dir, 'fused' if eval_flip else 'origin')
+        self._save_top10_results(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(),
+                                 q_camids.numpy(), fig_dir)
+
+    def _get_dist_matrix(self, flip_fuse=False, re_ranking=False):
         self.model.eval()
+        if flip_fuse:
+            print('**** flip fusion based distance matrix ****')
 
-        if eval_flip:
-            print('**** evaluate with flip images ****')
+        if re_ranking:
+            raise NotImplementedError('Not recommended, as it costs too much time.')
 
+        start = curtime()
+
+        with torch.no_grad():
+
+            if self.phase_num == 1:
+                q_g_dist = - self._compare_images(self.queryloader, self.galleryloader)
+
+                if flip_fuse:
+                    q_g_dist -= self._compare_images(self.queryloader, self.galleryFliploader)
+                    q_g_dist -= self._compare_images(self.queryFliploader, self.galleryloader)
+                    q_g_dist -= self._compare_images(self.queryFliploader, self.galleryFliploader)
+                    q_g_dist /= 4.0
+
+            elif self.phase_num == 2:
+                '''phase one'''
+                query_features = self._get_feature(self.queryloader)
+                gallery_features = self._get_feature(self.galleryloader)
+
+                '''phase two'''
+                q_g_dist = - self._compare_features(query_features, gallery_features)
+
+                if not flip_fuse:
+                    del gallery_features, query_features
+                else:
+                    query_flip_features = self._get_feature(self.queryFliploader)
+                    q_g_dist -= self._compare_features(query_flip_features, gallery_features)
+                    del gallery_features
+                    gallery_flip_features = self._get_feature(self.galleryFliploader)
+                    q_g_dist -= self._compare_features(query_flip_features, gallery_flip_features)
+                    del query_flip_features
+                    q_g_dist -= self._compare_features(query_features, gallery_flip_features)
+                    del gallery_flip_features, query_features
+                    q_g_dist /= 4.0
+
+            else:
+                raise ValueError
+
+        end = curtime()
+        print('it costs {:.3f} s to compute distance matrix'
+              .format(end - start))
+
+        return q_g_dist
+
+    def _get_labels(self):
         q_pids, q_camids = [], []
         g_pids, g_camids = [], []
         for queries in self.queryloader:
@@ -313,61 +380,4 @@ class ReIDEvaluator:
         g_pids = torch.Tensor(g_pids)
         g_camids = torch.Tensor(g_camids)
 
-        start = curtime()
-
-        with torch.no_grad():
-
-            if self.phase_num == 1:
-                q_g_similarity = self._compare_images(self.queryloader, self.galleryloader)
-
-                if eval_flip:
-                    q_g_similarity += self._compare_images(self.queryloader, self.galleryFliploader)
-                    q_g_similarity += self._compare_images(self.queryFliploader, self.galleryloader)
-                    q_g_similarity += self._compare_images(self.queryFliploader, self.galleryFliploader)
-                    q_g_similarity /= 4.0
-
-            elif self.phase_num == 2:
-                '''phase one'''
-                query_features = self._get_feature(self.queryloader)
-                gallery_features = self._get_feature(self.galleryloader)
-
-                '''phase two'''
-                q_g_similarity = self._compare_features(query_features, gallery_features)
-
-                if not eval_flip:
-                    del gallery_features, query_features
-                else:
-                    query_flip_features = self._get_feature(self.queryFliploader)
-                    q_g_similarity += self._compare_features(query_flip_features, gallery_features)
-                    del gallery_features
-                    gallery_flip_features = self._get_feature(self.galleryFliploader)
-                    q_g_similarity += self._compare_features(query_flip_features, gallery_flip_features)
-                    del query_flip_features
-                    q_g_similarity += self._compare_features(query_features, gallery_flip_features)
-                    del gallery_flip_features, query_features
-                    q_g_similarity /= 4.0
-
-            else:
-                raise ValueError
-
-        end = curtime()
-        print('it costs {:.3f} s to compute similarity matrix'
-              .format(end - start))
-
-        if re_ranking:
-            raise NotImplementedError('Not recommended, as it costs too much time.')
-        else:
-            distmat = -q_g_similarity
-
-        if self.minors_num <= 0:
-            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
-        else:
-            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
-
-        if savefig:
-            print("Saving visualization figures")
-            fig_dir = os.path.join(self.fig_dir, 'fused' if eval_flip else 'origin')
-            self.save_incorrect_pairs(distmat.numpy(), g_pids.numpy(), q_pids.numpy(), g_camids.numpy(),
-                                      q_camids.numpy(), fig_dir)
-
-        return rank1
+        return q_pids, q_camids, g_pids, g_camids

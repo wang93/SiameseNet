@@ -16,8 +16,8 @@ def train(**kwargs):
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
     if opt.evaluate:
-        reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig)
-        reid_evaluator.evaluate(re_ranking=opt.re_ranking, savefig=opt.savefig, eval_flip=True)
+        reid_evaluator.evaluate(re_ranking=opt.re_ranking, eval_flip=False)
+        reid_evaluator.evaluate(re_ranking=opt.re_ranking, eval_flip=True)
 
     reid_trainer.train_from(done_epoch)
 

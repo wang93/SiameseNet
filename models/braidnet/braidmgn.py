@@ -239,10 +239,11 @@ class DenseBraidMGN(BraidMGN):
     def __init__(self, feats=256, fc=(1,)):
         super(DenseBraidMGN, self).__init__()
 
-        self.meta = {'mean': [0.485, 0.456, 0.406],
-                     'std': [0.229, 0.224, 0.225],
-                     'imageSize': [384, 128]
-                     }
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [384, 128]
+        }
 
         self.pair2bi = Pair2Bi()
 

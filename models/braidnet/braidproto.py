@@ -5,19 +5,17 @@ import torch.nn as nn
 from torch.nn import BatchNorm3d, BatchNorm2d, BatchNorm1d
 from torch.optim import SGD, Adam
 
-from models.braidnet.primitives.subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
-
 
 def weights_init_kaiming(m: nn.Module):
-    if isinstance(m, (nn.Linear, WLinear)):
+    if isinstance(m, (nn.Linear,)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d, WConv2d)):
+    elif isinstance(m, (nn.Conv1d, nn.Conv2d, nn.Conv3d,)):
         nn.init.kaiming_normal_(m.weight, a=0, mode='fan_in')
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
-    elif isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
+    elif isinstance(m, (BatchNorm1d, BatchNorm2d, BatchNorm3d)):
         if m.affine:
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)
@@ -43,7 +41,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                 if v is None:
                     continue
 
-                if k in ('weight',) and isinstance(model, (WConv2d, WLinear, nn.Conv2d, nn.Linear, nn.Conv3d)):
+                if k in ('weight',) and isinstance(model, (nn.Conv2d, nn.Linear, nn.Conv3d)):
                     self.reg_params.append(v)
                 else:
                     self.noreg_params.append(v)
@@ -83,13 +81,22 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
 
     def correct_params(self):
         for m in self.modules():
-            if isinstance(m, (WConv2d, WLinear)):
+            if m is self:
+                continue
+            if callable(getattr(m, 'correct_params')):
+                print('correct the params of {0}'.format(m.__name__))
                 m.correct_params()
+            # if isinstance(m, (WConv2d, WLinear)):
+            #     m.correct_params()
 
     def correct_grads(self):
         for m in self.modules():
-            if isinstance(m, (WConv2d, WLinear)):
+            if m is self:
+                continue
+            if callable(getattr(m, 'correct_grads')):
                 m.correct_grads()
+            # if isinstance(m, (WConv2d, WLinear)):
+            #     m.correct_grads()
 
     def zero_tail_weight(self):
         nn.init.constant_(self.fc[-1].fc.weight, 0.0)

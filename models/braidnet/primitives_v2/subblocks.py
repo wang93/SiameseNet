@@ -28,6 +28,10 @@ class WConv2d(nn.Module):
         out_b = self.conv_p(in_b) + self.conv_q(in_a)
         return out_a, out_b
 
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
+
 
 class WLinear(nn.Module):
     def __init__(self, in_features, out_features, bias=True):
@@ -40,6 +44,10 @@ class WLinear(nn.Module):
         out_a = self.conv_p(in_a) + self.conv_q(in_b)
         out_b = self.conv_p(in_b) + self.conv_q(in_a)
         return out_a, out_b
+
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
 
 
 class WBatchNorm2d(nn.Module):

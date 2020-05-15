@@ -20,7 +20,7 @@ class WConv2d(nn.Conv2d):
             self, 2 * in_channels, 2 * out_channels, kernel_size, stride, padding, dilation,
             groups, bias)
 
-        self.correct_params()
+        # self.correct_params()
 
     def correct_params(self):
         weight_a = self.weight.data[:self.out_channels//2, :, :, :]
@@ -72,7 +72,7 @@ class WConv2d(nn.Conv2d):
 class WLinear(nn.Linear):
     def __init__(self, in_features, out_features, bias=True):
         nn.Linear.__init__(self, 2 * in_features, 2 * out_features, bias)
-        self.correct_params()
+        # self.correct_params()
 
     def correct_params(self):
         weight_a = self.weight.data[:self.out_features//2, :]

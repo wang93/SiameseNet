@@ -45,7 +45,7 @@ class WLinear(nn.Module):
 class WBatchNorm2d(nn.Module):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
         super(WBatchNorm2d, self).__init__()
-        self.bn = BatchNorm2d(self, num_features=num_channels, eps=eps, **kwargs)
+        self.bn = BatchNorm2d(num_features=num_channels, eps=eps, **kwargs)
 
     def forward(self, input_):
         in_a, in_b = input_
@@ -58,7 +58,7 @@ class WBatchNorm2d(nn.Module):
 class WBatchNorm1d(nn.Module):
     def __init__(self, num_channels, eps=1e-5, **kwargs):
         super(WBatchNorm1d, self).__init__()
-        self.bn = BatchNorm1d(self, num_features=num_channels, eps=eps, **kwargs)
+        self.bn = BatchNorm1d(num_features=num_channels, eps=eps, **kwargs)
 
     def forward(self, input_):
         in_a, in_b = input_

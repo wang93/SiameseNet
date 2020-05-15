@@ -3,8 +3,8 @@ from primary_objects_factory import get_trainer
 from utils.standard_actions import prepare_running
 
 
-@prepare_running
-def train(opt):
+def train(**kwargs):
+    opt = prepare_running(**kwargs)
     reid_trainer = get_trainer(opt)
     if opt.evaluate:
         reid_trainer.evaluate_best()

@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.nn import BatchNorm3d, BatchNorm2d, BatchNorm1d
 from torch.optim import SGD, Adam
 
-from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
+from models.braidnet.primitives.subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
 
 def weights_init_kaiming(m: nn.Module):
@@ -96,7 +96,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
 
     @property
     def _default_output(self):
-        return None  # torch.tensor([0., ]).cuda()
+        return None
 
     @abstractmethod
     def extract(self, ims):

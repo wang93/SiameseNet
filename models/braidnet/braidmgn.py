@@ -5,9 +5,9 @@ import torch
 import torch.nn as nn
 from torchvision.models.resnet import resnet50, Bottleneck
 
-from .blocks import *
+from models.braidnet.primitives.subblocks import *
+from models.braidnet.primitives_v2.blocks import *
 from .braidproto import BraidProto, weights_init_kaiming
-from .subblocks import *
 
 
 class MGN(nn.Module):

@@ -3,7 +3,7 @@ from torch import Tensor
 
 __all__ = ['slice_tensor', 'split_tensor', 'cat_tensor_pair', 'cat_tensors',
            'tensor_cpu', 'tensor_cuda', 'tensor_repeat', 'tensor_size',
-           'tensor_memory', 'tensor_attr']
+           'tensor_memory', 'tensor_attr', 'combine_tensor_pair']
 
 
 def slice_tensor(data, indices):
@@ -41,6 +41,18 @@ def cat_tensor_pair(a, b, dim):
         return [cat_tensor_pair(i, j, dim) for i, j in zip(a, b)]
     elif isinstance(a, dict):
         return {k: cat_tensor_pair(v, b[k], dim) for k, v in a.items()}
+    else:
+        raise TypeError('type {0} is not supported'.format(type(a)))
+
+
+def combine_tensor_pair(a, b):
+    assert type(a) == type(b)
+    if isinstance(a, Tensor):
+        return (a, b)
+    elif isinstance(a, (list, tuple)):
+        return [combine_tensor_pair(i, j) for i, j in zip(a, b)]
+    elif isinstance(a, dict):
+        return {k: combine_tensor_pair(v, b[k]) for k, v in a.items()}
     else:
         raise TypeError('type {0} is not supported'.format(type(a)))
 

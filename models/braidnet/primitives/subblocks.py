@@ -190,10 +190,10 @@ class PartPools(nn.Module):
             for pool in sub_pools:
                 sub_result.append(pool(input_))
 
-            result.append(torch.cat(sub_result, 1))
+            # result.append(torch.cat(sub_result, 1))
+            result.append(sub_result)
 
         return result
-
 
 
 

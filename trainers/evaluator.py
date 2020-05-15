@@ -11,8 +11,6 @@ import matplotlib.pyplot as plt
 
 # from utils.re_ranking import re_ranking as re_ranking_func
 
-from scipy.optimize import brentq
-from scipy.interpolate import interp1d
 from sklearn.metrics import roc_curve
 
 from collections import defaultdict
@@ -196,8 +194,16 @@ class ReIDEvaluator:
         scores_ = - torch.cat(scores_, dim=0)
 
         fpr, tpr, thresholds = roc_curve(matches, scores_, pos_label=1.)
-        eer = brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
-        thresh = interp1d(fpr, thresholds)(eer)
+        for i, (fpr_, tpr_) in enumerate(zip(fpr, tpr)):
+            if 1. - fpr_ < tpr_:
+                break
+
+        i = max(i, 1)
+        eer = (2 + fpr[i] + fpr[i - 1] - tpr[i] - tpr[i - 1]) / 4.
+        thresh = (thresholds[i] + thresholds[i - 1]) / 2
+
+        # eer = brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
+        # thresh = interp1d(fpr, thresholds)(eer)
 
         return thresh, eer
 

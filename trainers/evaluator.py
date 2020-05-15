@@ -193,7 +193,7 @@ class ReIDEvaluator:
         matches = torch.cat(results, dim=0).float()
         scores_ = - torch.cat(scores_, dim=0)
 
-        fpr, tpr, thresholds = roc_curve(matches, scores_, pos_label=1.)
+        fpr, tpr, thresholds = roc_curve(matches.numpy(), scores_.numpy(), pos_label=1.)
         for i, (fpr_, tpr_) in enumerate(zip(fpr, tpr)):
             if 1. - fpr_ < tpr_:
                 break

@@ -7,7 +7,7 @@ from utils.tensor_section_functions import cat_tensor_pair
 from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
-           'CatBraidsGroups', 'BraidBlock', 'LinearBraidBlock', 'SumY',
+           'CatBraidsGroups', 'BraidBlock', 'LinearBraidBlock', 'SumY', 'MinY',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock']
 
 def int2tuple(n):
@@ -224,9 +224,19 @@ class MaxY(SumY):
         return y.view(y.size(0), -1)
 
 
+class MinY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(MinY, self).__init__(channel_in, linear)
+
+    def forward(self, x_from_braid):
+        y = torch.min(*torch.chunk(x_from_braid, 2, dim=1))
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
+
+
 class SumMaxY(SumY):
     def __init__(self, channel_in, linear=False):
-        super(SumMaxY, self).__init__(channel_in*2, linear)
+        super(SumMaxY, self).__init__(channel_in * 2, linear)
 
     def forward(self, x_from_braid):
         x = torch.chunk(x_from_braid, 2, dim=1)

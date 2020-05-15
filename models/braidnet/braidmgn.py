@@ -230,7 +230,7 @@ class BraidMGN(BraidProto):
             model.train(pretrained_training)
 
         for model in chain(self.bi.backone.modules(), self.bi.p1.modules(), self.bi.p2.modules(), self.bi.p3.modules()):
-            if isinstance(model, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, WBatchNorm1d, WBatchNorm2d)):
+            if isinstance(model, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
                 model.train(False)
 
         return self

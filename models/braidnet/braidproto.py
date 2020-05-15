@@ -83,7 +83,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
         for m in self.modules():
             if m is self:
                 continue
-            if callable(getattr(m, 'correct_params')):
+            if hasattr(m, 'correct_params'):
                 print('correct the params of {0}'.format(m.__name__))
                 m.correct_params()
             # if isinstance(m, (WConv2d, WLinear)):
@@ -93,7 +93,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
         for m in self.modules():
             if m is self:
                 continue
-            if callable(getattr(m, 'correct_grads')):
+            if hasattr(m, 'correct_grads'):
                 m.correct_grads()
             # if isinstance(m, (WConv2d, WLinear)):
             #     m.correct_grads()

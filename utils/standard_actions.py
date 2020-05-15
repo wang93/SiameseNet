@@ -3,6 +3,7 @@ import os
 import random
 import subprocess
 import sys
+import time
 
 import numpy as np
 import torch
@@ -57,9 +58,7 @@ def prepare_running(**kwargs):
     return opt
 
 
-
 def print_time(func):
-    import time
 
     def wrapper(*args, **kwargs):
         print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))

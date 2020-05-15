@@ -182,12 +182,18 @@ class ResLinearBraidBlock(nn.Module):
                                 affine=True,
                                 track_running_stats=True)
         self.relu = nn.ReLU(inplace=True)
+        self.wbn2 = WBatchNorm1d(channel_out,
+                                 eps=1e-05,
+                                 momentum=0.1,
+                                 affine=True,
+                                 track_running_stats=True)
 
     def forward(self, x):
         y = self.wlinear(x)
         y = self.wbn(y)
+        y = self.relu(y)
         z = x + y
-        z = self.relu(z)
+        z = self.wbn2(z)
 
         return z
 

@@ -84,7 +84,6 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
             if m is self:
                 continue
             if hasattr(m, 'correct_params'):
-                print('correct the params of {0}'.format(m.__name__))
                 m.correct_params()
             # if isinstance(m, (WConv2d, WLinear)):
             #     m.correct_params()

@@ -176,8 +176,10 @@ class ReIDEvaluator:
         return all_cmc.numpy(), mAP.item()
 
     @staticmethod
-    def get_eer(fpr, tpr, thresholds, left=0, right=None):
+    def get_eer(fpr, tpr, thresholds, left=None, right=None):
         if right is None:
+            left = 0
+
             if len(fpr) != len(tpr) or len(fpr) != len(thresholds):
                 raise ValueError
 
@@ -192,8 +194,13 @@ class ReIDEvaluator:
                 return eer, thresh
 
         if right - left <= 1:
-            eer = (2 + fpr[left] - tpr[left] + fpr[right] - tpr[right]) / 4.
-            thresh = (thresholds[left] + thresholds[right]) / 2.
+            margin_left = 1. - fpr[left] - tpr[left]
+            margin_right = tpr[right] - 1. + fpr[right]
+            margin_all = margin_left + margin_right
+            eer = (fpr[left] * margin_left + fpr[right] * margin_right) / margin_all
+            thresh = (thresholds[left] * margin_left + thresholds[right] * margin_right) / margin_all
+            # eer = (2 + fpr[left] - tpr[left] + fpr[right] - tpr[right]) / 4.
+            # thresh = (thresholds[left] + thresholds[right]) / 2.
             return eer, thresh
 
         mid = (left + right) // 2

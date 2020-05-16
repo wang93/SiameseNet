@@ -36,8 +36,6 @@ class ReIDEvaluator:
         self.phase_num = phase_num
         self.minors_num = minors_num
 
-        # self.batch_size = self.queryloader.batch_size
-
     def _save_top10_results(self, distmat, g_pids, q_pids, g_camids, q_camids, fig_dir):
         print("Saving visualization figures")
 
@@ -85,8 +83,25 @@ class ReIDEvaluator:
             plt.close(fig)
 
     def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True):
-        cmc, mAP = self.get_cmc_map(distmat, q_pids, g_pids, q_camids, g_camids)
-        threshold, eer = self.eer_func_gpu(distmat, q_pids, g_pids, q_camids, g_camids)
+        num_q, num_g = distmat.size()
+        scores, indices = torch.sort(distmat, dim=1)
+        labels = g_pids[indices] == q_pids.view([num_q, -1])
+        keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
+
+        labels_ = []
+        scores_ = []
+        for i in range(num_q):
+            m = labels[i][keep[i]]
+            s = scores[i][keep[i]]
+            if m.any():
+                labels_.append(m)
+                scores_.append(s)
+
+        labels = torch.cat(labels_, dim=0).float()
+        scores = - torch.cat(scores_, dim=0)
+
+        cmc, mAP = self.get_cmc_map(labels)
+        threshold, eer = self.get_eer(labels, scores)
 
         if immidiate:
             print("----------- Evaluation Report ----------")
@@ -147,22 +162,31 @@ class ReIDEvaluator:
         return cmc[0]
 
     @staticmethod
-    def get_cmc_map(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
-        num_q, num_g = distmat.size()
-        if num_g < max_rank:
-            max_rank = num_g
-            print("Note: number of gallery samples is quite small, got {}".format(num_g))
-        _, indices = torch.sort(distmat, dim=1)
-        matches = g_pids[indices] == q_pids.view([num_q, -1])
-        keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
-        # keep = g_camids[indices]  != q_camids.view([num_q, -1])
+    def get_cmc_map(labels, max_rank=50):
+        # num_q, num_g = distmat.size()
+        # if num_g < max_rank:
+        #     max_rank = num_g
+        #     print("Note: number of gallery samples is quite small, got {}".format(num_g))
+        # _, indices = torch.sort(distmat, dim=1)
+        # matches = g_pids[indices] == q_pids.view([num_q, -1])
+        # keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
+        # # keep = g_camids[indices]  != q_camids.view([num_q, -1])
+        # results = []
+        # num_rel = []
+        # for i in range(num_q):
+        #     m = matches[i][keep[i]]
+        #     if m.any():
+        #         num_rel.append(m.sum())
+        #         results.append(m[:max_rank].unsqueeze(0))
+        # matches = torch.cat(results, dim=0).float()
+        # num_rel = torch.Tensor(num_rel)
+
         results = []
         num_rel = []
-        for i in range(num_q):
-            m = matches[i][keep[i]]
-            if m.any():
-                num_rel.append(m.sum())
-                results.append(m[:max_rank].unsqueeze(0))
+        for m in labels:
+            num_rel.append(m.sum())
+            results.append(m[:max_rank].unsqueeze(0))
+
         matches = torch.cat(results, dim=0).float()
         num_rel = torch.Tensor(num_rel)
 
@@ -177,10 +201,8 @@ class ReIDEvaluator:
         return all_cmc.numpy(), mAP.item()
 
     @staticmethod
-    def get_eer(fpr, tpr, thresholds):
-
-        if len(fpr) != len(tpr) or len(fpr) != len(thresholds):
-            raise ValueError
+    def get_eer(matches, scores):
+        fpr, tpr, thresholds = roc_curve(matches.numpy(), scores.numpy(), pos_label=1.)
 
         left = 0
         right = len(fpr) - 1
@@ -208,40 +230,6 @@ class ReIDEvaluator:
                 right = mid
             else:
                 left = mid
-
-    def eer_func_gpu(self, distmat, q_pids, g_pids, q_camids, g_camids):
-        num_q, num_g = distmat.size()
-        scores, indices = torch.sort(distmat, dim=1)
-        matches = g_pids[indices] == q_pids.view([num_q, -1])
-        keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
-        # keep = g_camids[indices]  != q_camids.view([num_q, -1])
-
-        results = []
-        scores_ = []
-        for i in range(num_q):
-            m = matches[i][keep[i]]
-            s = scores[i][keep[i]]
-            if m.any():
-                results.append(m)
-                scores_.append(s)
-        matches = torch.cat(results, dim=0).float()
-        scores_ = - torch.cat(scores_, dim=0)
-
-        fpr, tpr, thresholds = roc_curve(matches.numpy(), scores_.numpy(), pos_label=1.)
-        eer, thresh = self.get_eer(fpr, tpr, thresholds)
-
-        # for i, (fpr_, tpr_) in enumerate(zip(fpr, tpr)):
-        #     if 1. - fpr_ < tpr_:
-        #         break
-        #
-        # i = max(i, 1)
-        # eer = (2 + fpr[i] + fpr[i - 1] - tpr[i] - tpr[i - 1]) / 4.
-        # thresh = (thresholds[i] + thresholds[i - 1]) / 2
-
-        # eer = brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
-        # thresh = interp1d(fpr, thresholds)(eer)
-
-        return thresh, eer
 
     def _parse_data(self, inputs):
         imgs, pids, camids = inputs

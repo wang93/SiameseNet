@@ -100,8 +100,8 @@ class ReIDEvaluator:
         labels = torch.cat(labels_, dim=0).float()
         scores = - torch.cat(scores_, dim=0)
 
-        cmc, mAP = self.get_cmc_map(labels)
-        threshold, eer = self.get_eer(labels, scores)
+        cmc, mAP = self._get_cmc_map(labels)
+        threshold, eer = self._get_eer(labels, scores)
 
         if immidiate:
             print("----------- Evaluation Report ----------")
@@ -162,7 +162,7 @@ class ReIDEvaluator:
         return cmc[0]
 
     @staticmethod
-    def get_cmc_map(labels, max_rank=50):
+    def _get_cmc_map(labels, max_rank=50):
         # num_q, num_g = distmat.size()
         # if num_g < max_rank:
         #     max_rank = num_g
@@ -185,7 +185,7 @@ class ReIDEvaluator:
         num_rel = []
         for m in labels:
             num_rel.append(m.sum())
-            results.append(m[:max_rank].unsqueeze(0))
+            results.append(m[:max_rank])
 
         matches = torch.cat(results, dim=0).float()
         num_rel = torch.Tensor(num_rel)
@@ -201,7 +201,7 @@ class ReIDEvaluator:
         return all_cmc.numpy(), mAP.item()
 
     @staticmethod
-    def get_eer(matches, scores):
+    def _get_eer(matches, scores):
         fpr, tpr, thresholds = roc_curve(matches.numpy(), scores.numpy(), pos_label=1.)
 
         left = 0

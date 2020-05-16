@@ -162,7 +162,7 @@ class ReIDEvaluator:
         return cmc[0]
 
     @staticmethod
-    def _get_cmc_map(labels, max_rank=50):
+    def _get_cmc_map(matches, max_rank=50):
         # num_q, num_g = distmat.size()
         # if num_g < max_rank:
         #     max_rank = num_g
@@ -181,14 +181,17 @@ class ReIDEvaluator:
         # matches = torch.cat(results, dim=0).float()
         # num_rel = torch.Tensor(num_rel)
 
-        results = []
-        num_rel = []
-        for m in labels:
-            num_rel.append(m.sum())
-            results.append(m[:max_rank])
+        # results = []
+        # num_rel = []
+        # for m in labels:
+        #     num_rel.append(m.sum())
+        #     results.append(m[:max_rank])
+        #
+        # matches = torch.cat(results, dim=0).float()
+        # num_rel = torch.Tensor(num_rel)
 
-        matches = torch.cat(results, dim=0).float()
-        num_rel = torch.Tensor(num_rel)
+        num_rel = torch.sum(matches, dim=(1,))
+        matches = matches[:, :max_rank]
 
         cmc = matches.cumsum(dim=1)
         cmc[cmc > 1] = 1
@@ -231,7 +234,8 @@ class ReIDEvaluator:
             else:
                 left = mid
 
-    def _parse_data(self, inputs):
+    @staticmethod
+    def _parse_data(inputs):
         imgs, pids, camids = inputs
         return imgs.cuda(), pids, camids
 

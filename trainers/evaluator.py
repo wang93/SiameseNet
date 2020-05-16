@@ -193,23 +193,20 @@ class ReIDEvaluator:
                 thresh = thresholds[left] / 2.
                 return eer, thresh
 
-        if right - left <= 1:
-            margin_left = 1. - fpr[left] - tpr[left]
-            margin_right = tpr[right] - 1. + fpr[right]
-            margin_all = margin_left + margin_right
-            eer = (fpr[left] * margin_left + fpr[right] * margin_right) / margin_all
-            thresh = (thresholds[left] * margin_left + thresholds[right] * margin_right) / margin_all
-            # eer = (2 + fpr[left] - tpr[left] + fpr[right] - tpr[right]) / 4.
-            # thresh = (thresholds[left] + thresholds[right]) / 2.
-            return eer, thresh
+        while True:
+            if right - left <= 1:
+                margin_left = 1. - fpr[left] - tpr[left]
+                margin_right = tpr[right] - 1. + fpr[right]
+                margin_all = margin_left + margin_right
+                eer = (fpr[left] * margin_left + fpr[right] * margin_right) / margin_all
+                thresh = (thresholds[left] * margin_left + thresholds[right] * margin_right) / margin_all
+                return eer, thresh
 
-        mid = (left + right) // 2
-        if 1 - fpr[mid] <= tpr[mid]:
-            right = mid
-        else:
-            left = mid
-
-        return ReIDEvaluator.get_eer(fpr, tpr, thresholds, left, right)
+            mid = (left + right) // 2
+            if 1 - fpr[mid] <= tpr[mid]:
+                right = mid
+            else:
+                left = mid
 
     def eer_func_gpu(self, distmat, q_pids, g_pids, q_camids, g_camids):
         num_q, num_g = distmat.size()

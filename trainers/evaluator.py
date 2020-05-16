@@ -89,19 +89,19 @@ class ReIDEvaluator:
         keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
 
         matches = []
-        scores = []
+        predictions = []
         for i in range(num_q):
             m = labels[i][keep[i]]
             s = scores[i][keep[i]]
             if m.any():
                 matches.append(m.float())
-                scores.append(-s)
+                predictions.append(-s)
 
         # labels = torch.cat(labels_, dim=1).float()
         # scores = - torch.cat(scores_, dim=1)
 
         cmc, mAP = self._get_cmc_map(matches)
-        threshold, eer = self._get_eer(matches, scores)
+        threshold, eer = self._get_eer(matches, predictions)
 
         if immidiate:
             print("----------- Evaluation Report ----------")

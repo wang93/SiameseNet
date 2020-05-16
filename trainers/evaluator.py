@@ -94,14 +94,14 @@ class ReIDEvaluator:
             m = labels[i][keep[i]]
             s = scores[i][keep[i]]
             if m.any():
-                labels_.append(m)
-                scores_.append(s)
+                labels_.append(m.float())
+                scores_.append(-s)
 
-        labels = torch.cat(labels_, dim=1).float()
-        scores = - torch.cat(scores_, dim=1)
+        # labels = torch.cat(labels_, dim=1).float()
+        # scores = - torch.cat(scores_, dim=1)
 
-        cmc, mAP = self._get_cmc_map(labels)
-        threshold, eer = self._get_eer(labels, scores)
+        cmc, mAP = self._get_cmc_map(labels_)
+        threshold, eer = self._get_eer(labels_, scores_)
 
         if immidiate:
             print("----------- Evaluation Report ----------")
@@ -181,17 +181,17 @@ class ReIDEvaluator:
         # matches = torch.cat(results, dim=0).float()
         # num_rel = torch.Tensor(num_rel)
 
-        # results = []
-        # num_rel = []
-        # for m in labels:
-        #     num_rel.append(m.sum())
-        #     results.append(m[:max_rank])
-        #
-        # matches = torch.cat(results, dim=0).float()
-        # num_rel = torch.Tensor(num_rel)
+        results = []
+        num_rel = []
+        for m in matches:
+            num_rel.append(m.sum())
+            results.append(m[:max_rank])
 
-        num_rel = torch.sum(matches, dim=(1,))
-        matches = matches[:, :max_rank]
+        matches = torch.cat(results, dim=1)
+        num_rel = torch.Tensor(num_rel)
+
+        # num_rel = torch.sum(matches, dim=(1,))
+        # matches = matches[:, :max_rank]
 
         cmc = matches.cumsum(dim=1)
         cmc[cmc > 1] = 1
@@ -205,8 +205,9 @@ class ReIDEvaluator:
 
     @staticmethod
     def _get_eer(matches, scores):
-        matches = matches.view(-1).numpy()
-        scores = scores.view(-1).numpy()
+        matches = torch.cat(matches, dim=0).numpy()
+        scores = torch.cat(scores, dim=0).numpy()
+
         fpr, tpr, thresholds = roc_curve(matches, scores, pos_label=1.)
 
         left = 0

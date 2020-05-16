@@ -196,7 +196,7 @@ class ReIDEvaluator:
         right = len(fpr) - 1
 
         if 1 - fpr[right] > tpr[right]:
-            return None, None
+            return 1., thresholds[right]
 
         if 1 - fpr[left] <= tpr[left]:
             print('Warning: eer estimation may be not accurate enough')
@@ -209,7 +209,8 @@ class ReIDEvaluator:
                 margin_left = 1. - fpr[left] - tpr[left]
                 margin_right = tpr[right] - 1. + fpr[right]
                 margin_all = margin_left + margin_right
-                if margin_all == 0:
+                assert margin_all >= 0.
+                if margin_all == 0.:
                     margin_left = 1.
                     margin_right = 1.
                     margin_all = 2.

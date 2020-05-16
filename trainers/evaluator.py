@@ -191,7 +191,7 @@ class ReIDEvaluator:
                 thresh = thresholds[left] / 2.
                 return eer, thresh
 
-        if right - left == 1:
+        if right - left <= 1:
             eer = (2 + fpr[left] - tpr[left] + fpr[right] - tpr[right]) / 4.
             thresh = (thresholds[left] + thresholds[right]) / 2.
             return eer, thresh

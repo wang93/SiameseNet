@@ -169,18 +169,47 @@ class ReIDEvaluator:
         cmc[cmc > 1] = 1
         all_cmc = cmc.sum(dim=0) / cmc.size(0)
 
-        pos = torch.Tensor(range(1, max_rank+1))
+        pos = torch.Tensor(range(1, max_rank + 1))
         temp_cmc = matches.cumsum(dim=1) / pos * matches
         AP = temp_cmc.sum(dim=1) / num_rel
         mAP = AP.sum() / AP.size(0)
         return all_cmc.numpy(), mAP.item()
+
+    @staticmethod
+    def get_eer(fpr, tpr, thresholds, left=0, right=None):
+        if right is None:
+            if len(fpr) != len(tpr) or len(fpr) != len(thresholds):
+                raise ValueError
+
+            right = len(fpr) - 1
+            if 1 - fpr[right] > tpr[right]:
+                return None, None
+
+            if 1 - fpr[left] <= tpr[left]:
+                print('eer estimation may be not accurate enough')
+                eer = (1 + fpr[left] - tpr[left]) / 4.
+                thresh = thresholds[left] / 2.
+                return eer, thresh
+
+        if right - left == 1:
+            eer = (2 + fpr[left] - tpr[left] + fpr[right] - tpr[right]) / 4.
+            thresh = (thresholds[left] + thresholds[right]) / 2.
+            return eer, thresh
+
+        mid = (left + right) // 2
+        if 1 - fpr[mid] <= tpr[mid]:
+            right = mid
+        else:
+            left = mid
+
+        return ReIDEvaluator.get_eer(fpr, tpr, thresholds, left, right)
 
     def eer_func_gpu(self, distmat, q_pids, g_pids, q_camids, g_camids):
         num_q, num_g = distmat.size()
         scores, indices = torch.sort(distmat, dim=1)
         matches = g_pids[indices] == q_pids.view([num_q, -1])
         keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
-        #keep = g_camids[indices]  != q_camids.view([num_q, -1])
+        # keep = g_camids[indices]  != q_camids.view([num_q, -1])
 
         results = []
         scores_ = []
@@ -194,13 +223,15 @@ class ReIDEvaluator:
         scores_ = - torch.cat(scores_, dim=0)
 
         fpr, tpr, thresholds = roc_curve(matches.numpy(), scores_.numpy(), pos_label=1.)
-        for i, (fpr_, tpr_) in enumerate(zip(fpr, tpr)):
-            if 1. - fpr_ < tpr_:
-                break
+        eer, thresh = self.get_eer(fpr, tpr, thresholds)
 
-        i = max(i, 1)
-        eer = (2 + fpr[i] + fpr[i - 1] - tpr[i] - tpr[i - 1]) / 4.
-        thresh = (thresholds[i] + thresholds[i - 1]) / 2
+        # for i, (fpr_, tpr_) in enumerate(zip(fpr, tpr)):
+        #     if 1. - fpr_ < tpr_:
+        #         break
+        #
+        # i = max(i, 1)
+        # eer = (2 + fpr[i] + fpr[i - 1] - tpr[i] - tpr[i - 1]) / 4.
+        # thresh = (thresholds[i] + thresholds[i - 1]) / 2
 
         # eer = brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
         # thresh = interp1d(fpr, thresholds)(eer)

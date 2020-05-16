@@ -4,7 +4,7 @@ from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
 from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair
-from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d, ReLU
+from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
            'BraidBlock', 'LinearBraidBlock', 'SumY',
@@ -158,7 +158,7 @@ class DenseLinearBraidBlock(nn.Module):
                                 momentum=0.1,
                                 affine=True,
                                 track_running_stats=True)
-        self.relu = ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=True)
         self.cat = CatBraids()
 
     def forward(self, x):

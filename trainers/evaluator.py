@@ -97,8 +97,8 @@ class ReIDEvaluator:
                 labels_.append(m)
                 scores_.append(s)
 
-        labels = torch.cat(labels_, dim=0).float()
-        scores = - torch.cat(scores_, dim=0)
+        labels = torch.cat(labels_, dim=1).float()
+        scores = - torch.cat(scores_, dim=1)
 
         cmc, mAP = self._get_cmc_map(labels)
         threshold, eer = self._get_eer(labels, scores)
@@ -205,7 +205,9 @@ class ReIDEvaluator:
 
     @staticmethod
     def _get_eer(matches, scores):
-        fpr, tpr, thresholds = roc_curve(matches.numpy(), scores.numpy(), pos_label=1.)
+        matches = matches.view(-1).numpy()
+        scores = scores.view(-1).numpy()
+        fpr, tpr, thresholds = roc_curve(matches, scores, pos_label=1.)
 
         left = 0
         right = len(fpr) - 1

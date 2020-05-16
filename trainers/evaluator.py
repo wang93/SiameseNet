@@ -101,7 +101,7 @@ class ReIDEvaluator:
         # scores = - torch.cat(scores_, dim=1)
 
         cmc, mAP = self._get_cmc_map(matches)
-        threshold, eer = self._get_eer(matches, predictions)
+        eer, threshold = self._get_eer(matches, predictions)
 
         if immidiate:
             print("----------- Evaluation Report ----------")

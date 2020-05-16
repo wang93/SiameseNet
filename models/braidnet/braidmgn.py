@@ -1,5 +1,4 @@
 import copy
-from itertools import chain
 
 import torch
 import torch.nn as nn
@@ -229,9 +228,9 @@ class BraidMGN(BraidProto):
         for model in [self.bi.backone, self.bi.p1, self.bi.p2, self.bi.p3]:
             model.train(pretrained_training)
 
-        for model in chain(self.bi.backone.modules(), self.bi.p1.modules(), self.bi.p2.modules(), self.bi.p3.modules()):
-            if isinstance(model, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-                model.train(False)
+        # for model in chain(self.bi.backone.modules(), self.bi.p1.modules(), self.bi.p2.modules(), self.bi.p3.modules()):
+        #     if isinstance(model, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+        #         model.train(False)
 
         return self
 

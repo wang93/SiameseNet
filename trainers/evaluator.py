@@ -163,24 +163,6 @@ class ReIDEvaluator:
 
     @staticmethod
     def _get_cmc_map(matches, max_rank=50):
-        # num_q, num_g = distmat.size()
-        # if num_g < max_rank:
-        #     max_rank = num_g
-        #     print("Note: number of gallery samples is quite small, got {}".format(num_g))
-        # _, indices = torch.sort(distmat, dim=1)
-        # matches = g_pids[indices] == q_pids.view([num_q, -1])
-        # keep = ~((g_pids[indices] == q_pids.view([num_q, -1])) & (g_camids[indices] == q_camids.view([num_q, -1])))
-        # # keep = g_camids[indices]  != q_camids.view([num_q, -1])
-        # results = []
-        # num_rel = []
-        # for i in range(num_q):
-        #     m = matches[i][keep[i]]
-        #     if m.any():
-        #         num_rel.append(m.sum())
-        #         results.append(m[:max_rank].unsqueeze(0))
-        # matches = torch.cat(results, dim=0).float()
-        # num_rel = torch.Tensor(num_rel)
-
         results = []
         num_rel = []
         for m in matches:

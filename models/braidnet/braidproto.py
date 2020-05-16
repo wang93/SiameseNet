@@ -85,8 +85,6 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                 continue
             if hasattr(m, 'correct_params'):
                 m.correct_params()
-            # if isinstance(m, (WConv2d, WLinear)):
-            #     m.correct_params()
 
     def correct_grads(self):
         for m in self.modules():
@@ -94,8 +92,6 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                 continue
             if hasattr(m, 'correct_grads'):
                 m.correct_grads()
-            # if isinstance(m, (WConv2d, WLinear)):
-            #     m.correct_grads()
 
     def zero_tail_weight(self):
         nn.init.constant_(self.fc[-1].fc.weight, 0.0)

@@ -176,22 +176,22 @@ class ReIDEvaluator:
         return all_cmc.numpy(), mAP.item()
 
     @staticmethod
-    def get_eer(fpr, tpr, thresholds, left=None, right=None):
-        if right is None:
-            left = 0
+    def get_eer(fpr, tpr, thresholds):
 
-            if len(fpr) != len(tpr) or len(fpr) != len(thresholds):
-                raise ValueError
+        if len(fpr) != len(tpr) or len(fpr) != len(thresholds):
+            raise ValueError
 
-            right = len(fpr) - 1
-            if 1 - fpr[right] > tpr[right]:
-                return None, None
+        left = 0
+        right = len(fpr) - 1
 
-            if 1 - fpr[left] <= tpr[left]:
-                print('eer estimation may be not accurate enough')
-                eer = (1 + fpr[left] - tpr[left]) / 4.
-                thresh = thresholds[left] / 2.
-                return eer, thresh
+        if 1 - fpr[right] > tpr[right]:
+            return None, None
+
+        if 1 - fpr[left] <= tpr[left]:
+            print('Warning: eer estimation may be not accurate enough')
+            eer = (1 + fpr[left] - tpr[left]) / 4.
+            thresh = thresholds[left] / 2.
+            return eer, thresh
 
         while True:
             if right - left <= 1:

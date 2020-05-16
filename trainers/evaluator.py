@@ -209,8 +209,13 @@ class ReIDEvaluator:
                 margin_left = 1. - fpr[left] - tpr[left]
                 margin_right = tpr[right] - 1. + fpr[right]
                 margin_all = margin_left + margin_right
-                eer = (fpr[left] * margin_left + fpr[right] * margin_right) / margin_all
-                thresh = (thresholds[left] * margin_left + thresholds[right] * margin_right) / margin_all
+                if margin_all == 0:
+                    margin_left = 1.
+                    margin_right = 1.
+                    margin_all = 2.
+
+                eer = (fpr[left] * margin_right + fpr[right] * margin_left) / margin_all
+                thresh = (thresholds[left] * margin_right + thresholds[right] * margin_left) / margin_all
                 return eer, thresh
 
             mid = (left + right) // 2

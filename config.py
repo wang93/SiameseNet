@@ -43,6 +43,7 @@ class DefaultConfig(object):
     eval_phase_num = 1  # 1 / 2
     test_pids_num = -1  # = <0 when don't change test set
     eval_minors_num = 0  # <=0 when evaluation on the whole test set once
+    eval_fast = False  # each query id has only one image for evaluation
 
     # model options
     model_name = 'braidmgn'  # braidnet, braidmgn, densebraidmgn

@@ -24,17 +24,18 @@ from datasets.samplers import PosNegPairSampler
 
 
 class ReIDEvaluator:
-    def __init__(self, model, exp_dir, queryloader, galleryloader, queryFliploader, galleryFliploader, phase_num=1,
-                 minors_num=0, ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
+    def __init__(self, model, opt, queryloader, galleryloader, queryFliploader, galleryFliploader,
+                 ranks=(1, 2, 4, 5, 8, 10, 16, 20)):
         self.model = model
-        self.fig_dir = os.path.join(exp_dir, 'visualize')
+        self.opt = opt
+        self.fig_dir = os.path.join(opt.exp_dir, 'visualize')
         self.queryloader = queryloader
         self.galleryloader = galleryloader
         self.queryFliploader = queryFliploader
         self.galleryFliploader = galleryFliploader
         self.ranks = ranks
-        self.phase_num = phase_num
-        self.minors_num = minors_num
+        # self.phase_num = phase_num
+        # self.minors_num = minors_num
 
     def _save_top10_results(self, distmat, g_pids, q_pids, g_camids, q_camids, fig_dir):
         print("Saving visualization figures")
@@ -82,7 +83,7 @@ class ReIDEvaluator:
             fig.savefig(os.path.join(fig_dir, '%d.png' % q_pids[i]), bbox_inches='tight')
             plt.close(fig)
 
-    def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True):
+    def measure_scores(self, distmat, q_pids, g_pids, q_camids, g_camids):
         num_q, num_g = distmat.size()
         scores, indices = torch.sort(distmat, dim=1)
         labels = g_pids[indices] == q_pids.view([num_q, -1])
@@ -97,26 +98,13 @@ class ReIDEvaluator:
                 matches.append(m.float())
                 predictions.append(-s)
 
-        # labels = torch.cat(labels_, dim=1).float()
-        # scores = - torch.cat(scores_, dim=1)
-
         cmc, mAP = self._get_cmc_map(matches)
         eer, threshold = self._get_eer(matches, predictions)
 
-        if immidiate:
-            print("----------- Evaluation Report ----------")
-            print("mAP: {:.1%}".format(mAP))
-            print("CMC curve")
-            for r in self.ranks:
-                print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
-            print("EER: {:.1%}, corresponding threshold: {:.3f}".format(eer, threshold))
-            print("----------------------------------------")
-            return cmc[0]
-        else:
-            return mAP, cmc, eer, threshold
+        return mAP, cmc, eer, threshold
 
     def measure_scores_on_minors(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
-        print('average evaluation results on {0} testset minors'.format(self.minors_num))
+        print('average evaluation results on {0} testset minors'.format(self.opt.minors_num))
         qpid2index = defaultdict(list)
         gpid2index = defaultdict(list)
         q_pids_all = q_pids_all.tolist()
@@ -132,14 +120,14 @@ class ReIDEvaluator:
         g_pids = torch.Tensor(pids)
 
         cmcs, mAPs, thresholds, eers = [], [], [], []
-        for _ in range(self.minors_num):
+        for _ in range(self.opt.minors_num):
             q_indices = torch.LongTensor([randchoice(qpid2index[pid]) for pid in pids])
             g_indices = torch.LongTensor([randchoice(gpid2index[pid]) for pid in pids])
             q_camids = q_camids_all[q_indices]
             g_camids = g_camids_all[g_indices]
             distmat = distmat_all[q_indices, :][:, g_indices]
 
-            mAP_, cmc_, eer_, threshold_ = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=False)
+            mAP_, cmc_, eer_, threshold_ = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
 
             mAPs.append(mAP_)
             cmcs.append(cmc_)
@@ -151,15 +139,26 @@ class ReIDEvaluator:
         threshold = np.mean(thresholds)
         eer = np.mean(eers)
 
-        print("---------- Evaluation Report ----------")
-        print("mAP: {:.1%}".format(mAP))
-        print("CMC curve")
-        for r in self.ranks:
-            print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
-        print("EER: {:.1%}, with threshold: {:.3f}".format(eer, threshold))
-        print("----------------------------------------")
+        return cmc, mAP, eer, threshold
 
-        return cmc[0]
+    def measure_scores_fast(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
+        print('each query id has only one image for evaluation')
+        qpid2index = defaultdict(list)
+        q_pids_all = q_pids_all.tolist()
+        for i, qpid in enumerate(q_pids_all):
+            qpid2index[qpid].append(i)
+
+        pids = list(set(q_pids_all))
+
+        q_pids = torch.Tensor(pids)
+
+        q_indices = torch.LongTensor([randchoice(qpid2index[pid]) for pid in pids])
+        q_camids = q_camids_all[q_indices]
+        distmat = distmat_all[q_indices, :]
+
+        mAP, cmc, eer, threshold = self.measure_scores(distmat, q_pids, g_pids_all, q_camids, g_camids_all)
+
+        return mAP, cmc, eer, threshold
 
     @staticmethod
     def _get_cmc_map(matches, max_rank=50):
@@ -319,13 +318,22 @@ class ReIDEvaluator:
     def evaluate(self, eval_flip=False, re_ranking=False):
         q_pids, q_camids, g_pids, g_camids = self._get_labels()
         distmat = self._get_dist_matrix(flip_fuse=eval_flip, re_ranking=re_ranking)
-
-        if self.minors_num <= 0:
-            rank1 = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids, immidiate=True)
+        if self.opt.eval_fast:
+            mAP, cmc, eer, threshold = self.measure_scores_fast(distmat, q_pids, g_pids, q_camids, g_camids)
+        elif self.opt.minors_num <= 0:
+            mAP, cmc, eer, threshold = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
         else:
-            rank1 = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
+            mAP, cmc, eer, threshold = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
 
-        return rank1
+        print("---------- Evaluation Report ----------")
+        print("mAP: {:.1%}".format(mAP))
+        print("CMC curve")
+        for r in self.ranks:
+            print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
+        print("EER: {:.1%}, with threshold: {:.3f}".format(eer, threshold))
+        print("----------------------------------------")
+
+        return cmc[0]
 
     def visualize(self, eval_flip=False, re_ranking=False):
         q_pids, q_camids, g_pids, g_camids = self._get_labels()
@@ -347,7 +355,7 @@ class ReIDEvaluator:
 
         with torch.no_grad():
 
-            if self.phase_num == 1:
+            if self.opt.phase_num == 1:
                 q_g_dist = - self._compare_images(self.queryloader, self.galleryloader)
 
                 if flip_fuse:
@@ -356,7 +364,7 @@ class ReIDEvaluator:
                     q_g_dist -= self._compare_images(self.queryFliploader, self.galleryFliploader)
                     q_g_dist /= 4.0
 
-            elif self.phase_num == 2:
+            elif self.opt.phase_num == 2:
                 '''phase one'''
                 query_features = self._get_feature(self.queryloader)
                 gallery_features = self._get_feature(self.galleryloader)

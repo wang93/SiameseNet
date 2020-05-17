@@ -139,7 +139,7 @@ class ReIDEvaluator:
         threshold = np.mean(thresholds)
         eer = np.mean(eers)
 
-        return cmc, mAP, eer, threshold
+        return mAP, cmc, eer, threshold
 
     def measure_scores_fast(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
         print('each query id has only one image for evaluation')

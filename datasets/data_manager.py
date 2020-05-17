@@ -26,6 +26,15 @@ class __Dataset(object):
     query = []
     gallery = []
 
+    def reduce_query(self):
+        print('reduce the query set by remaining one image for each query')
+        qpid2index = defaultdict(list)
+        for i, r in enumerate(self.query):
+            qpid2index[r[0]].append(i)
+
+        keep_indices = [random.choice(indices) for _, indices in qpid2index.items()]
+        self.query = [self.query[i] for i in keep_indices]
+
     @abstractmethod
     def __init__(self):
         pass

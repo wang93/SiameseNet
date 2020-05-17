@@ -16,6 +16,9 @@ def get_dataloaders(opt, model_meta):
     if opt.test_pids_num >= 0:
         dataset.subtest2train(opt.test_pids_num)
 
+    if opt.eval_fast:
+        dataset.reduce_query()
+
     dataset.print_summary()
 
     pin_memory = True

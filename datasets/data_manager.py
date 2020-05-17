@@ -30,7 +30,7 @@ class __Dataset(object):
         print('reduce the query set by remaining one image for each query')
         qpid2index = defaultdict(list)
         for i, r in enumerate(self.query):
-            qpid2index[r[0]].append(i)
+            qpid2index[r[1]].append(i)
 
         keep_indices = [random.choice(indices) for _, indices in qpid2index.items()]
         self.query = [self.query[i] for i in keep_indices]

@@ -104,7 +104,7 @@ class ReIDEvaluator:
         return mAP, cmc, eer, threshold
 
     def measure_scores_on_minors(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
-        print('average evaluation results on {0} testset minors'.format(self.opt.minors_num))
+        print('average evaluation results on {0} testset minors'.format(self.opt.eval_minors_num))
         qpid2index = defaultdict(list)
         gpid2index = defaultdict(list)
         q_pids_all = q_pids_all.tolist()
@@ -120,7 +120,7 @@ class ReIDEvaluator:
         g_pids = torch.Tensor(pids)
 
         cmcs, mAPs, thresholds, eers = [], [], [], []
-        for _ in range(self.opt.minors_num):
+        for _ in range(self.opt.eval_minors_num):
             q_indices = torch.LongTensor([randchoice(qpid2index[pid]) for pid in pids])
             g_indices = torch.LongTensor([randchoice(gpid2index[pid]) for pid in pids])
             q_camids = q_camids_all[q_indices]
@@ -304,6 +304,10 @@ class ReIDEvaluator:
         dataloader.batch_sampler.drop_last = False
         dataloader._DataLoader__initialized = True
 
+    @staticmethod
+    def _thinner_dataloader(loader):
+        pass
+
     def _get_feature(self, dataloader):
         with torch.no_grad():
             fun = lambda d: self.model(d, None, mode='extract')
@@ -320,7 +324,7 @@ class ReIDEvaluator:
         distmat = self._get_dist_matrix(flip_fuse=eval_flip, re_ranking=re_ranking)
         if self.opt.eval_fast:
             mAP, cmc, eer, threshold = self.measure_scores_fast(distmat, q_pids, g_pids, q_camids, g_camids)
-        elif self.opt.minors_num <= 0:
+        elif self.opt.eval_minors_num <= 0:
             mAP, cmc, eer, threshold = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
         else:
             mAP, cmc, eer, threshold = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
@@ -355,7 +359,7 @@ class ReIDEvaluator:
 
         with torch.no_grad():
 
-            if self.opt.phase_num == 1:
+            if self.opt.eval_phase_num == 1:
                 q_g_dist = - self._compare_images(self.queryloader, self.galleryloader)
 
                 if flip_fuse:
@@ -364,7 +368,7 @@ class ReIDEvaluator:
                     q_g_dist -= self._compare_images(self.queryFliploader, self.galleryFliploader)
                     q_g_dist /= 4.0
 
-            elif self.opt.phase_num == 2:
+            elif self.opt.eval_phase_num == 2:
                 '''phase one'''
                 query_features = self._get_feature(self.queryloader)
                 gallery_features = self._get_feature(self.galleryloader)

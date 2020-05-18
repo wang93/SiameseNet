@@ -396,7 +396,7 @@ class ReIDEvaluator:
         print('it costs {:.3f} s to compute distance matrix'
               .format(end - start))
 
-        return q_g_dist
+        return q_g_dist.cpu()
 
     def _get_labels(self):
         q_pids, q_camids = [], []

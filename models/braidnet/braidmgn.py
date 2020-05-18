@@ -176,7 +176,10 @@ class BraidMGN(BraidProto):
         x = self.y(x)
         x = self.fc(x)
 
-        return self.score2prob(x).mean(dim=1, keepdim=True)
+        if self.training:
+            return self.score2prob(x)
+        else:
+            return self.score2prob(x).mean(dim=1, keepdim=True)
 
         # if self.training:
         #     return self.score2prob(x)
@@ -200,7 +203,10 @@ class BraidMGN(BraidProto):
         x = self.y(x)
         x = self.fc(x)
 
-        return self.score2prob(x).mean(dim=1, keepdim=True)
+        if self.training:
+            return self.score2prob(x)
+        else:
+            return self.score2prob(x).mean(dim=1, keepdim=True)
 
         # if self.training:
         #     return self.score2prob(x)

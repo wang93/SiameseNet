@@ -150,6 +150,7 @@ class CrossSimilarityBCELoss(object):
     def __call__(self, score_mat, labels):
         N = score_mat.size(0)
         is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=score_mat.dtype)
+        is_pos.expand_as(score_mat)
         loss = self.bce_loss(score_mat, is_pos)
         return loss
 

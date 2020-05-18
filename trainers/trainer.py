@@ -193,7 +193,13 @@ class BraidCrossTrainer(BraidPairTrainer):
                               slice_tensor(features, b_indices),
                               mode='metric').squeeze()
 
-        score_mat = torch.zeros((n, n), device=scores_l.device, dtype=scores_l.dtype)
+        if len(scores_l.size()) == 1:
+            score_mat = torch.zeros((n, n), device=scores_l.device, dtype=scores_l.dtype)
+        elif len(scores_l.size()) == 2:
+            score_mat = torch.zeros((n, n, scores_l.size()[1]), device=scores_l.device, dtype=scores_l.dtype)
+        else:
+            raise NotImplementedError
+
         score_mat[a_indices, b_indices] = scores_l
         score_mat[b_indices, a_indices] = scores_l
 

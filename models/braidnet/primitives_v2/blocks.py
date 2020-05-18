@@ -145,7 +145,7 @@ class MMBlock(nn.Module):
                               padding=padding,
                               stride=stride,
                               bias=False)
-        self.wbn = WBatchNorm2d(channel_out,
+        self.wbn = WBatchNorm2d(channel_out * 2,
                                 eps=1e-05,
                                 momentum=0.1,
                                 affine=True,
@@ -196,7 +196,7 @@ class LinearMMBlock(nn.Module):
         super(LinearMMBlock, self).__init__()
 
         self.wlinear = MMLinear(channel_in, channel_out, bias=False)
-        self.wbn = WBatchNorm1d(channel_out,
+        self.wbn = WBatchNorm1d(channel_out * 2,
                                 eps=1e-05,
                                 momentum=0.1,
                                 affine=True,

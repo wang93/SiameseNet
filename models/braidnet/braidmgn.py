@@ -179,7 +179,7 @@ class BraidMGN(BraidProto):
         if self.training:
             return self.score2prob(x)
         else:
-            return self.score2prob(x).mean(dim=1, keepdim=True)
+            return self.score2prob(x).mean(dim=1)
 
         # if self.training:
         #     return self.score2prob(x)
@@ -206,7 +206,7 @@ class BraidMGN(BraidProto):
         if self.training:
             return self.score2prob(x)
         else:
-            return self.score2prob(x).mean(dim=1, keepdim=True)
+            return self.score2prob(x).mean(dim=1)
 
         # if self.training:
         #     return self.score2prob(x)

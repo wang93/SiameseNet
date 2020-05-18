@@ -153,7 +153,7 @@ class CrossSimilarityBCELoss(object):
         if len(score_mat.size()) > 2:
             for _ in range(len(score_mat.size()) - 2):
                 is_pos = is_pos.unsqueeze(2)
-            is_pos.expand_as(score_mat)
+            is_pos = is_pos.expand_as(score_mat)
         loss = self.bce_loss(score_mat, is_pos)
         return loss
 

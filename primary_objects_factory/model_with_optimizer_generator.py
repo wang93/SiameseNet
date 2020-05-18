@@ -14,6 +14,9 @@ def get_model_with_optimizer(opt):
     elif opt.model_name == 'braidmgn':
         from models.braidnet.braidmgn import BraidMGN
         model = BraidMGN(feats=opt.feats, fc=(1,))
+    elif opt.model_name == 'mmbraidmgn':
+        from models.braidnet.braidmgn import MMBraidMGN
+        model = MMBraidMGN(feats=opt.feats, fc=(1,))
     elif opt.model_name == 'densebraidmgn':
         from models.braidnet.braidmgn import DenseBraidMGN
         model = DenseBraidMGN(feats=opt.feats, fc=(1,))

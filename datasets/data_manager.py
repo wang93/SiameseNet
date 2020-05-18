@@ -27,7 +27,7 @@ class __Dataset(object):
     gallery = []
 
     def reduce_query(self):
-        print('reduce the query set by remaining one image for each query')
+        print('reduce the query set by remaining one image for each query id')
         qpid2index = defaultdict(list)
         for i, r in enumerate(self.query):
             qpid2index[r[1]].append(i)

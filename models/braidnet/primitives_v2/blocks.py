@@ -4,10 +4,10 @@ from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
 from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair
-from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d
+from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d, MMConv2d, MMLinear
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
-           'BraidBlock', 'LinearBraidBlock', 'SumY',
+           'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock']
 
 
@@ -131,10 +131,71 @@ class BraidBlock(nn.Module):
         return x
 
 
+class MMBlock(nn.Module):
+    def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1), gap=False):
+        if channel_out % 2:
+            raise ValueError
+        super(MMBlock, self).__init__()
+
+        kernel_size = int2tuple(kernel_size)
+        stride = int2tuple(stride)
+        padding = tuple([(i - 1) // 2 for i in kernel_size])
+        self.wconv = MMConv2d(channel_in, channel_out / 2,
+                              kernel_size=kernel_size,
+                              padding=padding,
+                              stride=stride,
+                              bias=False)
+        self.wbn = WBatchNorm2d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+        if gap:
+            self.pool = nn.AdaptiveAvgPool2d(1)
+
+        else:
+            # self.pool = lambda x: x
+            self.pool = nn.MaxPool2d(kernel_size=[2, 2],
+                                     stride=[2, 2],
+                                     padding=0,
+                                     dilation=1,
+                                     ceil_mode=False)
+
+    def forward(self, x):
+        x = self.wconv(x)
+        x = self.wbn(x)
+        x = [self.relu(i) for i in x]
+        x = [self.pool(i) for i in x]
+        return x
+
+
 class LinearBraidBlock(nn.Module):
     def __init__(self, channel_in, channel_out):
         super(LinearBraidBlock, self).__init__()
         self.wlinear = WLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.wlinear(x)
+        x = self.wbn(x)
+        x = [self.relu(i) for i in x]
+        return x
+
+
+class LinearMMBlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        if channel_out % 2:
+            raise ValueError
+        super(LinearMMBlock, self).__init__()
+
+        self.wlinear = MMLinear(channel_in, channel_out / 2, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
                                 momentum=0.1,

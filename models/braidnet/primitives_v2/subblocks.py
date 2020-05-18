@@ -3,8 +3,8 @@ import torch.nn as nn
 from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
-__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d',
-           'WBatchNorm1d', 'PartPool', 'ReLU']
+__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d',
+           'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear']
 
 POOLS_DICT = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
 
@@ -33,6 +33,43 @@ class WConv2d(nn.Module):
         self.conv_q.weight.data /= 2.
 
 
+class MMConv2d(nn.Module):
+    def __init__(self, in_channels=10, out_channels=10, kernel_size=3, stride=(1, 1),
+                 padding=(1, 1), dilation=1, groups=1, bias=True):
+        super(MMConv2d, self).__init__()
+        if groups != 1:
+            raise NotImplementedError
+
+        self.conv_p = nn.Conv2d(in_channels, out_channels, kernel_size,
+                                stride, padding, dilation, groups, bias)
+
+        self.conv_q = nn.Conv2d(in_channels, out_channels, kernel_size,
+                                stride, padding, dilation, groups, False)
+
+    def forward(self, input_):
+        in_a, in_b = input_
+
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        out_a_max = torch.max(p_a, q_b)
+        out_a_min = torch.min(p_a, q_b)
+
+        out_b_max = torch.max(p_b, q_a)
+        out_b_min = torch.min(p_b, q_a)
+
+        out_a = torch.cat((out_a_max, out_a_min), dim=1)
+        out_b = torch.cat((out_b_max, out_b_min), dim=1)
+
+        return out_a, out_b
+
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
+
+
 class WLinear(nn.Module):
     def __init__(self, in_features, out_features, bias=True):
         super(WLinear, self).__init__()
@@ -43,6 +80,36 @@ class WLinear(nn.Module):
         in_a, in_b = input_
         out_a = self.conv_p(in_a) + self.conv_q(in_b)
         out_b = self.conv_p(in_b) + self.conv_q(in_a)
+        return out_a, out_b
+
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
+
+
+class MMLinear(nn.Module):
+    def __init__(self, in_features, out_features, bias=True):
+        super(MMLinear, self).__init__()
+        self.conv_p = nn.Linear(in_features, out_features, bias)
+        self.conv_q = nn.Linear(in_features, out_features, False)
+
+    def forward(self, input_):
+        in_a, in_b = input_
+
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        out_a_max = torch.max(p_a, q_b)
+        out_a_min = torch.min(p_a, q_b)
+
+        out_b_max = torch.max(p_b, q_a)
+        out_b_min = torch.min(p_b, q_a)
+
+        out_a = torch.cat((out_a_max, out_a_min), dim=1)
+        out_b = torch.cat((out_b_max, out_b_min), dim=1)
+
         return out_a, out_b
 
     def correct_params(self):

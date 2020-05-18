@@ -106,8 +106,8 @@ def get_max_equal_batchsize(fun, *samples):
 
 def get_optimized_batchsize(fun, *samples):
     '''I am not sure that the returned batchsize can make the computaion faster'''
-    max_batchsize = get_max_equal_batchsize(fun, *samples)
-    per_gpu_max_batchsize = max(max_batchsize // GPU_NUM, 1)
+    max_batchsize = get_max_equal_batchsize(fun, *samples) - 1
+    per_gpu_max_batchsize = max(max_batchsize // GPU_NUM - 1, 1)
     per_gpu_opti_batchsize = 2 ** int(math.log2(per_gpu_max_batchsize))
     optimized_batchsize = GPU_NUM * per_gpu_opti_batchsize
 

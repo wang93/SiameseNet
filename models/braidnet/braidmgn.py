@@ -264,10 +264,10 @@ class MMBraidMGN(BraidMGN):
             self.part_braids.append(LinearMMBlock(channel_in, channel_in))
 
         self.braids2braid = CatBraids()
-        channel_in = sum(channel_ins) * 2
+        channel_in = sum(channel_ins)
 
         self.final_braid = LinearMMBlock(channel_in, channel_in)
-        channel_in *= 2
+        channel_in = channel_in
 
         self.y = MinMaxY(channel_in, linear=True)
         channel_in *= 2

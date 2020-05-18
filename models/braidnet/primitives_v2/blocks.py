@@ -133,14 +133,14 @@ class BraidBlock(nn.Module):
 
 class MMBlock(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size=(3, 3), stride=(1, 1), gap=False):
-        if channel_out % 2:
-            raise ValueError
+        # if channel_out % 2:
+        #     raise ValueError
         super(MMBlock, self).__init__()
 
         kernel_size = int2tuple(kernel_size)
         stride = int2tuple(stride)
         padding = tuple([(i - 1) // 2 for i in kernel_size])
-        self.wconv = MMConv2d(channel_in, channel_out // 2,
+        self.wconv = MMConv2d(channel_in, channel_out,
                               kernel_size=kernel_size,
                               padding=padding,
                               stride=stride,
@@ -191,11 +191,11 @@ class LinearBraidBlock(nn.Module):
 
 class LinearMMBlock(nn.Module):
     def __init__(self, channel_in, channel_out):
-        if channel_out % 2:
-            raise ValueError
+        # if channel_out % 2:
+        #     raise ValueError
         super(LinearMMBlock, self).__init__()
 
-        self.wlinear = MMLinear(channel_in, channel_out // 2, bias=False)
+        self.wlinear = MMLinear(channel_in, channel_out, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
                                 momentum=0.1,

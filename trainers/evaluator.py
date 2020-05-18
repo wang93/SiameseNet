@@ -34,8 +34,6 @@ class ReIDEvaluator:
         self.queryFliploader = queryFliploader
         self.galleryFliploader = galleryFliploader
         self.ranks = ranks
-        # self.phase_num = phase_num
-        # self.minors_num = minors_num
 
     def _save_top10_results(self, distmat, g_pids, q_pids, g_camids, q_camids, fig_dir):
         print("Saving visualization figures")
@@ -140,25 +138,6 @@ class ReIDEvaluator:
         eer = np.mean(eers)
 
         return mAP, cmc, eer, threshold
-
-    # def measure_scores_fast(self, distmat_all, q_pids_all, g_pids_all, q_camids_all, g_camids_all):
-    #     print('each query id has only one image for evaluation')
-    #     qpid2index = defaultdict(list)
-    #     q_pids_all = q_pids_all.tolist()
-    #     for i, qpid in enumerate(q_pids_all):
-    #         qpid2index[qpid].append(i)
-    #
-    #     pids = list(set(q_pids_all))
-    #
-    #     q_pids = torch.Tensor(pids)
-    #
-    #     q_indices = torch.LongTensor([randchoice(qpid2index[pid]) for pid in pids])
-    #     q_camids = q_camids_all[q_indices]
-    #     distmat = distmat_all[q_indices, :]
-    #
-    #     mAP, cmc, eer, threshold = self.measure_scores(distmat, q_pids, g_pids_all, q_camids, g_camids_all)
-    #
-    #     return mAP, cmc, eer, threshold
 
     @staticmethod
     def _get_cmc_map(matches, max_rank=50):
@@ -304,10 +283,6 @@ class ReIDEvaluator:
         dataloader.batch_sampler.drop_last = False
         dataloader._DataLoader__initialized = True
 
-    # @staticmethod
-    # def _reduce_dataloader(loader):
-    #     pass
-
     def _get_feature(self, dataloader):
         with torch.no_grad():
             fun = lambda d: self.model(d, None, mode='extract')
@@ -322,8 +297,7 @@ class ReIDEvaluator:
     def evaluate(self, eval_flip=False, re_ranking=False):
         q_pids, q_camids, g_pids, g_camids = self._get_labels()
         distmat = self._get_dist_matrix(flip_fuse=eval_flip, re_ranking=re_ranking)
-        # if self.opt.eval_fast:
-        #     mAP, cmc, eer, threshold = self.measure_scores_fast(distmat, q_pids, g_pids, q_camids, g_camids)
+
         if self.opt.eval_minors_num <= 0:
             mAP, cmc, eer, threshold = self.measure_scores(distmat, q_pids, g_pids, q_camids, g_camids)
         else:
@@ -399,23 +373,6 @@ class ReIDEvaluator:
         return q_g_dist.cpu()
 
     def _get_labels(self):
-        # q_pids, q_camids = [], []
-        # g_pids, g_camids = [], []
-        # for queries in self.queryloader:
-        #     _, pids, camids = self._parse_data(queries)
-        #     q_pids.extend(pids)
-        #     q_camids.extend(camids)
-        #
-        # q_pids = torch.Tensor(q_pids)
-        # q_camids = torch.Tensor(q_camids)
-        #
-        # for galleries in self.galleryloader:
-        #     _, pids, camids = self._parse_data(galleries)
-        #     g_pids.extend(pids)
-        #     g_camids.extend(camids)
-        # 
-        # g_pids = torch.Tensor(g_pids)
-        # g_camids = torch.Tensor(g_camids)
         _, q_pids, q_camids = zip(*self.queryloader.dataset.dataset)
         _, g_pids, g_camids = zip(*self.galleryloader.dataset.dataset)
         q_pids = torch.Tensor(q_pids)

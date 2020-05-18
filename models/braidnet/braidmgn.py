@@ -147,8 +147,6 @@ class BraidMGN(BraidProto):
         fc_blocks = []
         for i, sub_fc in enumerate(fc):
             is_tail = (i + 1 == len(fc))
-            if is_tail:
-                sub_fc *= 4
             fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)

@@ -158,6 +158,22 @@ class CrossSimilarityBCELoss(object):
         return loss
 
 
+class CrossSimilarityCELoss(object):
+    def __init__(self):
+        self.ce_loss = nn.CrossEntropyLoss()
+
+    def __call__(self, score_mat, labels):
+        N = score_mat.size(0)
+        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=score_mat.dtype)
+
+        scores = torch.cat((score_mat[:, :, 0].view(-1).unsqueeze(1),
+                            score_mat[:, :, 1].view(-1).unsqueeze(1)), dim=1)
+        targets = is_pos.view(-1)
+
+        loss = self.ce_loss(scores, targets)
+        return loss
+
+
 class CrossEntropyLabelSmooth(nn.Module):
     """Cross entropy loss with label smoothing regularizer.
     Reference:

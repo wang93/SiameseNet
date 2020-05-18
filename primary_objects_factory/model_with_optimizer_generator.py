@@ -8,21 +8,23 @@ __all__ = ['get_model_with_optimizer', ]
 
 def get_model_with_optimizer(opt):
     print('initializing {0} model and its optimizer...'.format(opt.model_name))
+    fc = (opt.tail_times,)
+
     if opt.model_name == 'braidnet':
         from models.braidnet import BraidNet
-        model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=(1,))
+        model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=fc)
     elif opt.model_name == 'braidmgn':
         from models.braidnet.braidmgn import BraidMGN
-        model = BraidMGN(feats=opt.feats, fc=(1,))
+        model = BraidMGN(feats=opt.feats, fc=fc)
     elif opt.model_name == 'mmbraidmgn':
         from models.braidnet.braidmgn import MMBraidMGN
-        model = MMBraidMGN(feats=opt.feats, fc=(1,))
+        model = MMBraidMGN(feats=opt.feats, fc=fc)
     elif opt.model_name == 'densebraidmgn':
         from models.braidnet.braidmgn import DenseBraidMGN
-        model = DenseBraidMGN(feats=opt.feats, fc=(1,))
+        model = DenseBraidMGN(feats=opt.feats, fc=fc)
     elif opt.model_name == 'resbraidmgn':
         from models.braidnet.braidmgn import ResBraidMGN
-        model = ResBraidMGN(feats=opt.feats, fc=(1,))
+        model = ResBraidMGN(feats=opt.feats, fc=fc)
     else:
         raise NotImplementedError
 

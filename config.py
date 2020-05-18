@@ -53,6 +53,7 @@ class DefaultConfig(object):
     pretrained_model = None
     disable_resume = False
     zero_tail_weight = False
+    tail_times = 1
     
     # miscs
     print_freq = 30

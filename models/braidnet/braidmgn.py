@@ -146,7 +146,9 @@ class BraidMGN(BraidProto):
 
         fc_blocks = []
         for i, sub_fc in enumerate(fc):
-            is_tail = (i+1 == len(fc))
+            is_tail = (i + 1 == len(fc))
+            if is_tail:
+                sub_fc *= 4
             fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
@@ -174,10 +176,12 @@ class BraidMGN(BraidProto):
         x = self.y(x)
         x = self.fc(x)
 
-        if self.training:
-            return self.score2prob(x)
-        else:
-            return x
+        return self.score2prob(x).mean(dim=1, keepdim=True)
+
+        # if self.training:
+        #     return self.score2prob(x)
+        # else:
+        #     return x
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
@@ -196,10 +200,12 @@ class BraidMGN(BraidProto):
         x = self.y(x)
         x = self.fc(x)
 
-        if self.training:
-            return self.score2prob(x)
-        else:
-            return x
+        return self.score2prob(x).mean(dim=1, keepdim=True)
+
+        # if self.training:
+        #     return self.score2prob(x)
+        # else:
+        #     return x
 
     def unlable_pretrained(self):
         self.freeze_pretrained = False

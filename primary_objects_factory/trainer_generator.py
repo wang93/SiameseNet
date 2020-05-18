@@ -18,8 +18,12 @@ def get_trainer(opt):
 
     if opt.train_mode == 'pair':
         if opt.loss == 'bce':
-            from torch.nn import BCELoss
-            criterion = BCELoss()
+            from utils.loss import PairSimilarityBCELoss
+            criterion = PairSimilarityBCELoss()
+
+        elif opt.loss == 'ce':
+            from torch.nn import CrossEntropyLoss
+            criterion = CrossEntropyLoss()
 
         else:
             raise NotImplementedError
@@ -36,6 +40,10 @@ def get_trainer(opt):
         elif opt.loss == 'triplet':
             from utils.loss import TripletLoss4Braid
             criterion = TripletLoss4Braid(opt.margin)
+
+        elif opt.loss == 'ce':
+            from utils.loss import CrossSimilarityCELoss
+            criterion = CrossSimilarityCELoss()
 
         else:
             raise NotImplementedError

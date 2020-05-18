@@ -115,7 +115,7 @@ class BraidMGN(BraidProto):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=256, fc=(1,)):
+    def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
         super(BraidMGN, self).__init__()
 
         self.meta = {'mean': [0.485, 0.456, 0.406],
@@ -151,7 +151,7 @@ class BraidMGN(BraidProto):
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
 
-        self.score2prob = nn.Sigmoid()
+        self.score2prob = score2prob  # nn.Sigmoid()
 
         # initialize parameters
         for m in [self.part_braids, self.final_braid, self.fc]:
@@ -175,9 +175,9 @@ class BraidMGN(BraidProto):
         x = self.fc(x)
 
         if self.training:
-            return self.score2prob(x)
+            return x
         else:
-            return self.score2prob(x).mean(dim=1)
+            return self.score2prob(x)
 
         # if self.training:
         #     return self.score2prob(x)
@@ -202,9 +202,9 @@ class BraidMGN(BraidProto):
         x = self.fc(x)
 
         if self.training:
-            return self.score2prob(x)
+            return x
         else:
-            return self.score2prob(x).mean(dim=1)
+            return self.score2prob(x)
 
         # if self.training:
         #     return self.score2prob(x)
@@ -251,7 +251,7 @@ class MMBraidMGN(BraidMGN):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=256, fc=(1,)):
+    def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
         super(MMBraidMGN, self).__init__()
 
         self.meta = {
@@ -289,7 +289,7 @@ class MMBraidMGN(BraidMGN):
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
 
-        self.score2prob = nn.Sigmoid()
+        self.score2prob = score2prob
 
         # initialize parameters
         for m in [self.part_braids, self.final_braid, self.fc]:
@@ -303,7 +303,7 @@ class DenseBraidMGN(BraidMGN):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=256, fc=(1,)):
+    def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
         super(DenseBraidMGN, self).__init__()
 
         self.meta = {
@@ -341,7 +341,7 @@ class DenseBraidMGN(BraidMGN):
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
 
-        self.score2prob = nn.Sigmoid()
+        self.score2prob = score2prob
 
         # initialize parameters
         for m in [self.part_braids, self.final_braid, self.fc]:
@@ -355,7 +355,7 @@ class ResBraidMGN(BraidMGN):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=256, fc=(1,)):
+    def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
         super(ResBraidMGN, self).__init__()
 
         self.meta = {'mean': [0.485, 0.456, 0.406],
@@ -391,7 +391,7 @@ class ResBraidMGN(BraidMGN):
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
 
-        self.score2prob = nn.Sigmoid()
+        self.score2prob = score2prob
 
         # initialize parameters
         for m in [self.part_braids, self.final_braid, self.fc]:

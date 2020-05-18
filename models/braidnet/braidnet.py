@@ -27,7 +27,7 @@ class BraidNet(BraidProto):
     noreg_params = []
     has_resnet_stem = False
 
-    def __init__(self, bi, braid, fc):
+    def __init__(self, bi, braid, fc, score2prob=nn.Sigmoid()):
         super(BraidNet, self).__init__()
 
         self.meta = {'mean': [0.485, 0.456, 0.406],
@@ -67,7 +67,7 @@ class BraidNet(BraidProto):
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
 
-        self.score2prob = nn.Sigmoid()
+        self.score2prob = score2prob  # nn.Sigmoid()
 
         # initialize parameters
         for m in self.modules():
@@ -86,9 +86,9 @@ class BraidNet(BraidProto):
         x = self.fc(x)
 
         if self.training:
-            return self.score2prob(x)
-        else:
             return x
+        else:
+            return self.score2prob(x)
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
@@ -106,9 +106,9 @@ class BraidNet(BraidProto):
         x = self.fc(x)
 
         if self.training:
-            return self.score2prob(x)
-        else:
             return x
+        else:
+            return self.score2prob(x)
 
     def load_pretrained(self, resnet_name='resnet18'):
         resnet_state_dict = model_zoo.load_url(model_urls[resnet_name])

@@ -145,9 +145,11 @@ class TripletLoss4Braid(object):
 
 class CrossSimilarityBCELoss(object):
     def __init__(self):
+        self.sigmoid = nn.Sigmoid()
         self.bce_loss = nn.BCELoss()
 
     def __call__(self, score_mat, labels):
+        score_mat = self.sigmoid(score_mat)
         N = score_mat.size(0)
         is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=score_mat.dtype)
         if len(score_mat.size()) > 2:
@@ -155,6 +157,16 @@ class CrossSimilarityBCELoss(object):
                 is_pos = is_pos.unsqueeze(2)
             is_pos = is_pos.expand_as(score_mat)
         loss = self.bce_loss(score_mat, is_pos)
+        return loss
+
+
+class PairSimilarityBCELoss(object):
+    def __init__(self):
+        self.sigmoid = nn.Sigmoid()
+        self.bce_loss = nn.BCELoss()
+
+    def __call__(self, scores, labels):
+        loss = self.bce_loss(self.sigmoid(scores), labels)
         return loss
 
 

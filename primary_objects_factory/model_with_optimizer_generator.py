@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 
 from utils.data_parallel import DataParallel
 from utils.serialization import parse_checkpoints
@@ -9,22 +10,34 @@ __all__ = ['get_model_with_optimizer', ]
 def get_model_with_optimizer(opt):
     print('initializing {0} model and its optimizer...'.format(opt.model_name))
     fc = (opt.tail_times,)
+    if opt.loss == 'bce':
+        score2prob = lambda x: nn.Sigmoid()(x).mean(dim=1)
+    elif opt.loss == 'triplet':
+        score2prob = lambda x: x.mean(dim=1)
+    elif opt.loss == 'ce':
+        score2prob = lambda x: nn.Softmax(dim=1)(x)[:, 0]
+    else:
+        raise NotImplementedError
 
     if opt.model_name == 'braidnet':
         from models.braidnet import BraidNet
-        model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=fc)
+        model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'braidmgn':
         from models.braidnet.braidmgn import BraidMGN
-        model = BraidMGN(feats=opt.feats, fc=fc)
+        model = BraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'mmbraidmgn':
         from models.braidnet.braidmgn import MMBraidMGN
-        model = MMBraidMGN(feats=opt.feats, fc=fc)
+        model = MMBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'densebraidmgn':
         from models.braidnet.braidmgn import DenseBraidMGN
-        model = DenseBraidMGN(feats=opt.feats, fc=fc)
+        model = DenseBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'resbraidmgn':
         from models.braidnet.braidmgn import ResBraidMGN
-        model = ResBraidMGN(feats=opt.feats, fc=fc)
+        model = ResBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
     else:
         raise NotImplementedError
 

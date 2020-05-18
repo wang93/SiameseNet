@@ -18,7 +18,7 @@ class DefaultConfig(object):
     workers = 8
 
     # optimization options
-    loss = 'bce'  # bce / triplet
+    loss = 'bce'  # bce / triplet / ce
     optim = 'sgd'
     max_epoch = 280
     iter_num_per_epoch = 500

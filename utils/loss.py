@@ -176,7 +176,7 @@ class CrossSimilarityCELoss(object):
 
     def __call__(self, score_mat, labels):
         N = score_mat.size(0)
-        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=score_mat.dtype)
+        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.long)
 
         scores = torch.cat((score_mat[:, :, 0].view(-1).unsqueeze(1),
                             score_mat[:, :, 1].view(-1).unsqueeze(1)), dim=1)

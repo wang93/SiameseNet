@@ -399,21 +399,27 @@ class ReIDEvaluator:
         return q_g_dist.cpu()
 
     def _get_labels(self):
-        q_pids, q_camids = [], []
-        g_pids, g_camids = [], []
-        for queries in self.queryloader:
-            _, pids, camids = self._parse_data(queries)
-            q_pids.extend(pids)
-            q_camids.extend(camids)
-
+        # q_pids, q_camids = [], []
+        # g_pids, g_camids = [], []
+        # for queries in self.queryloader:
+        #     _, pids, camids = self._parse_data(queries)
+        #     q_pids.extend(pids)
+        #     q_camids.extend(camids)
+        #
+        # q_pids = torch.Tensor(q_pids)
+        # q_camids = torch.Tensor(q_camids)
+        #
+        # for galleries in self.galleryloader:
+        #     _, pids, camids = self._parse_data(galleries)
+        #     g_pids.extend(pids)
+        #     g_camids.extend(camids)
+        # 
+        # g_pids = torch.Tensor(g_pids)
+        # g_camids = torch.Tensor(g_camids)
+        _, q_pids, q_camids = zip(*self.queryloader.dataset.dataset)
+        _, g_pids, g_camids = zip(*self.galleryloader.dataset.dataset)
         q_pids = torch.Tensor(q_pids)
         q_camids = torch.Tensor(q_camids)
-
-        for galleries in self.galleryloader:
-            _, pids, camids = self._parse_data(galleries)
-            g_pids.extend(pids)
-            g_camids.extend(camids)
-
         g_pids = torch.Tensor(g_pids)
         g_camids = torch.Tensor(g_camids)
 

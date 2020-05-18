@@ -9,15 +9,23 @@ __all__ = ['get_model_with_optimizer', ]
 
 def get_model_with_optimizer(opt):
     print('initializing {0} model and its optimizer...'.format(opt.model_name))
-    fc = (opt.tail_times,)
+    
     if opt.loss == 'bce':
+        fc = (opt.tail_times,)
         score2prob = lambda x: nn.Sigmoid()(x).mean(dim=1)
+
     elif opt.loss == 'triplet':
+        fc = (1,)
         score2prob = lambda x: x.mean(dim=1)
+
     elif opt.loss == 'ce':
+        fc = (2,)
         score2prob = lambda x: nn.Softmax(dim=1)(x)[:, 0]
+
     else:
         raise NotImplementedError
+
+    print('the setting of fc layers is {0}'.format(fc))
 
     if opt.model_name == 'braidnet':
         from models.braidnet import BraidNet
@@ -38,6 +46,7 @@ def get_model_with_optimizer(opt):
     elif opt.model_name == 'resbraidmgn':
         from models.braidnet.braidmgn import ResBraidMGN
         model = ResBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     else:
         raise NotImplementedError
 

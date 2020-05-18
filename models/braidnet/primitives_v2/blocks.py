@@ -140,7 +140,7 @@ class MMBlock(nn.Module):
         kernel_size = int2tuple(kernel_size)
         stride = int2tuple(stride)
         padding = tuple([(i - 1) // 2 for i in kernel_size])
-        self.wconv = MMConv2d(channel_in, channel_out / 2,
+        self.wconv = MMConv2d(channel_in, channel_out // 2,
                               kernel_size=kernel_size,
                               padding=padding,
                               stride=stride,
@@ -195,7 +195,7 @@ class LinearMMBlock(nn.Module):
             raise ValueError
         super(LinearMMBlock, self).__init__()
 
-        self.wlinear = MMLinear(channel_in, channel_out / 2, bias=False)
+        self.wlinear = MMLinear(channel_in, channel_out // 2, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
                                 momentum=0.1,

@@ -35,14 +35,14 @@ class _Trainer:
         if self.opt.savefig:
             self.visualize_best()
 
-    def _adopt_to_best(self):
+    def _adapt_to_best(self):
         best_state_dict, best_epoch, best_rank1 = get_best_model(self.opt.exp_dir)
         self.model.module.load_state_dict(best_state_dict)
         return best_epoch, best_rank1
 
     @print_time
     def visualize_best(self):
-        best_epoch, best_rank1 = self._adopt_to_best()
+        best_epoch, best_rank1 = self._adapt_to_best()
         print('visualization based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
               .format(best_rank1, best_epoch))
         self.evaluator.visualize(re_ranking=self.opt.re_ranking, eval_flip=False)
@@ -50,7 +50,7 @@ class _Trainer:
         print('The whole process should be terminated.')
 
     def evaluate_best(self, eval_flip=None):
-        best_epoch, best_rank1 = self._adopt_to_best()
+        best_epoch, best_rank1 = self._adapt_to_best()
         print('evaluation based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
               .format(best_rank1, best_epoch))
         self.evaluate(eval_flip)

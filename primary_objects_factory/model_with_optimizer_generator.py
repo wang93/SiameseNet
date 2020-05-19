@@ -21,7 +21,7 @@ def get_model_with_optimizer(opt):
 
     elif opt.loss == 'ce':
         fc = (2,)
-        score2prob = lambda x: nn.LogSoftmax(dim=1)(x)[:, 1]
+        score2prob = lambda x: nn.Softmax(dim=1)(x)[:, 1]
 
     else:
         raise NotImplementedError

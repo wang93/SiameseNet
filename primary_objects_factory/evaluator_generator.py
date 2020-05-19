@@ -4,15 +4,7 @@ def get_evaluator(opt, model, queryloader, galleryloader, queryFliploader, galle
     print('initializing evaluator...')
 
     from trainers.evaluator import ReIDEvaluator
-    # reid_evaluator = ReIDEvaluator(model,
-    #                                opt.exp_dir,
-    #                                queryloader=queryloader,
-    #                                galleryloader=galleryloader,
-    #                                queryFliploader=queryFliploader,
-    #                                galleryFliploader=galleryFliploader,
-    #                                phase_num=opt.eval_phase_num,
-    #                                minors_num=opt.eval_minors_num,
-    #                                ranks=ranks)
+
     reid_evaluator = ReIDEvaluator(model,
                                    opt,
                                    queryloader=queryloader,

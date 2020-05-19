@@ -4,7 +4,7 @@ import random
 from PIL import Image
 from torchvision import transforms as T
 
-from utils.random_erasing import RandomErasing, Cutout
+from dataset.random_erasing import RandomErasing, Cutout
 
 
 class Random2DTranslation(object):

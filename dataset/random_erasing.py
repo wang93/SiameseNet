@@ -1,19 +1,15 @@
 from __future__ import absolute_import
 
-from torchvision.transforms import *
-
-from PIL import Image
-import random
 import math
-import numpy as np
-import torch
+import random
+
 
 class Cutout(object):
-    def __init__(self, probability = 0.5, size = 64, mean=[0.4914, 0.4822, 0.4465]):
+    def __init__(self, probability=0.5, size=64, mean=[0.4914, 0.4822, 0.4465]):
         self.probability = probability
         self.mean = mean
         self.size = size
-       
+
     def __call__(self, img):
 
         if random.uniform(0, 1) > self.probability:

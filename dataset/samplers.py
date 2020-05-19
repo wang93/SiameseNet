@@ -2,9 +2,9 @@ from __future__ import absolute_import
 
 from collections import defaultdict
 
+import torch
 from numpy.random import choice as randchoice
 from numpy.random import uniform as randuniform
-import torch
 from torch.utils.data.sampler import Sampler
 
 

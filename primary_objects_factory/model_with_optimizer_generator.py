@@ -7,9 +7,10 @@ from utils.serialization import parse_checkpoints
 __all__ = ['get_model_with_optimizer', ]
 
 
-def get_model_with_optimizer(opt):
-    print('initializing {0} model and its optimizer...'.format(opt.model_name))
-    
+def get_model_with_optimizer(opt, id_num=1, naive=False):
+    if not naive:
+        print('initializing model {0} and its optimizer...'.format(opt.model_name))
+
     if opt.loss == 'bce':
         fc = (opt.tail_times,)
         score2prob = lambda x: x.mean(dim=1)
@@ -26,7 +27,8 @@ def get_model_with_optimizer(opt):
     else:
         raise NotImplementedError
 
-    print('the setting of fc layers is {0}'.format(fc))
+    if not naive:
+        print('the setting of fc layers is {0}'.format(fc))
 
     if opt.model_name == 'braidnet':
         from models.braidnet import BraidNet
@@ -48,8 +50,15 @@ def get_model_with_optimizer(opt):
         from models.braidnet.braidmgn import ResBraidMGN
         model = ResBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
 
+    elif opt.model_name == 'osnet':
+        from models.braidnet.braidosnet import OSNet
+        model = OSNet(feats=opt.feats, num_classes=id_num)
+
     else:
         raise NotImplementedError
+
+    if naive:
+        return model
 
     if opt.pretrained_subparams:
         print('use pretrained params')

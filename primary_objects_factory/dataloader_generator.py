@@ -1,17 +1,17 @@
 from torch.utils.data import DataLoader
 
-from datasets import data_manager
-from datasets.data_loader import ImageData
-from utils.transforms import TestTransform, TrainTransform
+from dataset import data_info
+from dataset.data_image import ImageData
+from dataset.transforms import TestTransform, TrainTransform
 
 
 def get_dataloaders(opt, model_meta):
     print('initializing {} dataset ...'.format(opt.dataset))
 
     if isinstance(opt.dataset, list):
-        dataset = data_manager.init_united_datasets(names=opt.dataset, mode=opt.mode)
+        dataset = data_info.init_united_datasets(names=opt.dataset, mode=opt.mode)
     else:
-        dataset = data_manager.init_dataset(name=opt.dataset, mode=opt.mode)
+        dataset = data_info.init_dataset(name=opt.dataset, mode=opt.mode)
 
     if opt.test_pids_num >= 0:
         dataset.subtest2train(opt.test_pids_num)
@@ -24,7 +24,7 @@ def get_dataloaders(opt, model_meta):
     pin_memory = True
 
     if opt.train_mode == 'pair':
-        from datasets.samplers import PosNegPairSampler
+        from dataset.samplers import PosNegPairSampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=PosNegPairSampler(data_source=dataset.train,
@@ -35,12 +35,19 @@ def get_dataloaders(opt, model_meta):
         )
 
     elif opt.train_mode == 'cross':
-        from datasets.samplers import RandomIdentitySampler
+        from dataset.samplers import RandomIdentitySampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
+        )
+
+    elif opt.train_mode == 'normal':
+        trainloader = DataLoader(
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            batch_size=opt.train_batch, num_workers=opt.workers,
+            pin_memory=pin_memory, drop_last=True, shuffle=True
         )
 
     else:

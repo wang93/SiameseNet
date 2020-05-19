@@ -154,19 +154,19 @@ class BraidPairTrainer(_Trainer):
         self.target = torch.tensor(target).cuda().unsqueeze(1)
 
     def _extract_feature(self, data):
-        return self.model(data, None, mode='extract')
+        return self.model(data, mode='extract')
 
-    def _compare_feature(self, features):
-        return self.model(*features, mode='metric').squeeze()
+    def _compare_feature(self, *features):
+        return self.model(*features, mode='metric')
 
     def _forward(self):
         if self.phase_num == 1:
             score = self.model(*self.data, mode='normal')
 
         elif self.phase_num == 2:
-            feat_a = self.model(self.data[0], mode='extract')
-            feat_b = self.model(self.data[1], mode='extract')
-            score = self.model(feat_a, feat_b, mode='metric')
+            feat_a = self._extract_feature(self.data[0])
+            feat_b = self._extract_feature(self.data[1])
+            score = self._compare_feature(feat_a, feat_b)
 
         else:
             raise ValueError
@@ -217,3 +217,31 @@ class BraidCrossTrainer(BraidPairTrainer):
             raise ValueError
 
         self.loss = self.criterion(score_mat, self.target)
+
+
+class NormalTrainer(_Trainer):
+    def _parse_data(self, inputs):
+        imgs, pids, _ = inputs
+        self.data = imgs.cuda()
+        self.target = pids.cuda()
+
+    def _forward(self):
+        if self.phase_num == 1:
+            predictions = self._extract_feature(self.data)
+
+        elif self.phase_num == 2:
+            raise NotImplementedError
+
+        else:
+            raise ValueError
+
+        self.loss = self.criterion(predictions, self.target)
+
+    def _backward(self):
+        self.loss.backward()
+
+    def _extract_feature(self, data):
+        return self.model(self.data, mode='extract')
+
+    def _compare_feature(self, features):
+        raise NotImplementedError

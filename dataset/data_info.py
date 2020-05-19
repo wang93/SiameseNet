@@ -282,18 +282,6 @@ class MSMT17(__Dataset):
         num_total_pids = num_train_pids + num_query_pids
         num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
 
-        # print("=> MSMT17 loaded")
-        # print("Dataset statistics:")
-        # print("  ------------------------------")
-        # print("  subset   | # ids | # images")
-        # print("  ------------------------------")
-        # print("  train    | {:5d} | {:8d}".format(num_train_pids, num_train_imgs))
-        # print("  query    | {:5d} | {:8d}".format(num_query_pids, num_query_imgs))
-        # print("  gallery  | {:5d} | {:8d}".format(num_gallery_pids, num_gallery_imgs))
-        # print("  ------------------------------")
-        # print("  total    | {:5d} | {:8d}".format(num_total_pids, num_total_imgs))
-        # print("  ------------------------------")
-
         self.train = train
         #self.trainval = train
         #self.val = val

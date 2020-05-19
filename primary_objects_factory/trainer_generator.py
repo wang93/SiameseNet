@@ -9,8 +9,11 @@ from .model_with_optimizer_generator import get_model_with_optimizer
 
 
 def get_trainer(opt):
-    model, optimizer, done_epoch = get_model_with_optimizer(opt)
+    model = get_model_with_optimizer(opt, naive=True)
     data_loaders = get_dataloaders(opt, model.module.meta)
+    train_id_num = data_loaders['trainloader'].sampler.num_identities
+    model, optimizer, done_epoch = get_model_with_optimizer(opt, id_num=train_id_num)
+
     evaluator = get_evaluator(opt, model, **data_loaders)
 
     summary_writer = SummaryWriter(path_join(opt.exp_dir, 'tensorboard_log'))
@@ -51,6 +54,22 @@ def get_trainer(opt):
         from trainers.trainer import BraidCrossTrainer
         reid_trainer = BraidCrossTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                          summary_writer, opt.train_phase_num, done_epoch)
+
+    elif opt.train_mode == 'normal':
+        if opt.loss == 'lsce':
+            from utils.loss import CrossEntropyLabelSmooth
+            criterion = CrossEntropyLabelSmooth(num_classes=train_id_num)
+
+        elif opt.loss == 'ce':
+            from torch.nn import CrossEntropyLoss
+            criterion = CrossEntropyLoss()
+
+        else:
+            raise NotImplementedError
+
+        from trainers.trainer import NormalTrainer
+        reid_trainer = NormalTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
+                                     summary_writer, opt.train_phase_num, done_epoch)
 
     else:
         raise NotImplementedError

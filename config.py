@@ -18,13 +18,13 @@ class DefaultConfig(object):
     workers = 8
 
     # optimization options
-    loss = 'bce'  # bce / triplet / ce
+    loss = 'bce'  # bce / triplet / ce / lsce
     optim = 'sgd'
     max_epoch = 280
     iter_num_per_epoch = 500
     train_batch = 256
     train_phase_num = 1  # 1 / 2
-    train_mode = 'pair'  # 'pair' or 'cross'
+    train_mode = 'pair'  # 'pair' or 'cross' or 'normal'
     freeze_pretrained_untill = -1  # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
     gamma = 0.5
@@ -46,7 +46,7 @@ class DefaultConfig(object):
     eval_fast = False  # each query id has only one image for evaluation
 
     # model options
-    model_name = 'braidmgn'  # braidnet, braidmgn, densebraidmgn
+    model_name = 'braidmgn'  # braidnet, braidmgn, densebraidmgn, osnet
     feats = 256  # in braidmgn, pooled feature vector length in each part with one pooling method
     last_stride = 1
     pretrained_subparams = False
@@ -83,11 +83,14 @@ class DefaultConfig(object):
         if self.model_name == 'braidmgn':
             self.pretrained_subparams = True
 
+        if self.model_name == 'osnet':
+            self.loss = 'lsce'
+            self.train_mode = 'normal'
+            self.train_phase_num = 1
+
     def state_dict_(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
                 if not k.endswith('_')}
-        # return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
-        #         if not k.startswith('_')}
 
     def print_(self):
         print('======== experiment config =========')

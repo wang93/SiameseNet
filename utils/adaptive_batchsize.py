@@ -74,7 +74,7 @@ def get_max_batchsize(fun, *samples):
     calling_memory_per_sample = max((memory_cost_2x - memory_cost) // sample_num + 1, 1)
     calling_memory_base = max(memory_cost * 2 - memory_cost_2x, 1)
 
-    max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample) - 1
+    max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample)
 
     return int(max(max_batchsize, 1))
 
@@ -94,12 +94,9 @@ def get_max_equal_batchsize(fun, *samples):
     calling_memory_per_sample = max((memory_cost_2x - memory_cost) // sample_num + 1, 1)
     calling_memory_base = max(memory_cost * 2 - memory_cost_2x + 1, 1)
 
-    max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample) - 1
-    # print(
-    #     'max_batchsize{0} = (free_memory{1} - calling_memory_base{2}) // (memory_per_sample{3} + calling_memory_per_sample{4}) - 1'
-    #         .format(max_batchsize, free_memory, calling_memory_base, memory_per_sample, calling_memory_per_sample))
+    max_batchsize = (free_memory - calling_memory_base) // (memory_per_sample + calling_memory_per_sample)
 
-    max_batchsize = (max_batchsize // GPU_NUM - 1) * GPU_NUM
+    max_batchsize = (max_batchsize // GPU_NUM) * GPU_NUM
 
     return int(max(max_batchsize, 1))
 
@@ -108,7 +105,7 @@ def get_optimized_batchsize(fun, *samples):
     '''I am not sure that the returned batchsize can make the computaion faster'''
     max_batchsize = get_max_equal_batchsize(fun, *samples)
     per_gpu_max_batchsize = max(max_batchsize // GPU_NUM, 1)
-    per_gpu_opti_batchsize = 2 ** max(int(math.log2(per_gpu_max_batchsize)) - 1, 0)
+    per_gpu_opti_batchsize = 2 ** max(int(math.log2(per_gpu_max_batchsize) - 0.5), 0)
     optimized_batchsize = GPU_NUM * per_gpu_opti_batchsize
 
     return int(max(optimized_batchsize, 1))

@@ -20,7 +20,7 @@ from time import time as curtime
 from utils.tensor_section_functions import *
 
 from utils.adaptive_batchsize import get_optimized_batchsize
-from datasets.samplers import PosNegPairSampler
+from dataset.samplers import PosNegPairSampler
 
 
 class ReIDEvaluator:

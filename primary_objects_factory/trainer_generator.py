@@ -11,7 +11,8 @@ from .model_with_optimizer_generator import get_model_with_optimizer
 def get_trainer(opt):
     model = get_model_with_optimizer(opt, naive=True)
     data_loaders = get_dataloaders(opt, model.meta)
-    train_id_num = data_loaders['trainloader'].sampler.num_identities
+    _, train_ids, _ = zip(*data_loaders['trainloader'].dataset.dataset)
+    train_id_num = len(set(train_ids))
     model, optimizer, done_epoch = get_model_with_optimizer(opt, id_num=train_id_num)
 
     evaluator = get_evaluator(opt, model, **data_loaders)

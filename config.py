@@ -87,6 +87,7 @@ class DefaultConfig(object):
             self.loss = 'lsce'
             self.train_mode = 'normal'
             self.train_phase_num = 1
+            self.eval_phase_num = 2
 
     def state_dict_(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()

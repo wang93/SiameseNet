@@ -1,3 +1,5 @@
+from warnings import warn
+
 import torch
 import torch.nn as nn
 
@@ -28,6 +30,7 @@ class OSNet(BraidProto):
         self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 
     def load_pretrained(self, *args, **kwargs):
+        warn('some functions related to pretrained params have not been finished yet')
         init_pretrained_weights(self.bi, key='osnet_x1_0')
 
     def extract(self, ims):
@@ -57,10 +60,10 @@ class OSNet(BraidProto):
         return self.cos(a, b)
 
     def unlable_pretrained(self):
-        raise NotImplementedError
+        pass
 
     def check_pretrained_params(self):
-        raise NotImplementedError
+        pass
 
     def train(self, mode=True):
         torch.nn.Module.train(self, mode)

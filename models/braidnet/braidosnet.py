@@ -56,6 +56,15 @@ class OSNet(BraidProto):
         a, b = torch.chunk(x, 2, dim=0)
         return self.cos(a, b)
 
+    def unlable_pretrained(self):
+        raise NotImplementedError
+
+    def check_pretrained_params(self):
+        raise NotImplementedError
+
+    def train(self, mode=True):
+        torch.nn.Module.train(self, mode)
+
 
 class BraidOSNet(BraidProto):
     reg_params = []

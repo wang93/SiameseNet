@@ -10,7 +10,7 @@ from .model_with_optimizer_generator import get_model_with_optimizer
 
 def get_trainer(opt):
     model = get_model_with_optimizer(opt, naive=True)
-    data_loaders = get_dataloaders(opt, model.module.meta)
+    data_loaders = get_dataloaders(opt, model.meta)
     train_id_num = data_loaders['trainloader'].sampler.num_identities
     model, optimizer, done_epoch = get_model_with_optimizer(opt, id_num=train_id_num)
 

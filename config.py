@@ -28,6 +28,7 @@ class DefaultConfig(object):
     freeze_pretrained_untill = -1  # =0, 1, 2... <=0 when always freeze pretrained
     lr = 0.4
     gamma = 0.5
+    milestones = []
     warmup_till = -1  # <=1 when do not use warmup
     weight_decay = 5e-4
     momentum = 0.9

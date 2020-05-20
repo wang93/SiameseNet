@@ -62,6 +62,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import MMBraidOSNet
         model = MMBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
+    elif opt.model_name == 'braidosnet':
+        from models.braidnet.braidosnet import BraidOSNet
+        model = BraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     else:
         raise NotImplementedError
 

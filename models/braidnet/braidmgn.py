@@ -116,7 +116,7 @@ class BraidMGN(BraidProto):
     freeze_pretrained = True
 
     def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
-        super(BraidMGN, self).__init__()
+        nn.Module.__init__(self)
 
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
@@ -248,7 +248,7 @@ class MMBraidMGN(BraidMGN):
     freeze_pretrained = True
 
     def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
-        super(MMBraidMGN, self).__init__()
+        nn.Module.__init__(self)
 
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
@@ -300,7 +300,7 @@ class DenseBraidMGN(BraidMGN):
     freeze_pretrained = True
 
     def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
-        super(DenseBraidMGN, self).__init__()
+        nn.Module.__init__(self)
 
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
@@ -352,7 +352,7 @@ class ResBraidMGN(BraidMGN):
     freeze_pretrained = True
 
     def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
-        super(ResBraidMGN, self).__init__()
+        nn.Module.__init__(self)
 
         self.meta = {'mean': [0.485, 0.456, 0.406],
                      'std': [0.229, 0.224, 0.225],

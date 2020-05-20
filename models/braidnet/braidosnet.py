@@ -14,7 +14,7 @@ class OSNet(BraidProto):
     freeze_pretrained = True
 
     def __init__(self, feats=512, num_classes=1000, **kwargs):
-        super(OSNet, self).__init__()
+        nn.Module.__init__(self)
 
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
@@ -75,6 +75,7 @@ class BraidOSNet(BraidProto):
     freeze_pretrained = True
 
     def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), **kwargs):
+        nn.Module.__init__(self)
 
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
@@ -161,6 +162,8 @@ class MMBraidOSNet(BraidOSNet):
     freeze_pretrained = True
 
     def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
+        nn.Module.__init__(self)
+
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
             'std': [0.229, 0.224, 0.225],

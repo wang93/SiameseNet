@@ -1,3 +1,4 @@
+# encoding: utf-8
 from warnings import warn
 
 import torch

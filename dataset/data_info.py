@@ -271,26 +271,28 @@ class MSMT17(__Dataset):
 
         self._check_before_run()
         train_relabel = (mode == 'retrieval')
-        train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, self.list_train_path, relabel=train_relabel)
+        train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, self.list_train_path,
+                                                                  relabel=train_relabel)
         val, num_val_pids, num_val_imgs = self._process_dir(self.train_dir, self.list_val_path, relabel=True)
         query, num_query_pids, num_query_imgs = self._process_dir(self.query_dir, self.list_query_path, relabel=False)
-        gallery, num_gallery_pids, num_gallery_imgs = self._process_dir(self.gallery_dir, self.list_gallery_path, relabel=False)
+        gallery, num_gallery_pids, num_gallery_imgs = self._process_dir(self.gallery_dir, self.list_gallery_path,
+                                                                        relabel=False)
 
         # train += val
         # num_train_imgs += num_val_imgs
 
-        num_total_pids = num_train_pids + num_query_pids
-        num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
+        # num_total_pids = num_train_pids + num_query_pids
+        # num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
 
         self.train = train
-        #self.trainval = train
-        #self.val = val
+        # self.trainval = train
+        # self.val = val
         self.query = query
         self.gallery = gallery
 
         self.num_train_pids = num_train_pids
-        #self.num_trainval_pids = num_train_pids
-        #self.num_val_pids = num_val_pids
+        # self.num_trainval_pids = num_train_pids
+        # self.num_val_pids = num_val_pids
         self.num_query_pids = num_query_pids
         self.num_gallery_pids = num_gallery_pids
         #self.images_dir = ''

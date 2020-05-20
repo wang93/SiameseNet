@@ -4,11 +4,11 @@ from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
 from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair
-from .subblocks import WConv2d, WBatchNorm2d, WLinear, WBatchNorm1d, MMConv2d, MMLinear
+from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
-           'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock',
-           'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock']
+           'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock',
+           'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY']
 
 
 def int2tuple(n):
@@ -210,6 +210,27 @@ class LinearMMBlock(nn.Module):
         return x
 
 
+class LinearMinBlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        # if channel_out % 2:
+        #     raise ValueError
+        super(LinearMinBlock, self).__init__()
+
+        self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.wlinear(x)
+        x = self.wbn(x)
+        x = [self.relu(i) for i in x]
+        return x
+
+
 class DenseLinearBraidBlock(nn.Module):
     def __init__(self, channel_in, channel_out):
         super(DenseLinearBraidBlock, self).__init__()
@@ -283,28 +304,6 @@ class SumY(nn.Module):
         return y.view(y.size(0), -1)
 
 
-#
-#
-# class MaxY(SumY):
-#     def __init__(self, channel_in, linear=False):
-#         super(MaxY, self).__init__(channel_in, linear)
-#
-#     def forward(self, x_from_braid):
-#         y = torch.max(*torch.chunk(x_from_braid, 2, dim=1))
-#         y = self.bn(y)
-#         return y.view(y.size(0), -1)
-#
-#
-# class MinY(SumY):
-#     def __init__(self, channel_in, linear=False):
-#         super(MinY, self).__init__(channel_in, linear)
-#
-#     def forward(self, x_from_braid):
-#         y = torch.min(*torch.chunk(x_from_braid, 2, dim=1))
-#         y = self.bn(y)
-#         return y.view(y.size(0), -1)
-#
-#
 # class SumMaxY(SumY):
 #     def __init__(self, channel_in, linear=False):
 #         super(SumMaxY, self).__init__(channel_in * 2, linear)
@@ -329,6 +328,28 @@ class SumY(nn.Module):
 #         y = torch.cat((y_sum, y_min), dim=1)
 #         y = self.bn(y)
 #         return y.view(y.size(0), -1)
+class MaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(MaxY, self).__init__(channel_in, linear)
+
+    def forward(self, x_from_braid):
+        if len(x_from_braid) != 2:
+            raise NotImplementedError
+        y = torch.max(*x_from_braid)
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
+
+
+class MinY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(MinY, self).__init__(channel_in, linear)
+
+    def forward(self, x_from_braid):
+        if len(x_from_braid) != 2:
+            raise NotImplementedError
+        y = torch.min(*x_from_braid)
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
 
 
 class MinMaxY(SumY):

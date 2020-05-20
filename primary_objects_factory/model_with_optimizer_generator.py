@@ -58,6 +58,14 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import OSNet
         model = OSNet(feats=opt.feats, num_classes=id_num)
 
+    elif opt.model_name == 'minwmaxybraidosnet':
+        from models.braidnet.braidosnet import MinWMaxYBraidOSNet
+        model = MinWMaxYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
+    elif opt.model_name == 'minwmmybraidosnet':
+        from models.braidnet.braidosnet import MinWMMYBraidOSNet
+        model = MinWMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'mmbraidosnet':
         from models.braidnet.braidosnet import MMBraidOSNet
         model = MMBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)

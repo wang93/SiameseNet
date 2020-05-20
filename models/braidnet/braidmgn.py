@@ -118,10 +118,11 @@ class BraidMGN(BraidProto):
     def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
         super(BraidMGN, self).__init__()
 
-        self.meta = {'mean': [0.485, 0.456, 0.406],
-                     'std': [0.229, 0.224, 0.225],
-                     'imageSize': [384, 128]
-                     }
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [384, 128]
+        }
 
         self.pair2bi = Pair2Bi()
 
@@ -131,7 +132,7 @@ class BraidMGN(BraidProto):
 
         self.bi2braid = Bi2Braid()
 
-        channel_ins = [feats*3, feats, feats, feats, feats, feats]
+        channel_ins = [feats * 3, feats, feats, feats, feats, feats]
         self.part_braids = nn.ModuleList()
         for channel_in in channel_ins:
             self.part_braids.append(LinearBraidBlock(channel_in, channel_in))
@@ -205,11 +206,6 @@ class BraidMGN(BraidProto):
             return x
         else:
             return self.score2prob(x)
-
-        # if self.training:
-        #     return self.score2prob(x)
-        # else:
-        #     return x
 
     def unlable_pretrained(self):
         self.freeze_pretrained = False

@@ -30,7 +30,7 @@ class OSNet(BraidProto):
         self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 
     def load_pretrained(self, *args, **kwargs):
-        warn('some functions related to pretrained params have not been achieved yet')
+        warn('some functions related to pretrained params have not been completed yet')
         init_pretrained_weights(self.bi, key='osnet_x1_0')
 
     def extract(self, ims):
@@ -74,59 +74,49 @@ class BraidOSNet(BraidProto):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=512, fc=(1,), num_classes=1000, pretrained=False, score2prob=nn.Sigmoid()):
-        super(BraidProto, self).__init__()
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), **kwargs):
+        super(BraidOSNet, self).__init__()
 
-        self.meta = {'mean': [0.485, 0.456, 0.406],
-                     'std': [0.229, 0.224, 0.225],
-                     'imageSize': [256, 128]
-                     }
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [256, 128]
+        }
 
         self.pair2bi = Pair2Bi()
-
         self.pair2braid = Pair2Braid()
-
-        self.bi = osnet_x1_0(feats=feats,
-                             num_classes=num_classes)
-
+        self.bi = osnet_x1_0(feats=feats)
         self.bi2braid = Bi2Braid()
-
-        channel_in = feats
-        self.final_braid = LinearBraidBlock(channel_in, channel_in)
-
-        self.y = MinMaxY(channel_in, linear=True)
-        channel_in *= 2
+        self.braid = LinearBraidBlock(feats, feats)
+        self.y = MinMaxY(feats, linear=True)
 
         fc_blocks = []
+        channel_in = feats * 2
         for i, sub_fc in enumerate(fc):
             is_tail = (i + 1 == len(fc))
             fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
             channel_in = sub_fc
-
         self.fc = nn.Sequential(*fc_blocks)
-        self.score2prob = score2prob  # nn.Sigmoid()
+
+        self.score2prob = score2prob
 
         # initialize parameters
-        for m in [self.part_braids, self.final_braid, self.fc]:
+        for m in [self.braid, self.fc]:
             weights_init_kaiming(m)
 
         self.correct_params()
 
     def load_pretrained(self, *args, **kwargs):
-        init_pretrained_weights(self, key='osnet_x1_0')
+        warn('some functions related to pretrained params have not been completed yet')
+        init_pretrained_weights(self.bi, key='osnet_x1_0')
 
     def extract(self, ims):
         x = self.bi(ims)
         return x
 
     def metric(self, feat_a, feat_b):
-        if self.training:
-            raise NotImplementedError
-
         x = self.pair2braid(feat_a, feat_b)
-        x = [model(data) for model, data in zip(self.part_braids, x)]
-        x = self.braids2braid(x)
-        x = self.final_braid(x)
+        x = self.braid(x)
         x = self.y(x)
         x = self.fc(x)
 
@@ -146,9 +136,7 @@ class BraidOSNet(BraidProto):
         x = self.pair2bi(a, b)
         x = self.bi(x)
         x = self.bi2braid(x)
-        x = [model(data) for model, data in zip(self.part_braids, x)]
-        x = self.braids2braid(x)
-        x = self.final_braid(x)
+        x = self.braid(x)
         x = self.y(x)
         x = self.fc(x)
 
@@ -156,3 +144,12 @@ class BraidOSNet(BraidProto):
             return x
         else:
             return self.score2prob(x)
+
+    def unlable_pretrained(self):
+        pass
+
+    def check_pretrained_params(self):
+        pass
+
+    def train(self, mode=True):
+        torch.nn.Module.train(self, mode)

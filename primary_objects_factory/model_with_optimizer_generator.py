@@ -58,6 +58,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import OSNet
         model = OSNet(feats=opt.feats, num_classes=id_num)
 
+    elif opt.model_name == 'braidosnet':
+        from models.braidnet.braidosnet import BraidOSNet
+        model = BraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     else:
         raise NotImplementedError
 
@@ -80,8 +84,6 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
     start_epoch = 0
-    # best_rank1 = -np.inf
-    # best_epoch = 0
     optimizer_state_dict = None
     if not opt.disable_resume:
         start_epoch, state_dict, best_epoch, best_rank1, optimizer_state_dict = parse_checkpoints(opt.exp_dir)

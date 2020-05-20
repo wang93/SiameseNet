@@ -42,9 +42,6 @@ def MileStoneLR_LinearWarmUp(optimizer, ep_from_1, gamma, warmup_till, milseston
 
 
 def get_lr_strategy(opt):
-    # if opt.warmup_till <= 1:
-    #     return lambda o, e: MultiStepLR(o, e, opt.gamma)
-    # else:
     if len(opt.milestones) == 0:
         return lambda o, e: MultiStepLR_LinearWarmUp(o, e, opt.gamma, opt.warmup_till)
     else:

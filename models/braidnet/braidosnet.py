@@ -86,7 +86,7 @@ class BraidOSNet(BraidProto):
         self.pair2bi = Pair2Bi()
         self.pair2braid = Pair2Braid()
         self.bi = osnet_x1_0(feats=feats)
-        self.bi.classifier = lambda x: x
+        self.bi.classifier = nn.Identity()
         self.bi2braid = Bi2Braid()
         self.braid = LinearBraidBlock(feats, feats)
         self.y = MinMaxY(feats, linear=True)

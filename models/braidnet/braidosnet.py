@@ -75,7 +75,6 @@ class BraidOSNet(BraidProto):
     freeze_pretrained = True
 
     def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), **kwargs):
-        super(BraidOSNet, self).__init__()
 
         self.meta = {
             'mean': [0.485, 0.456, 0.406],
@@ -154,3 +153,40 @@ class BraidOSNet(BraidProto):
 
     def train(self, mode=True):
         torch.nn.Module.train(self, mode)
+
+
+class MMBraidOSNet(BraidOSNet):
+    reg_params = []
+    noreg_params = []
+    freeze_pretrained = True
+
+    def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [256, 128]
+        }
+
+        self.pair2bi = Pair2Bi()
+        self.pair2braid = Pair2Braid()
+        self.bi = osnet_x1_0(feats=feats)
+        self.bi.classifier = nn.Identity()
+        self.bi2braid = Bi2Braid()
+        self.braid = LinearMMBlock(feats, feats)
+        self.y = MinMaxY(feats * 2, linear=True)
+
+        fc_blocks = []
+        channel_in = feats * 4
+        for i, sub_fc in enumerate(fc):
+            is_tail = (i + 1 == len(fc))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
+            channel_in = sub_fc
+        self.fc = nn.Sequential(*fc_blocks)
+
+        self.score2prob = score2prob
+
+        # initialize parameters
+        for m in [self.braid, self.fc]:
+            weights_init_kaiming(m)
+
+        self.correct_params()

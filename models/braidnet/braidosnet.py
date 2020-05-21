@@ -42,7 +42,7 @@ class OSNet(BraidProto):
         if self.training:
             raise NotImplementedError
 
-        return self.dist(feat_a, feat_b)
+        return - self.dist(feat_a, feat_b)
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
@@ -58,7 +58,7 @@ class OSNet(BraidProto):
         x = self.pair2bi(a, b)
         x = self.bi(x)
         a, b = torch.chunk(x, 2, dim=0)
-        return self.dist(a, b)
+        return - self.dist(a, b)
 
     def unlable_pretrained(self):
         pass

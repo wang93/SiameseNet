@@ -8,7 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock',
-           'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY']
+           'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
 def int2tuple(n):
@@ -217,6 +217,25 @@ class LinearMinBlock(nn.Module):
         super(LinearMinBlock, self).__init__()
 
         self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.wlinear(x)
+        x = self.wbn(x)
+        x = [self.relu(i) for i in x]
+        return x
+
+
+class LinearMinBN2Block(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(LinearMinBN2Block, self).__init__()
+
+        self.wlinear = MinBNLinear(channel_in, channel_out)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
                                 momentum=0.1,

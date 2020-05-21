@@ -1,12 +1,46 @@
+from random import random
+
 import torch
 import torch.nn as nn
 from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
-__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d',
-           'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear', 'MinLinear']
+from .functions import *
+
+__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d', 'SoftMinLinear',
+           'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear', 'MinLinear', 'Min2Linear']
 
 POOLS_DICT = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
+
+
+class SoftMin(nn.Module):
+    def __init__(self):
+        super(SoftMin, self).__init__()
+
+    def forward(self, a, b):
+        a = torch.exp(-a)
+        b = torch.exp(-b)
+        a = a / (a + b)
+        b = 1. - a
+        if random() < 0.5:
+            return torch.min(a, b)
+        else:
+            return torch.min(b, a)
+
+
+class SoftMax(nn.Module):
+    def __init__(self):
+        super(SoftMax, self).__init__()
+
+    def forward(self, a, b):
+        a = torch.exp(a)
+        b = torch.exp(b)
+        a = a / (a + b)
+        b = 1. - a
+        if random() < 0.5:
+            return torch.max(a, b)
+        else:
+            return torch.max(b, a)
 
 
 class WConv2d(nn.Module):
@@ -133,6 +167,55 @@ class MinLinear(nn.Module):
 
         out_a = torch.min(p_a, q_b)
         out_b = torch.min(p_b, q_a)
+
+        return out_a, out_b
+
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
+
+
+class Min2Linear(nn.Module):
+    def __init__(self, in_features, out_features, bias=True):
+        super(Min2Linear, self).__init__()
+        self.conv_p = nn.Linear(in_features, out_features, bias)
+        self.conv_q = nn.Linear(in_features, out_features, False)
+
+    def forward(self, input_):
+        in_a, in_b = input_
+
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        out_a = Min2.apply(p_a, q_b)
+        out_b = Min2.apply(p_b, q_a)
+
+        return out_a, out_b
+
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
+
+
+class SoftMinLinear(nn.Module):
+    def __init__(self, in_features, out_features, bias=True):
+        super(SoftMinLinear, self).__init__()
+        self.conv_p = nn.Linear(in_features, out_features, bias)
+        self.conv_q = nn.Linear(in_features, out_features, False)
+        self.softmin = SoftMin()
+
+    def forward(self, input_):
+        in_a, in_b = input_
+
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        out_a = self.softmin(p_a, q_b)
+        out_b = self.softmin(p_b, q_a)
 
         return out_a, out_b
 

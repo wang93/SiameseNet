@@ -6,7 +6,7 @@ from torch.nn import BatchNorm2d as BatchNorm2d
 from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair
 from .subblocks import *
 
-__all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids',
+__all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY']
 
@@ -217,6 +217,27 @@ class LinearMinBlock(nn.Module):
         super(LinearMinBlock, self).__init__()
 
         self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.wlinear(x)
+        x = self.wbn(x)
+        x = [self.relu(i) for i in x]
+        return x
+
+
+class LinearMin2Block(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        # if channel_out % 2:
+        #     raise ValueError
+        super(LinearMin2Block, self).__init__()
+
+        self.wlinear = Min2Linear(channel_in, channel_out, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
                                 momentum=0.1,

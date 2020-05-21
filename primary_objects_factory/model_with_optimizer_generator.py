@@ -70,6 +70,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import Min2WMMYBraidOSNet
         model = Min2WMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
+    elif opt.model_name == 'minbnwmmybraidosnet':
+        from models.braidnet.braidosnet import MinBNWMMYBraidOSNet
+        model = MinBNWMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'mmbraidosnet':
         from models.braidnet.braidosnet import MMBraidOSNet
         model = MMBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)

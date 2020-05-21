@@ -6,7 +6,7 @@ from torch.nn import BatchNorm2d as BatchNorm2d
 from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair
 from .subblocks import *
 
-__all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block',
+__all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY']
 
@@ -227,6 +227,19 @@ class LinearMinBlock(nn.Module):
     def forward(self, x):
         x = self.wlinear(x)
         x = self.wbn(x)
+        x = [self.relu(i) for i in x]
+        return x
+
+
+class LinearMinBNBlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(LinearMinBNBlock, self).__init__()
+
+        self.wlinear = MinBNLinear(channel_in, channel_out)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.wlinear(x)
         x = [self.relu(i) for i in x]
         return x
 

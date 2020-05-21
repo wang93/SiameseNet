@@ -1,8 +1,6 @@
 # encoding: utf-8
 import math
 
-import torch as th
-import torch
 from torch import nn
 
 
@@ -82,6 +80,7 @@ class CBAM_Module(nn.Module):
         x = self.sigmoid_spatial(x)
         x = module_input * x
         return x
+
 
 class CBAMBottleneck(nn.Module):
     expansion = 4

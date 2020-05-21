@@ -7,7 +7,7 @@ from torch.nn import BatchNorm2d as BatchNorm2d
 
 from .functions import *
 
-__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d', 'SoftMinLinear',
+__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d', 'SoftMinLinear', 'MinBNLinear',
            'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear', 'MinLinear', 'Min2Linear']
 
 POOLS_DICT = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
@@ -164,6 +164,45 @@ class MinLinear(nn.Module):
         q_b = self.conv_q(in_b)
         p_b = self.conv_p(in_b)
         q_a = self.conv_q(in_a)
+
+        out_a = torch.min(p_a, q_b)
+        out_b = torch.min(p_b, q_a)
+
+        return out_a, out_b
+
+    def correct_params(self):
+        self.conv_p.weight.data /= 2.
+        self.conv_q.weight.data /= 2.
+
+
+class MinBNLinear(nn.Module):
+    def __init__(self, in_features, out_features, **kwargs):
+        super(MinBNLinear, self).__init__()
+        self.conv_p = nn.Linear(in_features, out_features, False)
+        self.conv_q = nn.Linear(in_features, out_features, False)
+
+        self.wbn_p = WBatchNorm1d(out_features,
+                                  eps=1e-05,
+                                  momentum=0.1,
+                                  affine=True,
+                                  track_running_stats=True)
+
+        self.wbn_q = WBatchNorm1d(out_features,
+                                  eps=1e-05,
+                                  momentum=0.1,
+                                  affine=True,
+                                  track_running_stats=True)
+
+    def forward(self, input_):
+        in_a, in_b = input_
+
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        p_a, p_b = self.wbn_p((p_a, p_b))
+        q_a, q_b = self.wbn_q((q_a, q_b))
 
         out_a = torch.min(p_a, q_b)
         out_b = torch.min(p_b, q_a)

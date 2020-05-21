@@ -334,6 +334,16 @@ class AABraidOSNet(BraidOSNet):
 
         self.correct_params()
 
+    def metric(self, feat_a, feat_b):
+        x = self.pair2braid(feat_a, feat_b)
+        x = self.braid(x)
+        x = self.fc(x)
+
+        if self.training:
+            return x
+        else:
+            return self.score2prob(x)
+
 
 class Min2WMMYBraidOSNet(BraidOSNet):
     reg_params = []

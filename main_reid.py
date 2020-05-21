@@ -7,7 +7,8 @@ def train(**kwargs):
     opt = prepare_running(**kwargs)
     reid_trainer = get_trainer(opt)
     if opt.evaluate:
-        reid_trainer.evaluate_best()
+        # reid_trainer.evaluate_best()
+        reid_trainer.evaluate()
         return
     reid_trainer.continue_train()
 

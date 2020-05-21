@@ -28,7 +28,7 @@ class OSNet(BraidProto):
         self.bi = osnet_x1_0(feats=feats,
                              num_classes=num_classes)
 
-        self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
+        self.dist = nn.PairwiseDistance(p=2.0)  # nn.CosineSimilarity(dim=1, eps=1e-6)
 
     def load_pretrained(self, *args, **kwargs):
         warn('some functions related to pretrained params have not been completed yet')
@@ -42,7 +42,7 @@ class OSNet(BraidProto):
         if self.training:
             raise NotImplementedError
 
-        return self.cos(feat_a, feat_b)
+        return self.dist(feat_a, feat_b)
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
@@ -58,7 +58,7 @@ class OSNet(BraidProto):
         x = self.pair2bi(a, b)
         x = self.bi(x)
         a, b = torch.chunk(x, 2, dim=0)
-        return self.cos(a, b)
+        return self.dist(a, b)
 
     def unlable_pretrained(self):
         pass
@@ -76,6 +76,7 @@ class EulideanOSNet(OSNet):
     freeze_pretrained = True
 
     def __init__(self, feats=512, num_classes=1000, **kwargs):
+        raise NotImplementedError('useless')
         nn.Module.__init__(self)
 
         self.meta = {

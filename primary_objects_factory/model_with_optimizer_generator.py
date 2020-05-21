@@ -62,6 +62,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import EulideanOSNet
         model = EulideanOSNet(feats=opt.feats, num_classes=id_num)
 
+    elif opt.model_name == 'aaosnet':
+        from models.braidnet.braidosnet import AABraidOSNet
+        model = AABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'minwmaxybraidosnet':
         from models.braidnet.braidosnet import MinWMaxYBraidOSNet
         model = MinWMaxYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)

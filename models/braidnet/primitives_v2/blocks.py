@@ -7,7 +7,7 @@ from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair
 from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
-           'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock',
+           'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -418,6 +418,29 @@ class MinMaxY(SumY):
         y = torch.cat((y_min, y_max), dim=1)
         y = self.bn(y)
         return y.view(y.size(0), -1)
+
+
+class AABlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(AABlock, self).__init__()
+        self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+        self.max_y = MaxY(channel_out, linear=True)
+        self.min_max_y = MinMaxY(channel_in, linear=True)
+
+    def forward(self, x):
+        y = self.wlinear(x)
+        y = self.wbn(y)
+        y = [self.relu(i) for i in y]
+        y = self.max_y(y)
+        z = self.min_max_y(x)
+        out = torch.cat((y, z), dim=1)
+        return out
 
 
 # class SquareMaxY(SumY):

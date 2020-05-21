@@ -70,6 +70,28 @@ class OSNet(BraidProto):
         torch.nn.Module.train(self, mode)
 
 
+class EulideanOSNet(OSNet):
+    reg_params = []
+    noreg_params = []
+    freeze_pretrained = True
+
+    def __init__(self, feats=512, num_classes=1000, **kwargs):
+        nn.Module.__init__(self)
+
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [256, 128]
+        }
+
+        self.pair2bi = Pair2Bi()
+
+        self.bi = osnet_x1_0(feats=feats,
+                             num_classes=num_classes)
+
+        self.cos = nn.PairwiseDistance(p=2.0)
+
+
 class BraidOSNet(BraidProto):
     reg_params = []
     noreg_params = []

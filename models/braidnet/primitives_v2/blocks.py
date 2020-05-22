@@ -8,6 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
+           'AA2Block',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -420,9 +421,22 @@ class MinMaxY(SumY):
         return y.view(y.size(0), -1)
 
 
+class SquareMaxY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(SquareMaxY, self).__init__(channel_in * 2, linear)
+
+    def forward(self, x_from_braid):
+        x = torch.chunk(x_from_braid, 2, dim=1)
+        y_square = torch.sub(*x).pow(2.)
+        y_max = torch.max(*x)
+        y = torch.cat((y_square, y_max), dim=1)
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
+
+
 class AABlock(nn.Module):
     def __init__(self, channel_in, channel_out):
-        super(AABlock, self).__init__()
+        super(AA2Block, self).__init__()
         self.wlinear = MinLinear(channel_in, channel_out, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
@@ -443,18 +457,28 @@ class AABlock(nn.Module):
         return out
 
 
-# class SquareMaxY(SumY):
-#     def __init__(self, channel_in, linear=False):
-#         super(SquareMaxY, self).__init__(channel_in*2, linear)
-#
-#     def forward(self, x_from_braid):
-#         x = torch.chunk(x_from_braid, 2, dim=1)
-#         y_square = torch.sub(*x) ** 2
-#         y_max = torch.max(*x)
-#         y = torch.cat((y_square, y_max), dim=1)
-#         y = self.bn(y)
-#         return y.view(y.size(0), -1)
-#
+class AA2Block(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(AA2Block, self).__init__()
+        self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
+        self.max_y = MaxY(channel_out, linear=True)
+        self.square_max_y = SquareMaxY(channel_in, linear=True)
+
+    def forward(self, x):
+        y = self.wlinear(x)
+        y = self.wbn(y)
+        y = [self.relu(i) for i in y]
+        y = self.max_y(y)
+        z = self.square_max_y(x)
+        out = torch.cat((y, z), dim=1)
+        return out
+
 #
 # class ResMaxY(SumY):
 #     def __init__(self, channel_in, linear=False):

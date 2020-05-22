@@ -8,7 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
-           'AA2Block',
+           'AA2Block', 'SquareY',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -390,6 +390,18 @@ class MaxY(SumY):
         if len(x_from_braid) != 2:
             raise NotImplementedError
         y = torch.max(*x_from_braid)
+        y = self.bn(y)
+        return y.view(y.size(0), -1)
+
+
+class SquareY(SumY):
+    def __init__(self, channel_in, linear=False):
+        super(SquareY, self).__init__(channel_in, linear)
+
+    def forward(self, x_from_braid):
+        if len(x_from_braid) != 2:
+            raise NotImplementedError
+        y = torch.sub(*x_from_braid).pow(2.)
         y = self.bn(y)
         return y.view(y.size(0), -1)
 

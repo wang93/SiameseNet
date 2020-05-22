@@ -359,7 +359,7 @@ class SquareOSNet(BraidOSNet):
         self.y = SquareY(feats, linear=True)
 
         fc_blocks = []
-        channel_in = feats * 2
+        channel_in = feats
         for i, sub_fc in enumerate(fc):
             is_tail = (i + 1 == len(fc))
             fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))

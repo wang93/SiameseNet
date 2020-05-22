@@ -180,6 +180,45 @@ class BraidOSNet(BraidProto):
         torch.nn.Module.train(self, mode)
 
 
+class MinMaxOSNet(BraidOSNet):
+    reg_params = []
+    noreg_params = []
+    freeze_pretrained = True
+
+    def __init__(self, feats=256, fc=(1,), score2prob=nn.Sigmoid()):
+        nn.Module.__init__(self)
+
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [256, 128]
+        }
+
+        self.pair2bi = Pair2Bi()
+        self.pair2braid = Pair2Braid()
+        self.bi = osnet_x1_0(feats=feats)
+        self.bi.classifier = nn.Identity()
+        self.bi2braid = Bi2Braid()
+        self.braid = nn.Identity()
+        self.y = MinMaxY(feats, linear=True)
+
+        fc_blocks = []
+        channel_in = feats * 2
+        for i, sub_fc in enumerate(fc):
+            is_tail = (i + 1 == len(fc))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
+            channel_in = sub_fc
+        self.fc = nn.Sequential(*fc_blocks)
+
+        self.score2prob = score2prob
+
+        # initialize parameters
+        for m in [self.braid, self.fc]:
+            weights_init_kaiming(m)
+
+        self.correct_params()
+
+
 class MMBraidOSNet(BraidOSNet):
     reg_params = []
     noreg_params = []
@@ -334,6 +373,25 @@ class AABraidOSNet(BraidOSNet):
             weights_init_kaiming(m)
 
         self.correct_params()
+
+    def forward(self, a=None, b=None, mode='normal'):
+        if a is None:
+            return self._default_output
+        if mode == 'extract':
+            return self.extract(a)
+        elif mode == 'metric':
+            return self.metric(a, b)
+
+        x = self.pair2bi(a, b)
+        x = self.bi(x)
+        x = self.bi2braid(x)
+        x = self.braid(x)
+        x = self.fc(x)
+
+        if self.training:
+            return x
+        else:
+            return self.score2prob(x)
 
     def metric(self, feat_a, feat_b):
         x = self.pair2braid(feat_a, feat_b)

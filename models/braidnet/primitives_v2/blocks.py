@@ -426,9 +426,8 @@ class SquareMaxY(SumY):
         super(SquareMaxY, self).__init__(channel_in * 2, linear)
 
     def forward(self, x_from_braid):
-        x = torch.chunk(x_from_braid, 2, dim=1)
-        y_square = torch.sub(*x).pow(2.)
-        y_max = torch.max(*x)
+        y_square = torch.sub(*x_from_braid).pow(2.)
+        y_max = torch.max(*x_from_braid)
         y = torch.cat((y_square, y_max), dim=1)
         y = self.bn(y)
         return y.view(y.size(0), -1)

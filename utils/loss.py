@@ -128,8 +128,10 @@ class TripletLoss4Braid(object):
     def __init__(self, margin=None):
         self.margin = margin
         if margin is not None:
+            print('use MarginRankingLoss')
             self.ranking_loss = nn.MarginRankingLoss(margin=margin)
         else:
+            print('use SoftMarginLoss')
             self.ranking_loss = nn.SoftMarginLoss()
 
     def __call__(self, score_mat, labels):

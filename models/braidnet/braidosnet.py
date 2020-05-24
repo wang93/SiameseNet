@@ -407,39 +407,8 @@ class MeanSquareOSNet(BraidOSNet):
 
         self.correct_params()
 
-    def metric(self, feat_a, feat_b):
-        x = self.pair2braid(feat_a, feat_b)
-        x = self.braid(x)
-        x = self.y(x)
-        x = self.fc(x)
 
-        if self.training:
-            return - x
-        else:
-            return - self.score2prob(x)
-
-    def forward(self, a=None, b=None, mode='normal'):
-        if a is None:
-            return self._default_output
-        if mode == 'extract':
-            return self.extract(a)
-        elif mode == 'metric':
-            return self.metric(a, b)
-
-        x = self.pair2bi(a, b)
-        x = self.bi(x)
-        x = self.bi2braid(x)
-        x = self.braid(x)
-        x = self.y(x)
-        x = self.fc(x)
-
-        if self.training:
-            return - x
-        else:
-            return - self.score2prob(x)
-
-
-class SumSquareOSNet(BraidOSNet):
+class SumSquareOSNet(MeanSquareOSNet):
     reg_params = []
     noreg_params = []
     freeze_pretrained = True

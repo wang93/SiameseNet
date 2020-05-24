@@ -135,7 +135,8 @@ class TripletLoss4Braid(object):
             self.ranking_loss = nn.SoftMarginLoss()
 
     def __call__(self, score_mat, labels):
-        dist_mat = - score_mat
+        # dist_mat = - score_mat
+        dist_mat = score_mat
         dist_ap, dist_an = hard_example_mining(dist_mat, labels, self.margin)
         y = dist_an.new().resize_as_(dist_an).fill_(1)
         if self.margin is not None:

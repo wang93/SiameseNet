@@ -422,6 +422,8 @@ class SumSquareY(nn.Module):
 class MeanSquareY(nn.Module):
     def __init__(self, channel_in, linear=False):
         nn.Module.__init__(self)
+        if not linear:
+            raise NotImplementedError
         # super(SumSquareY, self).__init__(channel_in, linear)
 
     def forward(self, x_from_braid):

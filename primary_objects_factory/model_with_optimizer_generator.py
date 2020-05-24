@@ -18,7 +18,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
 
     elif opt.loss == 'triplet':
         fc = (1,)
-        score2prob = lambda x: -x.mean(dim=1)
+        score2prob = lambda x: x.mean(dim=1)
 
     elif opt.loss == 'ce':
         fc = (2,)

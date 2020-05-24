@@ -375,7 +375,7 @@ class SquareOSNet(BraidOSNet):
         self.correct_params()
 
 
-class MeanSquareY(BraidOSNet):
+class MeanSquareOSNet(BraidOSNet):
     reg_params = []
     noreg_params = []
     freeze_pretrained = True

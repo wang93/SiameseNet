@@ -416,7 +416,7 @@ class MeanSquareOSNet(BraidOSNet):
         if self.training:
             return -x
         else:
-            return self.score2prob(x)
+            return -x
 
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
@@ -434,9 +434,9 @@ class MeanSquareOSNet(BraidOSNet):
         x = self.fc(x)
 
         if self.training:
-            return - x
+            return -x
         else:
-            return self.score2prob(x)
+            return -x
 
 
 class SumSquareOSNet(MeanSquareOSNet):

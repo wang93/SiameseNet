@@ -397,13 +397,7 @@ class SumSquareOSNet(BraidOSNet):
         self.braid = nn.Identity()
         self.y = SumSquareY(feats, linear=True)
 
-        fc_blocks = []
-        channel_in = feats
-        for i, sub_fc in enumerate(fc):
-            is_tail = (i + 1 == len(fc))
-            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
-            channel_in = sub_fc
-        self.fc = nn.Sequential(*fc_blocks)
+        self.fc = nn.Identity()
 
         self.score2prob = score2prob
 

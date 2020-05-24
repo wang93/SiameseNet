@@ -399,8 +399,6 @@ class MeanSquareOSNet(BraidOSNet):
 
         self.fc = nn.Identity()
 
-        self.score2prob = score2prob
-
         # initialize parameters
         for m in [self.braid, self.fc]:
             weights_init_kaiming(m)
@@ -462,8 +460,6 @@ class SumSquareOSNet(MeanSquareOSNet):
         self.y = SumSquareY(feats, linear=True)
 
         self.fc = nn.Identity()
-
-        self.score2prob = score2prob
 
         # initialize parameters
         for m in [self.braid, self.fc]:

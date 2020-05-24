@@ -70,6 +70,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import SumSquareOSNet
         model = SumSquareOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
+    elif opt.model_name == 'meansquareosnet':
+        from models.braidnet.braidosnet import MeanSquareOSNet
+        model = MeanSquareOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'aabraidosnet':
         from models.braidnet.braidosnet import AABraidOSNet
         model = AABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)

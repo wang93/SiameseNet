@@ -8,7 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
-           'AA2Block', 'SquareY', 'SumSquareY',
+           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -416,6 +416,19 @@ class SumSquareY(nn.Module):
             raise NotImplementedError
         y = torch.sub(*x_from_braid).pow(2.)
         y = torch.sum(y, dim=1)
+        return y.view(y.size(0), -1)
+
+
+class MeanSquareY(nn.Module):
+    def __init__(self, channel_in, linear=False):
+        nn.Module.__init__(self)
+        # super(SumSquareY, self).__init__(channel_in, linear)
+
+    def forward(self, x_from_braid):
+        if len(x_from_braid) != 2:
+            raise NotImplementedError
+        y = torch.sub(*x_from_braid).pow(2.)
+        y = torch.mean(y, dim=1)
         return y.view(y.size(0), -1)
 
 

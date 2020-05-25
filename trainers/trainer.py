@@ -145,13 +145,17 @@ class _Trainer:
         return np.array(features), ids
 
     @print_time
-    def check_discriminant(self):
+    def check_discriminant_best(self):
         if self.opt.dataset is not 'market1501':
             raise NotImplementedError
         from dataset.attributes import get_market_attributes
         from sklearn import svm
         from sklearn.metrics import confusion_matrix
         from pprint import pprint
+
+        best_epoch, best_rank1 = self._adapt_to_best()
+        print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
+              .format(best_rank1, best_epoch))
 
         features, ids = self._get_feature_with_id(self.train_loader)
 
@@ -192,6 +196,8 @@ class _Trainer:
                 print('confusion matrix:')
                 pprint(cm)
                 print()
+
+        print('The whole process should be terminated.')
 
     def _parse_data(self, inputs):
         raise NotImplementedError

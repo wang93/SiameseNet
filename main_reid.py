@@ -13,7 +13,7 @@ def train(**kwargs):
         return
 
     if opt.check_discriminant:
-        reid_trainer.check_discriminant()
+        reid_trainer.check_discriminant_best()
         return
 
     reid_trainer.continue_train()

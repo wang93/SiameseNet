@@ -204,12 +204,13 @@ class CommonData(__Dataset):
         self.gallery_dir = osp.join(dataset_dir, 'bounding_box_test')
 
         self._check_before_run()
-        train_relabel = (mode == 'retrieval')
+        # train_relabel = (mode == 'retrieval')
+        train_relabel = False
         train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, relabel=train_relabel)
         query, num_query_pids, num_query_imgs = self._process_dir(self.query_dir, relabel=False)
         gallery, num_gallery_pids, num_gallery_imgs = self._process_dir(self.gallery_dir, relabel=False)
-        #num_total_pids = num_train_pids + num_query_pids
-        #num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
+        # num_total_pids = num_train_pids + num_query_pids
+        # num_total_imgs = num_train_imgs + num_query_imgs + num_gallery_imgs
 
         self.train = train
         self.query = query
@@ -268,7 +269,7 @@ class MSMT17(__Dataset):
         self.dataset_dir = dataset_dir
         dataset_dir = osp.join(ROOT, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'train')
-        #self.test_dir = osp.join(self.dataset_dir, 'test')
+        # self.test_dir = osp.join(self.dataset_dir, 'test')
         self.query_dir = osp.join(dataset_dir, 'test')
         self.gallery_dir = osp.join(dataset_dir, 'test')
         self.list_train_path = osp.join(dataset_dir, 'list_train.txt')
@@ -277,7 +278,8 @@ class MSMT17(__Dataset):
         self.list_gallery_path = osp.join(dataset_dir, 'list_gallery.txt')
 
         self._check_before_run()
-        train_relabel = (mode == 'retrieval')
+        # train_relabel = (mode == 'retrieval')
+        train_relabel = False
         train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, self.list_train_path,
                                                                   relabel=train_relabel)
         val, num_val_pids, num_val_imgs = self._process_dir(self.train_dir, self.list_val_path, relabel=True)

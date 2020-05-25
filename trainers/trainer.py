@@ -159,7 +159,6 @@ class _Trainer:
         features_train = features[:split_border]
         features_test = features[split_border:]
 
-        ids = list(ids)
         attributes = get_market_attributes(set_name='train')
 
         attribute_ids = attributes.pop('image_index')

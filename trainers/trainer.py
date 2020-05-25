@@ -191,7 +191,11 @@ class _Trainer:
                 hitted_test = (labels_test == class_).astype(int)
 
                 model = svm.SVC(kernel='linear')
-                model.fit(features_train, hitted_train)
+                try:
+                    model.fit(features_train, hitted_train)
+                except ValueError:
+                    print('skip it due to missing pos/neg samples')
+                    continue
                 prediction = model.predict(features_test)
 
                 cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)

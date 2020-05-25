@@ -1,4 +1,5 @@
 # encoding: utf-8
+import random
 import time
 
 import numpy as np
@@ -141,6 +142,13 @@ class _Trainer:
                 features.extend(features_.tolist())
                 ids_ = [str(i.item()) for i in ids_]
                 ids.extend(ids_)
+
+        # shuffle
+        num = len(ids)
+        indices = [i for i in range(num)]
+        random.shuffle(indices)
+        features = [features[i] for i in indices]
+        ids = [ids[i] for i in indices]
 
         return np.array(features), ids
 

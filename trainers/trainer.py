@@ -200,7 +200,9 @@ class _Trainer:
                 precision_neg = float(cm[0, 0]) / float(cm[0, 0] + cm[0, 1])
                 worst_precision = min(precision_pos, precision_neg)
 
-                table.add_row([label2word[key][class_], accuracy, worst_precision])
+                table.add_row([label2word[key][class_],
+                               '{0:.3%}'.format(accuracy),
+                               '{0:.3%}'.format(worst_precision)])
 
                 print('accuracy: {0:.3%}'.format(accuracy))
                 print('worst_precision: {0:.3%}'.format(worst_precision))

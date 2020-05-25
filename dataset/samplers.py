@@ -39,7 +39,6 @@ class PosNegPairSampler(Sampler):
             pid_pair = tuple(randchoice(self.pids, size=2, replace=False))
             chosen = tuple([randchoice(self.index_dic[pid]) for pid in pid_pair])
 
-
         return chosen
 
     next = __next__  # Python 2 compatibility

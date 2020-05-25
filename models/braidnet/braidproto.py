@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 import torch.nn as nn
 from torch.nn import BatchNorm3d, BatchNorm2d, BatchNorm1d
-from torch.optim import SGD, Adam
+from torch.optim import SGD, Adam, AdamW
 
 
 def weights_init_kaiming(m: nn.Module):
@@ -71,6 +71,15 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                              betas=(0.9, 0.999),
                              eps=1e-8,
                              amsgrad=False)
+
+        elif optim == 'adamw':
+            param_groups = [{'params': self.reg_params},
+                            {'params': self.noreg_params, 'weight_decay': 0.}]
+            default = {'lr': lr, 'weight_decay': weight_decay}
+            optimizer = AdamW(param_groups, **default,
+                              betas=(0.9, 0.999),
+                              eps=1e-8,
+                              amsgrad=False)
         else:
             raise NotImplementedError
 

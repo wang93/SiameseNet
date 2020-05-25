@@ -68,7 +68,7 @@ class RandomIdentitySampler(Sampler):
             replace = False if len(t) >= self.num_instances else True
             t = randchoice(t, size=self.num_instances, replace=replace)
             ret.extend(t)
-        return iter(ret)
+        return iter(recdt)
 
     def __len__(self):
         return self.num_identities * self.num_instances

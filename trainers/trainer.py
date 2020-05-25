@@ -139,7 +139,7 @@ class _Trainer:
             ids = []
             for features_, ids_ in records:
                 features.extend(features_.tolist())
-                ids.extend(ids.tolist())
+                ids.extend(ids)
 
         return np.array(features), np.array(ids)
 

@@ -12,10 +12,9 @@ def get_market_attributes(set_name='train'):
 
     attributes = dict()
     fields = ['age', 'backpack', 'bag', 'handbag', 'downblack', 'downblue', 'downbrown', 'downgray', 'downgreen',
-              'downpink',
-              'downpurple', 'downwhite', 'downyellow', 'upblack', 'upblue', 'upgreen', 'upgray', 'uppurple', 'upred',
-              'upwhite',
-              'upyellow', 'clothes', 'down', 'up', 'hair', 'hat', 'gender', 'image_index']
+              'downpink', 'downpurple', 'downwhite', 'downyellow', 'upblack', 'upblue', 'upgreen', 'upgray',
+              'uppurple', 'upred', 'upwhite', 'upyellow', 'clothes', 'down', 'up', 'hair', 'hat', 'gender',
+              'image_index']
 
     for field in fields:
         attributes[field] = train_data[field][0][0][0].tolist()

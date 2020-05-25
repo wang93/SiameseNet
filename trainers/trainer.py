@@ -1,12 +1,13 @@
 # encoding: utf-8
 import time
 
+import numpy as np
 import torch
 
 from utils.meters import AverageMeter
 from utils.serialization import save_best_model, save_current_status, get_best_model
 from utils.standard_actions import print_time
-from utils.tensor_section_functions import slice_tensor, tensor_size
+from utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cuda, tensor_cpu
 
 
 class _Trainer:
@@ -128,6 +129,64 @@ class _Trainer:
         else:
             rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=eval_flip)
             return rank1
+
+    def _get_feature_with_id(self, dataloader):
+        with torch.no_grad():
+            fun = lambda d: self.model(d, None, mode='extract')
+            records = [(tensor_cpu(fun(tensor_cuda(data))), identity) for data, identity, _ in dataloader]
+
+            features = []
+            ids = []
+            for features_, ids_ in records:
+                features.extend(features_.tolist())
+                ids.extend(ids.tolist())
+
+        return np.array(features), np.array(ids)
+
+    @print_time
+    def check_discriminant(self):
+        if self.opt.dataset is not 'market1501':
+            raise NotImplementedError
+        from dataset.attributes import get_market_attributes
+        from sklearn import svm
+        from sklearn.metrics import confusion_matrix
+        from pprint import pprint
+
+        features, ids = self._get_feature_with_id(self.train_loader)
+
+        sample_num = len(features)
+        split_border = sample_num // 2 + 1
+        features_train = features[:split_border]
+        features_test = features[split_border:]
+
+        ids = list(ids)
+        attributes = get_market_attributes(set_name='train')
+
+        attribute_ids = attributes.pop('image_index')
+        index_map = [attribute_ids.index(i) for i in ids]
+
+        attributes_new = dict()
+        for key, label in attributes.items():
+            label_new = [label[i] for i in index_map]
+            attributes_new[key] = np.array(label_new)
+
+        for key, labels in attributes_new.items():
+            labels_train = labels[:split_border]
+            labels_test = labels[split_border:]
+            classes = set(labels)
+            for class_ in classes:
+                print('checking the discriminant for the label {0} of {1}'.format(class_, key))
+                hitted_train = (labels_train == class_).astype(int)
+                hitted_test = (labels_test == class_).astype(int)
+
+                model = svm.SVC(kernel='linear')
+                model.fit(features_train, hitted_train)
+                prediction = model.predict(features_test)
+
+                cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
+                print('confusion matrix:')
+                pprint(cm)
+                print()
 
     def _parse_data(self, inputs):
         raise NotImplementedError

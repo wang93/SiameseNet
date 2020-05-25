@@ -294,15 +294,6 @@ class ReIDEvaluator:
             features = cat_tensors(features, dim=0)  # torch.cat(features, dim=0)
         return features
 
-    def _get_feature_with_id(self, dataloader):
-        with torch.no_grad():
-            fun = lambda d: self.model(d, None, mode='extract')
-            batch_size = get_optimized_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0]))
-            batch_size = min(batch_size, len(dataloader))
-            self._change_batchsize(dataloader, batch_size)
-            records = [(tensor_cpu(fun(tensor_cuda(data))), identity) for data, identity, _ in dataloader]
-        return records
-
     def evaluate(self, eval_flip=False, re_ranking=False):
         q_pids, q_camids, g_pids, g_camids = self._get_labels()
         distmat = self._get_dist_matrix(flip_fuse=eval_flip, re_ranking=re_ranking)

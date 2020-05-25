@@ -4,6 +4,7 @@ import os
 import random
 # import glob
 import re
+import warnings
 from abc import abstractmethod
 from collections import defaultdict
 from os import path as osp
@@ -92,6 +93,8 @@ class __Dataset(object):
         self._re_parse(name)
 
     def _add_pid_incompatible_set(self, name, addset):
+        warnings.warn('adding pid incompatibe set makes pids'
+                      'inconsistent with corresponding attributes data')
         if name not in ('train', 'query', 'gallery'):
             raise ValueError
 
@@ -217,9 +220,12 @@ class CommonData(__Dataset):
         self.num_gallery_pids = num_gallery_pids
 
     def _process_dir(self, dir_path, relabel=False):
+        if relabel:
+            warnings.warn('relabel makes pid inconsistent with attributes data')
+
         img_names = os.listdir(dir_path)
         img_paths = [os.path.join(dir_path, img_name) for img_name in img_names \
-            if img_name.endswith('jpg') or img_name.endswith('png')]
+                     if img_name.endswith('jpg') or img_name.endswith('png')]
         pattern = re.compile(r'([-\d]+)_c([-\d]+)')
 
         pid_container = set()
@@ -234,10 +240,11 @@ class CommonData(__Dataset):
             pid, camid = map(int, pattern.search(img_path).groups())
             if pid == -1:
                 continue  # junk images are just ignored
-            #assert 0 <= pid <= 1501  # pid == 0 means background
-            #assert 1 <= camid <= 6
+            # assert 0 <= pid <= 1501  # pid == 0 means background
+            # assert 1 <= camid <= 6
             camid -= 1  # index starts from 0
-            if relabel: pid = pid2label[pid]
+            if relabel:
+                pid = pid2label[pid]
             dataset.append((img_path, pid, camid))
 
         num_pids = len(pid_container)
@@ -298,8 +305,10 @@ class MSMT17(__Dataset):
         #self.images_dir = ''
         #self.num_cams = 15
 
-
     def _process_dir(self, dir_path, list_path, relabel=False):
+        if relabel:
+            warnings.warn('relabel makes pids inconsistent with attributes data')
+
         with open(list_path, 'r') as txt:
             lines = txt.readlines()
         dataset = []
@@ -324,7 +333,7 @@ class MSMT17(__Dataset):
 
 def init_dataset(name, mode, subpids_num=-1):
     if 'MSMT17' in name:
-         dataset = MSMT17(name, mode)
+        dataset = MSMT17(name, mode)
     else:
         dataset = CommonData(name, mode)
 
@@ -335,6 +344,9 @@ def init_dataset(name, mode, subpids_num=-1):
 
 
 def combine_incompatible_trainsets(subsets):
+    warnings.warn('combining multiple incompatibe train sets makes pids'
+                  'inconsistent with corresponding attributes data')
+
     camid_maps = []
     camid_map_cur = 0
     for subset in subsets:
@@ -371,6 +383,9 @@ def __resampe_subsets(subsets):
 
 
 def combine_incompatibe_testsets(query_sets, gallery_sets, resample=True):
+    warnings.warn('combining multiple incompatibe test sets makes pids'
+                  'inconsistent with corresponding attributes data')
+
     if resample:
         query_sets = __resampe_subsets(query_sets)
         gallery_sets = __resampe_subsets(gallery_sets)

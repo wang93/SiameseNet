@@ -63,6 +63,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                             {'params': self.noreg_params, 'weight_decay': 0.}]
             default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
             optimizer = SGD(param_groups, **default)
+
         elif optim == 'adam':
             param_groups = [{'params': self.reg_params},
                             {'params': self.noreg_params, 'weight_decay': 0.}]
@@ -71,6 +72,15 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                              betas=(0.9, 0.999),
                              eps=1e-8,
                              amsgrad=False)
+
+        elif optim == 'amsgrad':
+            param_groups = [{'params': self.reg_params},
+                            {'params': self.noreg_params, 'weight_decay': 0.}]
+            default = {'lr': lr, 'weight_decay': weight_decay}
+            optimizer = Adam(param_groups, **default,
+                             betas=(0.9, 0.999),
+                             eps=1e-8,
+                             amsgrad=True)
 
         elif optim == 'adamw':
             param_groups = [{'params': self.reg_params},

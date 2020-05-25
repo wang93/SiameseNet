@@ -20,3 +20,5 @@ def get_market_attributes(set_name='train'):
         attributes[field] = train_data[field][0][0][0].tolist()
 
     attributes['image_index'] = [s[0] for s in attributes['image_index']]
+
+    return attributes

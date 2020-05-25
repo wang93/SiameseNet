@@ -475,7 +475,7 @@ class SquareMaxY(SumY):
 
 class AABlock(nn.Module):
     def __init__(self, channel_in, channel_out):
-        super(AA2Block, self).__init__()
+        super(AABlock, self).__init__()
         self.wlinear = MinLinear(channel_in, channel_out, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,

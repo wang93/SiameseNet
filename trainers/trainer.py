@@ -208,7 +208,7 @@ class _Trainer:
                 pprint(cm)
                 print()
 
-        print(table.get_string(sortby='Attribute'))
+        print(table)
 
         print('The whole process should be terminated.')
 

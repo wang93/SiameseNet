@@ -23,7 +23,14 @@ def get_dataloaders(opt, model_meta):
 
     pin_memory = True
 
-    if opt.train_mode == 'pair':
+    if opt.train_mode == 'normal' or opt.check_discriminant:
+        trainloader = DataLoader(
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            batch_size=opt.train_batch, num_workers=opt.workers,
+            pin_memory=pin_memory, drop_last=True, shuffle=True
+        )
+
+    elif opt.train_mode == 'pair':
         from dataset.samplers import PosNegPairSampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
@@ -41,13 +48,6 @@ def get_dataloaders(opt, model_meta):
             sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
-        )
-
-    elif opt.train_mode == 'normal':
-        trainloader = DataLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
-            batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=True, shuffle=True
         )
 
     else:

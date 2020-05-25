@@ -70,7 +70,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
             optimizer = Adam(param_groups, **default,
                              betas=(0.9, 0.999),
                              eps=1e-8,
-                             amsgrad=True)
+                             amsgrad=False)
         else:
             raise NotImplementedError
 

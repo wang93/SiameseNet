@@ -152,6 +152,7 @@ class _Trainer:
         from sklearn import svm
         from sklearn.metrics import confusion_matrix
         from pprint import pprint
+        from prettytable import PrettyTable
 
         best_epoch, best_rank1 = self._adapt_to_best()
         print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
@@ -174,6 +175,9 @@ class _Trainer:
             label_new = [label[i] for i in index_map]
             attributes_new[key] = np.array(label_new)
 
+        field_names = ('Attribute', 'Accuracy', 'The Worst Precision')
+        table = PrettyTable(field_names=field_names)
+
         for key, labels in attributes_new.items():
             labels_train = labels[:split_border]
             labels_test = labels[split_border:]
@@ -191,11 +195,20 @@ class _Trainer:
                 prediction = model.predict(features_test)
 
                 cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
-                precision = float(cm[1, 1] + cm[0, 0]) / float(cm[0, 0] + cm[0, 1] + cm[1, 1] + cm[1, 0])
-                print('precision: {0:.3%}'.format(precision))
+                accuracy = float(cm[1, 1] + cm[0, 0]) / float(cm[0, 0] + cm[0, 1] + cm[1, 1] + cm[1, 0])
+                precision_pos = float(cm[1, 1]) / float(cm[1, 1] + cm[1, 0])
+                precision_neg = float(cm[0, 0]) / float(cm[0, 0] + cm[0, 1])
+                worst_precision = min(precision_pos, precision_neg)
+
+                table.add_row([label2word[key][class_], accuracy, worst_precision])
+
+                print('accuracy: {0:.3%}'.format(accuracy))
+                print('worst_precision: {0:.3%}'.format(worst_precision))
                 print('confusion matrix:')
                 pprint(cm)
                 print()
+
+        print(table.get_string(sortby='Attribute'))
 
         print('The whole process should be terminated.')
 

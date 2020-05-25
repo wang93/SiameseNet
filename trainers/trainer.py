@@ -184,6 +184,8 @@ class _Trainer:
                 prediction = model.predict(features_test)
 
                 cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
+                precision = float(cm[1, 1]) / float(cm[0, 1] + cm[1, 1])
+                print('precision: {0:.3%}'.format(precision))
                 print('confusion matrix:')
                 pprint(cm)
                 print()

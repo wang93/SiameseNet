@@ -160,7 +160,7 @@ class _Trainer:
         features_train = features[:split_border]
         features_test = features[split_border:]
 
-        attributes = get_market_attributes(set_name='train')
+        attributes, label2word = get_market_attributes(set_name='train')
 
         attribute_ids = attributes.pop('image_index')
         index_map = [attribute_ids.index(i) for i in ids]
@@ -175,7 +175,10 @@ class _Trainer:
             labels_test = labels[split_border:]
             classes = set(labels)
             for class_ in classes:
-                print('checking the discriminant for the label {0} of {1}'.format(class_, key))
+                if len(classes) == 2 and class_ == 1:
+                    continue
+                # print('checking the discriminant for the label {0} of {1}'.format(class_, key))
+                print('checking the discriminant for {0}}'.format(label2word[key][class_]))
                 hitted_train = (labels_train == class_).astype(int)
                 hitted_test = (labels_test == class_).astype(int)
 
@@ -184,7 +187,7 @@ class _Trainer:
                 prediction = model.predict(features_test)
 
                 cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
-                precision = float(cm[1, 1]) / float(cm[0, 1] + cm[1, 1])
+                precision = float(cm[1, 1] + cm[0, 0]) / float(cm[0, 0] + cm[0, 1] + cm[1, 1] + cm[1, 0])
                 print('precision: {0:.3%}'.format(precision))
                 print('confusion matrix:')
                 pprint(cm)

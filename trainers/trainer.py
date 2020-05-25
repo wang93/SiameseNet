@@ -178,7 +178,7 @@ class _Trainer:
                 if len(classes) == 2 and class_ == 1:
                     continue
                 # print('checking the discriminant for the label {0} of {1}'.format(class_, key))
-                print('checking the discriminant for {0}}'.format(label2word[key][class_]))
+                print('checking the discriminant for {0} ...'.format(label2word[key][class_]))
                 hitted_train = (labels_train == class_).astype(int)
                 hitted_test = (labels_test == class_).astype(int)
 

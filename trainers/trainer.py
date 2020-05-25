@@ -139,9 +139,10 @@ class _Trainer:
             ids = []
             for features_, ids_ in records:
                 features.extend(features_.tolist())
+                ids_ = [str(i) for i in ids_]
                 ids.extend(ids_)
 
-        return np.array(features), np.array(ids)
+        return np.array(features), ids
 
     @print_time
     def check_discriminant(self):

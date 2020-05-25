@@ -1,4 +1,3 @@
-import numpy
 import scipy.io as scio
 
 
@@ -20,6 +19,6 @@ def get_market_attributes(set_name='train'):
     for field in fields:
         attributes[field] = train_data[field][0][0][0].tolist()
 
-    attributes['image_index'] = [s[0].astype(numpy.int64) for s in attributes['image_index']]
+    attributes['image_index'] = [str(s[0]) for s in attributes['image_index']]
 
     return attributes

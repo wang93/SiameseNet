@@ -28,6 +28,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         fc = None
         score2prob = None
 
+    elif opt.loss == 'lsce_bce':
+        fc = (opt.tail_times,)
+        score2prob = lambda x: x.mean(dim=1)
+
     else:
         raise NotImplementedError
 
@@ -58,9 +62,9 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import OSNet
         model = OSNet(feats=opt.feats, num_classes=id_num)
 
-    elif opt.model_name == 'eulideanosnet':
-        from models.braidnet.braidosnet import EulideanOSNet
-        model = EulideanOSNet(feats=opt.feats, num_classes=id_num)
+    # elif opt.model_name == 'eulideanosnet':
+    #     from models.braidnet.braidosnet import EulideanOSNet
+    #     model = EulideanOSNet(feats=opt.feats, num_classes=id_num)
 
     elif opt.model_name == 'squareosnet':
         from models.braidnet.braidosnet import SquareOSNet
@@ -77,6 +81,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     elif opt.model_name == 'aabraidosnet':
         from models.braidnet.braidosnet import AABraidOSNet
         model = AABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
+    elif opt.model_name == 'aaboss':
+        from models.braidnet.braidosnet import AABOSS
+        model = AABOSS(feats=opt.feats, fc=fc, score2prob=score2prob, num_classes=id_num)
 
     elif opt.model_name == 'aa2braidosnet':
         from models.braidnet.braidosnet import AA2BraidOSNet

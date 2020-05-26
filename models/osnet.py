@@ -428,13 +428,13 @@ class OSNet(nn.Module):
             return v
 
         y = self.classifier(v)
-        return y
-        # if self.loss == 'softmax':
-        #     return y
-        # elif self.loss == 'triplet':
-        #     return y, v
-        # else:
-        #     raise KeyError("Unsupported loss: {}".format(self.loss))
+        if isinstance(self.classifier, nn.Identity):
+            return y
+        else:
+            return y, v
+
+        # y = self.classifier(v)
+        # return y
 
 
 def init_pretrained_weights(model, key=''):

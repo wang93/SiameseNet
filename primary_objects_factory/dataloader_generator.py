@@ -8,7 +8,8 @@ from dataset.transforms import TestTransform, TrainTransform
 def get_dataloaders(opt, model_meta):
     print('initializing {} dataset ...'.format(opt.dataset))
 
-    train_relabel = (opt.train_mode == 'normal') and (not opt.check_discriminant)
+    # train_relabel = (opt.train_mode == 'normal' or opt.loss == 'lsce_bce') and (not opt.check_discriminant)
+    train_relabel = not opt.check_discriminant
     if train_relabel:
         print('note: the training set is relabeled!')
 
@@ -66,7 +67,7 @@ def get_dataloaders(opt, model_meta):
             pin_memory=pin_memory, drop_last=False
         )
 
-    elif opt.train_mode == 'cross':
+    elif opt.train_mode in ['cross', 'ide_cross']:
         from dataset.samplers import RandomIdentitySampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),

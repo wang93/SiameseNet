@@ -148,7 +148,7 @@ class _Trainer:
                         continue
                     features.append(feature_)
                     ids.append(id_)
-                
+
         # shuffle
         num = len(ids)
         indices = [i for i in range(num)]
@@ -213,6 +213,7 @@ class _Trainer:
                     model.fit(features_train, hitted_train)
                 except ValueError:
                     print('skip it due to missing pos/neg samples')
+                    print()
                     continue
                 prediction = model.predict(features_test)
 
@@ -324,6 +325,34 @@ class BraidCrossTrainer(BraidPairTrainer):
             raise ValueError
 
         self.loss = self.criterion(score_mat, self.target)
+
+
+class BraidCrossIDETrainer(BraidCrossTrainer):
+    def __init__(self, *args, **kwargs):
+        super(BraidCrossIDETrainer, self).__init__(*args, **kwargs)
+        if not isinstance(self.criterion, (list, tuple)):
+            raise ValueError
+
+        if len(self.criterion) != 2:
+            raise ValueError
+
+    def _parse_data(self, inputs):
+        imgs, pids, _ = inputs
+        self.data = imgs.cuda()
+        self.target = pids.cuda()
+
+    def _forward(self):
+        if self.phase_num == 1:
+            raise NotImplementedError('In most cases, it will waste too much computation.')
+
+        elif self.phase_num == 2:
+            predics, features = self._extract_feature(self.data)
+            score_mat = self._compare_feature(features)
+
+        else:
+            raise ValueError
+
+        self.loss = self.criterion[0](predics, self.target) + self.criterion[1](score_mat, self.target)
 
 
 class NormalTrainer(_Trainer):

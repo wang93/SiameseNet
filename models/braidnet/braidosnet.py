@@ -70,29 +70,6 @@ class OSNet(BraidProto):
         torch.nn.Module.train(self, mode)
 
 
-class EulideanOSNet(OSNet):
-    reg_params = []
-    noreg_params = []
-    freeze_pretrained = True
-
-    def __init__(self, feats=512, num_classes=1000, **kwargs):
-        raise NotImplementedError('useless')
-        nn.Module.__init__(self)
-
-        self.meta = {
-            'mean': [0.485, 0.456, 0.406],
-            'std': [0.229, 0.224, 0.225],
-            'imageSize': [256, 128]
-        }
-
-        self.pair2bi = Pair2Bi()
-
-        self.bi = osnet_x1_0(feats=feats,
-                             num_classes=num_classes)
-
-        self.cos = nn.PairwiseDistance(p=2.0)
-
-
 class BraidOSNet(BraidProto):
     reg_params = []
     noreg_params = []
@@ -532,6 +509,91 @@ class AABraidOSNet(BraidOSNet):
             return x
         else:
             return self.score2prob(x)
+
+    def metric(self, feat_a, feat_b):
+        x = self.pair2braid(feat_a, feat_b)
+        x = self.braid(x)
+        x = self.fc(x)
+
+        if self.training:
+            return x
+        else:
+            return self.score2prob(x)
+
+
+class AABOSS(BraidOSNet):
+    reg_params = []
+    noreg_params = []
+    freeze_pretrained = True
+
+    def __init__(self, feats=256, fc=(1,), num_classes=1000, score2prob=nn.Sigmoid()):
+        nn.Module.__init__(self)
+
+        self.meta = {
+            'mean': [0.485, 0.456, 0.406],
+            'std': [0.229, 0.224, 0.225],
+            'imageSize': [256, 128]
+        }
+
+        self.pair2bi = Pair2Bi()
+        self.pair2braid = Pair2Braid()
+        self.bi = osnet_x1_0(feats=feats, num_classes=num_classes)
+        self.bi2braid = Bi2Braid()
+        self.braid = AABlock(feats, feats)
+        # self.y = MinMaxY(feats, linear=True)
+
+        fc_blocks = []
+        channel_in = feats * 2 + feats
+        for i, sub_fc in enumerate(fc):
+            is_tail = (i + 1 == len(fc))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail))
+            channel_in = sub_fc
+        self.fc = nn.Sequential(*fc_blocks)
+
+        self.score2prob = score2prob
+
+        # initialize parameters
+        for m in [self.braid, self.fc]:
+            weights_init_kaiming(m)
+
+        self.correct_params()
+
+    def half_forward(self, ims):
+        """this method is used in checking discriminant"""
+        if self.training:
+            raise AttributeError
+        x = self.bi(ims)
+        x = self.braid.half_forward(x)
+        return x
+
+    def forward(self, a=None, b=None, mode='normal'):
+        if a is None:
+            return self._default_output
+        if mode == 'extract':
+            return self.extract(a)
+        elif mode == 'half':
+            return self.half_forward(a)
+        elif mode == 'metric':
+            return self.metric(a, b)
+
+        raise NotImplementedError('phase_num==1 demands too complicated implementation')
+
+        # x = self.pair2bi(a, b)
+        # if self.training:
+        #     y, x = self.bi(x)
+        # else:
+        #     x = self.bi(x)
+        # x = self.bi2braid(x)
+        # x = self.braid(x)
+        # x = self.fc(x)
+        #
+        # if self.training:
+        #     return y, x
+        # else:
+        #     return self.score2prob(x)
+
+    def extract(self, ims):
+        return self.bi(ims)
 
     def metric(self, feat_a, feat_b):
         x = self.pair2braid(feat_a, feat_b)

@@ -56,6 +56,21 @@ def get_trainer(opt):
         reid_trainer = BraidCrossTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                          summary_writer, opt.train_phase_num, done_epoch)
 
+    elif opt.train_mode == 'ide_cross':
+        if opt.loss == 'lsce_bce':
+            from utils.loss import CrossEntropyLabelSmooth
+            from utils.loss import CrossSimilarityBCELoss
+            criterion = [CrossEntropyLabelSmooth(num_classes=train_id_num),
+                         CrossSimilarityBCELoss()]
+
+        else:
+            raise NotImplementedError
+
+        from trainers.trainer import BraidCrossIDETrainer
+        reid_trainer = BraidCrossIDETrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy,
+                                            criterion,
+                                            summary_writer, opt.train_phase_num, done_epoch)
+
     elif opt.train_mode == 'normal':
         if opt.loss == 'lsce':
             from utils.loss import CrossEntropyLabelSmooth

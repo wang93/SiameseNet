@@ -141,10 +141,14 @@ class _Trainer:
             features = []
             ids = []
             for features_, ids_ in records:
-                features.extend(features_.tolist())
+                features_ = features_.tolist()
                 ids_ = [str(i.item()) for i in ids_]
-                ids.extend(ids_)
-
+                for id_, feature_ in zip(ids_, features_):
+                    if id_ == '0':
+                        continue
+                    features.append(feature_)
+                    ids.append(id_)
+                
         # shuffle
         num = len(ids)
         indices = [i for i in range(num)]

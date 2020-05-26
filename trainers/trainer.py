@@ -132,6 +132,7 @@ class _Trainer:
             return rank1
 
     def _get_feature_with_id(self, dataloader):
+        self.model.eval()
         with torch.no_grad():
             mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'
             fun = lambda d: self.model(d, None, mode=mode)

@@ -154,7 +154,7 @@ class _Trainer:
         return np.array(features), ids
 
     @print_time
-    def check_discriminant_best(self):
+    def check_discriminant_best(self, set_name='train'):
         if self.opt.dataset is not 'market1501':
             raise NotImplementedError
         from dataset.attributes import get_market_attributes
@@ -167,14 +167,18 @@ class _Trainer:
         print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
               .format(best_rank1, best_epoch))
 
-        features, ids = self._get_feature_with_id(self.train_loader)
+        if set_name == 'train':
+            data_loader = self.train_loader
+        elif set_name == 'query':
+            data_loader = self.evaluator.queryloader
+        features, ids = self._get_feature_with_id(data_loader)
 
         sample_num = len(features)
         split_border = sample_num // 2 + 1
         features_train = features[:split_border]
         features_test = features[split_border:]
 
-        attributes, label2word = get_market_attributes(set_name='train')
+        attributes, label2word = get_market_attributes(set_name=set_name)
 
         attribute_ids = attributes.pop('image_index')
         index_map = [attribute_ids.index(i) for i in ids]

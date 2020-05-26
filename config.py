@@ -61,7 +61,7 @@ class DefaultConfig(object):
     exp_name = 'test'
     exp_dir = './exps/test'
 
-    check_discriminant = False
+    check_discriminant = ''
 
     def parse_(self, kwargs):
         for k, v in kwargs.items():

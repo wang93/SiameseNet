@@ -106,7 +106,7 @@ class MMConv2d(nn.Module):
 
 class WLinear(nn.Module):
     def __init__(self, in_features, out_features, bias=True):
-        super(WLinear, self).__init__()
+        nn.Module.__init__(self)
         self.conv_p = nn.Linear(in_features, out_features, bias)
         self.conv_q = nn.Linear(in_features, out_features, False)
 
@@ -116,16 +116,22 @@ class WLinear(nn.Module):
         out_b = self.conv_p(in_b) + self.conv_q(in_a)
         return out_a, out_b
 
+    def half_forward(self, in_a):
+        """this method is used in checking discriminant"""
+        out_a = self.conv_p(in_a)
+        out_b = self.conv_q(in_a)
+        return torch.cat((out_a, out_b), dim=1)
+
     def correct_params(self):
         self.conv_p.weight.data /= 2.
         self.conv_q.weight.data /= 2.
 
 
-class MMLinear(nn.Module):
+class MMLinear(WLinear):
     def __init__(self, in_features, out_features, bias=True):
-        super(MMLinear, self).__init__()
-        self.conv_p = nn.Linear(in_features, out_features, bias)
-        self.conv_q = nn.Linear(in_features, out_features, False)
+        super(MMLinear, self).__init__(in_features, out_features, bias)
+        # self.conv_p = nn.Linear(in_features, out_features, bias)
+        # self.conv_q = nn.Linear(in_features, out_features, False)
 
     def forward(self, input_):
         in_a, in_b = input_
@@ -146,16 +152,12 @@ class MMLinear(nn.Module):
 
         return out_a, out_b
 
-    def correct_params(self):
-        self.conv_p.weight.data /= 2.
-        self.conv_q.weight.data /= 2.
 
-
-class MinLinear(nn.Module):
+class MinLinear(WLinear):
     def __init__(self, in_features, out_features, bias=True):
-        super(MinLinear, self).__init__()
-        self.conv_p = nn.Linear(in_features, out_features, bias)
-        self.conv_q = nn.Linear(in_features, out_features, False)
+        super(MinLinear, self).__init__(in_features, out_features, bias)
+        # self.conv_p = nn.Linear(in_features, out_features, bias)
+        # self.conv_q = nn.Linear(in_features, out_features, False)
 
     def forward(self, input_):
         in_a, in_b = input_
@@ -170,16 +172,12 @@ class MinLinear(nn.Module):
 
         return out_a, out_b
 
-    def correct_params(self):
-        self.conv_p.weight.data /= 2.
-        self.conv_q.weight.data /= 2.
 
-
-class MinBNLinear(nn.Module):
+class MinBNLinear(WLinear):
     def __init__(self, in_features, out_features, **kwargs):
-        super(MinBNLinear, self).__init__()
-        self.conv_p = nn.Linear(in_features, out_features, False)
-        self.conv_q = nn.Linear(in_features, out_features, False)
+        super(MinBNLinear, self).__init__(in_features, out_features, bias=False)
+        # self.conv_p = nn.Linear(in_features, out_features, False)
+        # self.conv_q = nn.Linear(in_features, out_features, False)
 
         self.wbn_p = WBatchNorm1d(out_features,
                                   eps=1e-05,
@@ -209,16 +207,12 @@ class MinBNLinear(nn.Module):
 
         return out_a, out_b
 
-    def correct_params(self):
-        self.conv_p.weight.data /= 2.
-        self.conv_q.weight.data /= 2.
 
-
-class Min2Linear(nn.Module):
+class Min2Linear(WLinear):
     def __init__(self, in_features, out_features, bias=True):
-        super(Min2Linear, self).__init__()
-        self.conv_p = nn.Linear(in_features, out_features, bias)
-        self.conv_q = nn.Linear(in_features, out_features, False)
+        super(Min2Linear, self).__init__(in_features, out_features, bias)
+        # self.conv_p = nn.Linear(in_features, out_features, bias)
+        # self.conv_q = nn.Linear(in_features, out_features, False)
 
     def forward(self, input_):
         in_a, in_b = input_
@@ -233,21 +227,16 @@ class Min2Linear(nn.Module):
 
         return out_a, out_b
 
-    def correct_params(self):
-        self.conv_p.weight.data /= 2.
-        self.conv_q.weight.data /= 2.
 
-
-class SoftMinLinear(nn.Module):
+class SoftMinLinear(WLinear):
     def __init__(self, in_features, out_features, bias=True):
-        super(SoftMinLinear, self).__init__()
-        self.conv_p = nn.Linear(in_features, out_features, bias)
-        self.conv_q = nn.Linear(in_features, out_features, False)
+        super(SoftMinLinear, self).__init__(in_features, out_features, bias)
+        # self.conv_p = nn.Linear(in_features, out_features, bias)
+        # self.conv_q = nn.Linear(in_features, out_features, False)
         self.softmin = SoftMin()
 
     def forward(self, input_):
         in_a, in_b = input_
-
         p_a = self.conv_p(in_a)
         q_b = self.conv_q(in_b)
         p_b = self.conv_p(in_b)
@@ -257,10 +246,6 @@ class SoftMinLinear(nn.Module):
         out_b = self.softmin(p_b, q_a)
 
         return out_a, out_b
-
-    def correct_params(self):
-        self.conv_p.weight.data /= 2.
-        self.conv_q.weight.data /= 2.
 
 
 class WBatchNorm2d(nn.Module):

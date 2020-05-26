@@ -506,11 +506,19 @@ class AABraidOSNet(BraidOSNet):
 
         self.correct_params()
 
+    def half_forward(self, ims):
+        """this method is used in checking discriminant"""
+        x = self.bi(ims)
+        x = self.braid.half_forward(x)
+        return x
+
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
             return self._default_output
         if mode == 'extract':
             return self.extract(a)
+        elif mode == 'half':
+            return self.half_forward(a)
         elif mode == 'metric':
             return self.metric(a, b)
 

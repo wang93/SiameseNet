@@ -495,6 +495,11 @@ class AABlock(nn.Module):
         out = torch.cat((y, z), dim=1)
         return out
 
+    def half_forward(self, x):
+        """this method is used in checking discriminant"""
+        y = self.wlinear.half_forward(x)
+        return torch.cat((x, y), dim=1)
+
 
 class AA2Block(nn.Module):
     def __init__(self, channel_in, channel_out):

@@ -133,7 +133,8 @@ class _Trainer:
 
     def _get_feature_with_id(self, dataloader):
         with torch.no_grad():
-            fun = lambda d: self.model(d, None, mode='extract')
+            mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'
+            fun = lambda d: self.model(d, None, mode=mode)
             records = [(tensor_cpu(fun(tensor_cuda(data))), identity) for data, identity, _ in dataloader]
 
             features = []

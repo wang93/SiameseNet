@@ -9,6 +9,8 @@ def get_dataloaders(opt, model_meta):
     print('initializing {} dataset ...'.format(opt.dataset))
 
     train_relabel = (opt.train_mode == 'normal') and (not opt.check_discriminant)
+    if train_relabel:
+        print('note: the training set is relabeled!')
 
     if isinstance(opt.dataset, list):
         dataset = data_info.init_united_datasets(names=opt.dataset, train_relabel=train_relabel)

@@ -169,8 +169,8 @@ class _Trainer:
 
         if set_name == 'train':
             data_loader = self.train_loader
-        elif set_name == 'query':
-            data_loader = self.evaluator.queryloader
+        elif set_name == 'test':
+            data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
         features, ids = self._get_feature_with_id(data_loader)
 
         sample_num = len(features)

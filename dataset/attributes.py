@@ -2,12 +2,6 @@ import scipy.io as scio
 
 
 def get_market_attributes(set_name='train'):
-    if set_name == 'gallery':
-        raise NotImplementedError
-
-    if set_name == 'query':
-        set_name = 'test'
-
     path = 'Market-1501_Attribute/market_attribute.mat'
     data = scio.loadmat(path)
     data = data['market_attribute'][0][0]

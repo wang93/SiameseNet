@@ -27,7 +27,26 @@ def get_dataloaders(opt, model_meta):
 
     pin_memory = True
 
-    if opt.train_mode == 'normal' or opt.check_discriminant:
+    if opt.check_discriminant:
+        trainloader = DataLoader(
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            batch_size=opt.train_batch, num_workers=opt.workers,
+            pin_memory=pin_memory, drop_last=True, shuffle=True
+        )
+
+        queryloader = DataLoader(
+            ImageData(dataset.query.extend(dataset.gallery), TestTransform(opt.datatype, model_meta)),
+            batch_size=opt.test_batch, num_workers=opt.workers,
+            pin_memory=pin_memory
+        )
+
+        return {'trainloader': trainloader,
+                'queryloader': queryloader,
+                'galleryloader': None,
+                'queryFliploader': None,
+                'galleryFliploader': None}
+
+    if opt.train_mode == 'normal':
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             batch_size=opt.train_batch, num_workers=opt.workers,

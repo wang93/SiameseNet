@@ -8,10 +8,12 @@ from dataset.transforms import TestTransform, TrainTransform
 def get_dataloaders(opt, model_meta):
     print('initializing {} dataset ...'.format(opt.dataset))
 
+    train_relabel = (opt.train_mode == 'normal') and (not opt.check_discriminant)
+
     if isinstance(opt.dataset, list):
-        dataset = data_info.init_united_datasets(names=opt.dataset, mode=opt.mode)
+        dataset = data_info.init_united_datasets(names=opt.dataset, train_relabel=train_relabel)
     else:
-        dataset = data_info.init_dataset(name=opt.dataset, mode=opt.mode)
+        dataset = data_info.init_dataset(name=opt.dataset, train_relabel=train_relabel)
 
     if opt.test_pids_num >= 0:
         dataset.subtest2train(opt.test_pids_num)

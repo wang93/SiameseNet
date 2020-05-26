@@ -196,7 +196,7 @@ class CommonData(__Dataset):
     # identities: 1501 (+1 for background)
     # images: 12936 (train) + 3368 (query) + 15913 (gallery)
     """
-    def __init__(self, dataset_dir, mode):
+    def __init__(self, dataset_dir, train_relabel):
         self.dataset_dir = dataset_dir
         dataset_dir = osp.join(ROOT, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'bounding_box_train')
@@ -205,7 +205,7 @@ class CommonData(__Dataset):
 
         self._check_before_run()
         # train_relabel = (mode == 'retrieval')
-        train_relabel = False
+        # train_relabel = False
         train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, relabel=train_relabel)
         query, num_query_pids, num_query_imgs = self._process_dir(self.query_dir, relabel=False)
         gallery, num_gallery_pids, num_gallery_imgs = self._process_dir(self.gallery_dir, relabel=False)
@@ -265,7 +265,8 @@ class MSMT17(__Dataset):
     # images: 32621 (train) + 11659 (query) + 82161 (gallery)
     # cameras: 15
     """
-    def __init__(self, dataset_dir, mode):
+
+    def __init__(self, dataset_dir, train_relabel):
         self.dataset_dir = dataset_dir
         dataset_dir = osp.join(ROOT, dataset_dir)
         self.train_dir = osp.join(dataset_dir, 'train')
@@ -279,7 +280,7 @@ class MSMT17(__Dataset):
 
         self._check_before_run()
         # train_relabel = (mode == 'retrieval')
-        train_relabel = False
+        # train_relabel = False
         train, num_train_pids, num_train_imgs = self._process_dir(self.train_dir, self.list_train_path,
                                                                   relabel=train_relabel)
         val, num_val_pids, num_val_imgs = self._process_dir(self.train_dir, self.list_val_path, relabel=True)
@@ -333,13 +334,13 @@ class MSMT17(__Dataset):
         return dataset, num_pids, num_imgs
 
 
-def init_dataset(name, mode, subpids_num=-1):
+def init_dataset(name, train_relabel, subpids_num=-1):
     if 'MSMT17' in name:
-        dataset = MSMT17(name, mode)
+        dataset = MSMT17(name, train_relabel)
     else:
-        dataset = CommonData(name, mode)
+        dataset = CommonData(name, train_relabel)
 
-    if subpids_num>0:
+    if subpids_num > 0:
         dataset.subsample_test_set(subpids_num)
 
     return dataset
@@ -427,16 +428,16 @@ def combine_incompatibe_testsets(query_sets, gallery_sets, resample=True):
     return (combined_query_set, num_query_pids, num_query_imgs), (combined_gallery_set, num_gallery_pids, num_gallery_imgs)
 
 
-def init_united_datasets(names, mode):
-    datasets = [init_dataset(name, mode) for name in names]
+def init_united_datasets(names, train_relabel):
+    datasets = [init_dataset(name, train_relabel) for name in names]
     dataset_keep = datasets[0]
     train, num_train_pids, num_train_imgs = combine_incompatible_trainsets([d.train for d in datasets])
 
     query_sets = [d.query for d in datasets]
     gallery_sets = [d.gallery for d in datasets]
 
-    (query, num_query_pids, num_query_imgs),\
-    (gallery, num_gallery_pids, num_gallery_imgs)\
+    (query, num_query_pids, num_query_imgs), \
+    (gallery, num_gallery_pids, num_gallery_imgs) \
         = combine_incompatibe_testsets(query_sets, gallery_sets)
 
     del query_sets, gallery_sets, datasets

@@ -336,7 +336,7 @@ class BraidCrossIDETrainer(BraidCrossTrainer):
         if len(self.criterion) != 2:
             raise ValueError
 
-        self.trade_off = kwargs['trade_off']
+        self.trade_off = self.opt.trade_off
 
     def _parse_data(self, inputs):
         imgs, pids, _ = inputs

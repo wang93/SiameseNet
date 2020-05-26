@@ -336,6 +336,8 @@ class BraidCrossIDETrainer(BraidCrossTrainer):
         if len(self.criterion) != 2:
             raise ValueError
 
+        self.trade_off = kwargs['trade_off']
+
     def _parse_data(self, inputs):
         imgs, pids, _ = inputs
         self.data = imgs.cuda()
@@ -352,7 +354,8 @@ class BraidCrossIDETrainer(BraidCrossTrainer):
         else:
             raise ValueError
 
-        self.loss = self.criterion[0](predics, self.target) + self.criterion[1](score_mat, self.target)
+        self.loss = self.trade_off * self.criterion[0](predics, self.target) \
+                    + (1 - self.trade_off) * self.criterion[1](score_mat, self.target)
 
 
 class NormalTrainer(_Trainer):

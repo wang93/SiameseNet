@@ -19,6 +19,7 @@ class DefaultConfig(object):
 
     # optimization options
     loss = 'bce'  # bce / triplet / ce / lsce
+    trade_off = 0.  # trade-off parameter to balance two losses
     optim = 'sgd'
     max_epoch = 280
     iter_num_per_epoch = 500

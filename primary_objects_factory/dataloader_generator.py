@@ -34,8 +34,10 @@ def get_dataloaders(opt, model_meta):
             pin_memory=pin_memory, drop_last=True, shuffle=True
         )
 
+        dataset.query.extend(dataset.gallery)
+
         queryloader = DataLoader(
-            ImageData(dataset.query.extend(dataset.gallery), TestTransform(opt.datatype, model_meta)),
+            ImageData(dataset.query, TestTransform(opt.datatype, model_meta)),
             batch_size=opt.test_batch, num_workers=opt.workers,
             pin_memory=pin_memory
         )

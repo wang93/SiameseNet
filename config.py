@@ -37,7 +37,6 @@ class DefaultConfig(object):
     sync_bn = False
 
     # evaluation optionsgit
-    evaluate = False
     savefig = False
     re_ranking = False
     eval_step = 50
@@ -62,6 +61,7 @@ class DefaultConfig(object):
     exp_name = 'test'
     exp_dir = './exps/test'
 
+    evaluate = False
     check_discriminant = ''
     check_element_discriminant = ''
 

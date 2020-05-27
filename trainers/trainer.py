@@ -212,7 +212,7 @@ class _Trainer:
                 hitted_train = (labels_train == class_).astype(int)
                 hitted_test = (labels_test == class_).astype(int)
 
-                model = svm.SVC(kernel='linear', max_iter=100000)
+                model = svm.SVC(kernel='linear', max_iter=1000000)
                 try:
                     model.fit(features_train, hitted_train)
                 except ValueError:

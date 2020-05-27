@@ -323,7 +323,7 @@ class _Trainer:
                     features_test_one = features_test[i]
 
                     model = svm.SVC(kernel='linear')
-                    model.fit(features_train_one, hitted_train)
+                    model.fit(features_train_one.rehsape(-1, 1), hitted_train)
                     prediction = model.predict(features_test_one)
 
                     cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)

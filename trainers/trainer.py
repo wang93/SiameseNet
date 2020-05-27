@@ -319,8 +319,8 @@ class _Trainer:
                 best_worst_precision = 0.
                 for i in range(feature_length):
                     print('{0}/{1}'.format(i + 1, feature_length))
-                    features_train_one = features_train[i]
-                    features_test_one = features_test[i]
+                    features_train_one = features_train[:, i]
+                    features_test_one = features_test[:, i]
 
                     model = svm.SVC(kernel='linear')
                     model.fit(features_train_one.reshape(-1, 1), hitted_train)

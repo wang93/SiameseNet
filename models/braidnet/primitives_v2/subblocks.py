@@ -49,17 +49,18 @@ class ChanelScaling(nn.Module):
         self.linear = linear
         if linear:
             self.alpha = nn.Parameter(torch.zeros(channels))
-            self.cs = ChannelScaling1d()
+            # self.cs = ChannelScaling1d()
         else:
             self.alpha = nn.Parameter(torch.zeros((channels, 1, 1)))
-            self.cs = ChannelScaling2d()
+            #self.cs = ChannelScaling2d()
 
     def forward(self, input_):
-        if self.linear:
-            cs = ChannelScaling1d()
-        else:
-            cs = ChannelScaling2d()
-        return cs.apply(self.alpha, input_)
+        return input_ * self.alpha.exp()
+        # if self.linear:
+        #     cs = ChannelScaling1d()
+        # else:
+        #     cs = ChannelScaling2d()
+        # return cs.apply(self.alpha, input_)
 
 
 class WConv2d(nn.Module):

@@ -242,13 +242,17 @@ class _Trainer:
 
         print(table)
 
-        plt.bar(x, y, width=0.1)
+        fig, ax = plt.subplots()
+
+        plt.bar(x, y, width=0.2)
         plt.xticks(x, x, rotation=90)
         plt.xlabel('Attribute', fontsize=14)
         plt.ylabel('The Worst Precision (%)', fontsize=14)
         plt.ylim(0., 100.)
-        params = {'figure.figsize': '12, 4'}
+        params = {'figure.figsize': '24, 6'}
         plt.rcParams.update(params)
+
+        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)

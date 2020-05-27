@@ -324,7 +324,7 @@ class _Trainer:
 
                     model = svm.SVC(kernel='linear')
                     model.fit(features_train_one.reshape(-1, 1), hitted_train)
-                    prediction = model.predict(features_test_one)
+                    prediction = model.predict(features_test_one.reshape(-1, 1))
 
                     cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
                     precision_pos = float(cm[1, 1]) / float(cm[1, 1] + cm[1, 0])

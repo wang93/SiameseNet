@@ -242,11 +242,13 @@ class _Trainer:
 
         print(table)
 
-        plt.bar(x, y, width=0.2)
-        plt.xticks(x, x, rotation=30)
+        plt.bar(x, y, width=0.1)
+        plt.xticks(x, x, rotation=90)
         plt.xlabel('Attribute', fontsize=14)
         plt.ylabel('The Worst Precision (%)', fontsize=14)
         plt.ylim(0., 100.)
+        params = {'figure.figsize': '12, 4'}
+        plt.rcParams.update(params)
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)

@@ -1,10 +1,17 @@
 # encoding: utf-8
+import os
 import random
 import time
+from pprint import pprint
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from prettytable import PrettyTable
+from sklearn import svm
+from sklearn.metrics import confusion_matrix
 
+from dataset.attributes import get_market_attributes
 from utils.meters import AverageMeter
 from utils.serialization import save_best_model, save_current_status, get_best_model
 from utils.standard_actions import print_time
@@ -162,13 +169,6 @@ class _Trainer:
     def check_discriminant_best(self, set_name='train'):
         if self.opt.dataset is not 'market1501':
             raise NotImplementedError
-        from dataset.attributes import get_market_attributes
-        from sklearn import svm
-        from sklearn.metrics import confusion_matrix
-        from pprint import pprint
-        from prettytable import PrettyTable
-        import matplotlib.pyplot as plt
-        import os
 
         best_epoch, best_rank1 = self._adapt_to_best()
         print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
@@ -265,17 +265,12 @@ class _Trainer:
         print('The whole process should be terminated.')
 
     @print_time
-    def check_pair_effect_best(self, set_name='train'):
+    def check_element_discriminant_best(self, set_name='train'):
         if self.opt.dataset is not 'market1501':
             raise NotImplementedError
-        from dataset.attributes import get_market_attributes
-        from pprint import pprint
-        from prettytable import PrettyTable
-        import matplotlib.pyplot as plt
-        import os
 
         best_epoch, best_rank1 = self._adapt_to_best()
-        print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
+        print('check element discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
               .format(best_rank1, best_epoch))
 
         if set_name == 'train':
@@ -299,7 +294,7 @@ class _Trainer:
             label_new = [label[i] for i in index_map]
             attributes_new[key] = np.array(label_new)
 
-        field_names = ('Attribute', 'Accuracy', 'The Worst Precision')
+        field_names = ('Attribute', 'The Best Worst Precision')
         table = PrettyTable(field_names=field_names)
 
         x = []
@@ -315,33 +310,36 @@ class _Trainer:
                 print('checking the discriminant for {0} ...'.format(label2word[key][class_]))
                 hitted_train = (labels_train == class_).astype(int)
                 hitted_test = (labels_test == class_).astype(int)
-
-                model = svm.SVC(kernel='linear')
-                try:
-                    model.fit(features_train, hitted_train)
-                except ValueError:
+                if sum(hitted_train) == 0 or sum(hitted_train) == len(hitted_train):
                     print('skip it due to missing pos/neg samples')
                     print()
                     continue
-                prediction = model.predict(features_test)
 
-                cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
-                accuracy = float(cm[1, 1] + cm[0, 0]) / float(cm[0, 0] + cm[0, 1] + cm[1, 1] + cm[1, 0])
-                precision_pos = float(cm[1, 1]) / float(cm[1, 1] + cm[1, 0])
-                precision_neg = float(cm[0, 0]) / float(cm[0, 0] + cm[0, 1])
-                worst_precision = min(precision_pos, precision_neg)
+                feature_length = features_train.shape[1]
+                best_worst_precision = 0.
+                for i in range(feature_length):
+                    print('{0}/{1}'.format(i, feature_length))
+                    features_train_one = features_train[i]
+                    features_test_one = features_test[i]
+
+                    model = svm.SVC(kernel='linear')
+                    model.fit(features_train_one, hitted_train)
+                    prediction = model.predict(features_test_one)
+
+                    cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
+                    precision_pos = float(cm[1, 1]) / float(cm[1, 1] + cm[1, 0])
+                    precision_neg = float(cm[0, 0]) / float(cm[0, 0] + cm[0, 1])
+                    worst_precision = min(precision_pos, precision_neg)
+
+                    best_worst_precision = max(best_worst_precision, worst_precision)
 
                 table.add_row([label2word[key][class_],
-                               '{0:.3%}'.format(accuracy),
-                               '{0:.3%}'.format(worst_precision)])
+                               '{0:.3%}'.format(best_worst_precision)])
 
                 x.append(label2word[key][class_])
-                y.append(worst_precision * 100)
+                y.append(best_worst_precision * 100)
 
-                print('accuracy: {0:.3%}'.format(accuracy))
-                print('worst_precision: {0:.3%}'.format(worst_precision))
-                print('confusion matrix:')
-                pprint(cm)
+                print('best_worst_precision: {0:.3%}'.format(best_worst_precision))
                 print()
 
         print(table)
@@ -351,7 +349,7 @@ class _Trainer:
         plt.bar(x, y, width=0.2)
         plt.xticks(x, x, rotation=90)
         plt.xlabel('Attribute', fontsize=14)
-        plt.ylabel('The Worst Precision (%)', fontsize=14)
+        plt.ylabel('The Best Worst Precision (%)', fontsize=14)
         plt.ylim(0., 100.)
         params = {'figure.figsize': '24, 6'}
         plt.rcParams.update(params)
@@ -361,7 +359,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')

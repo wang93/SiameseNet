@@ -16,6 +16,10 @@ def train(**kwargs):
         reid_trainer.check_discriminant_best(opt.check_discriminant)
         return
 
+    if opt.check_element_discriminant:
+        reid_trainer.check_element_discriminant_best(opt.check_element_discriminant)
+        return
+
     reid_trainer.continue_train()
 
 

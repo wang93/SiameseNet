@@ -318,7 +318,7 @@ class _Trainer:
                 feature_length = features_train.shape[1]
                 best_worst_precision = 0.
                 for i in range(feature_length):
-                    print('{0}/{1}'.format(i, feature_length))
+                    print('{0}/{1}'.format(i + 1, feature_length))
                     features_train_one = features_train[i]
                     features_test_one = features_test[i]
 

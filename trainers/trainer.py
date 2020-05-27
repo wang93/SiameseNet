@@ -259,7 +259,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_balancedDA_{1}.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -359,7 +359,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_balancedEDA_{1}.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')

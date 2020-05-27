@@ -212,7 +212,7 @@ class _Trainer:
                 hitted_train = (labels_train == class_).astype(int)
                 hitted_test = (labels_test == class_).astype(int)
 
-                model = svm.SVC(kernel='linear', class_weight='balanced')
+                model = svm.SVC(kernel='linear')
                 try:
                     model.fit(features_train, hitted_train)
                 except ValueError:
@@ -259,7 +259,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_balancedDA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -322,7 +322,7 @@ class _Trainer:
                     features_train_one = features_train[:, i]
                     features_test_one = features_test[:, i]
 
-                    model = svm.SVC(kernel='linear', class_weight='balanced')
+                    model = svm.SVC(kernel='linear')
                     model.fit(features_train_one.reshape(-1, 1), hitted_train)
                     prediction = model.predict(features_test_one.reshape(-1, 1))
 
@@ -359,7 +359,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_balancedEDA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')

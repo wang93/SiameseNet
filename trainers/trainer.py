@@ -246,12 +246,13 @@ class _Trainer:
         plt.xticks(x, x, rotation=30)
         plt.xlabel('Attribute', fontsize=14)
         plt.ylabel('The Worst Precision (%)', fontsize=14)
-        plt.ylim(0., 1.)
+        plt.ylim(0., 100.)
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, 'discriminant_analysis_on_{0}_set.png'.format(set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.close()
 
         print('The whole process should be terminated.')
 

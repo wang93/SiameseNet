@@ -242,6 +242,110 @@ class _Trainer:
 
         print(table)
 
+        # fig, ax = plt.subplots()
+
+        plt.bar(x, y, width=0.2)
+        plt.xticks(x, x, rotation=90)
+        plt.xlabel('Attribute', fontsize=14)
+        plt.ylabel('The Worst Precision (%)', fontsize=14)
+        plt.ylim(0., 100.)
+        params = {'figure.figsize': '24, 6'}
+        plt.rcParams.update(params)
+
+        plt.tight_layout()
+
+        # plt.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
+
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize')
+        os.makedirs(save_dir, exist_ok=True)
+
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.close()
+
+        print('The whole process should be terminated.')
+
+    @print_time
+    def check_pair_effect_best(self, set_name='train'):
+        if self.opt.dataset is not 'market1501':
+            raise NotImplementedError
+        from dataset.attributes import get_market_attributes
+        from pprint import pprint
+        from prettytable import PrettyTable
+        import matplotlib.pyplot as plt
+        import os
+
+        best_epoch, best_rank1 = self._adapt_to_best()
+        print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
+              .format(best_rank1, best_epoch))
+
+        if set_name == 'train':
+            data_loader = self.train_loader
+        elif set_name == 'test':
+            data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
+        features, ids = self._get_feature_with_id(data_loader)
+
+        sample_num = len(features)
+        split_border = sample_num // 2 + 1
+        features_train = features[:split_border]
+        features_test = features[split_border:]
+
+        attributes, label2word = get_market_attributes(set_name=set_name)
+
+        attribute_ids = attributes.pop('image_index')
+        index_map = [attribute_ids.index(i) for i in ids]
+
+        attributes_new = dict()
+        for key, label in attributes.items():
+            label_new = [label[i] for i in index_map]
+            attributes_new[key] = np.array(label_new)
+
+        field_names = ('Attribute', 'Accuracy', 'The Worst Precision')
+        table = PrettyTable(field_names=field_names)
+
+        x = []
+        y = []
+        for key, labels in attributes_new.items():
+            labels_train = labels[:split_border]
+            labels_test = labels[split_border:]
+            classes = set(labels)
+            for class_ in classes:
+                if len(classes) == 2 and class_ == 1:
+                    continue
+                # print('checking the discriminant for the label {0} of {1}'.format(class_, key))
+                print('checking the discriminant for {0} ...'.format(label2word[key][class_]))
+                hitted_train = (labels_train == class_).astype(int)
+                hitted_test = (labels_test == class_).astype(int)
+
+                model = svm.SVC(kernel='linear')
+                try:
+                    model.fit(features_train, hitted_train)
+                except ValueError:
+                    print('skip it due to missing pos/neg samples')
+                    print()
+                    continue
+                prediction = model.predict(features_test)
+
+                cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
+                accuracy = float(cm[1, 1] + cm[0, 0]) / float(cm[0, 0] + cm[0, 1] + cm[1, 1] + cm[1, 0])
+                precision_pos = float(cm[1, 1]) / float(cm[1, 1] + cm[1, 0])
+                precision_neg = float(cm[0, 0]) / float(cm[0, 0] + cm[0, 1])
+                worst_precision = min(precision_pos, precision_neg)
+
+                table.add_row([label2word[key][class_],
+                               '{0:.3%}'.format(accuracy),
+                               '{0:.3%}'.format(worst_precision)])
+
+                x.append(label2word[key][class_])
+                y.append(worst_precision * 100)
+
+                print('accuracy: {0:.3%}'.format(accuracy))
+                print('worst_precision: {0:.3%}'.format(worst_precision))
+                print('confusion matrix:')
+                pprint(cm)
+                print()
+
+        print(table)
+
         fig, ax = plt.subplots()
 
         plt.bar(x, y, width=0.2)

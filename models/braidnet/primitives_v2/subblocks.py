@@ -48,7 +48,7 @@ class ChanelScaling(nn.Module):
         super(ChanelScaling, self).__init__()
         self.linear = linear
         if linear:
-            self.alpha = nn.Parameter(torch.zeros((channels, 1)))
+            self.alpha = nn.Parameter(torch.zeros(channels))
             self.cs = ChannelScaling1d()
         else:
             self.alpha = nn.Parameter(torch.zeros((channels, 1, 1)))

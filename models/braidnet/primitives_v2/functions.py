@@ -50,7 +50,7 @@ class ChannelScaling2d(Function):
         scaling_factor, z = ctx.saved_tensors
         grad_y = grad_z * scaling_factor
         grad_alpha = grad_z * z
-        grad_alpha = grad_alpha.sum(0)
+        grad_alpha = grad_alpha.sum(0, keepdim=True)
         grad_alpha = grad_alpha.sum((1, 2), keepdim=True)
 
         return grad_alpha, grad_y
@@ -73,21 +73,21 @@ class ChannelScaling1d(Function):
         grad_y = grad_z * scaling_factor
         grad_alpha = grad_z * z
         grad_alpha = grad_alpha.sum(0)
-        grad_alpha = grad_alpha.sum((1,), keepdim=True)
+        # grad_alpha = grad_alpha.sum((1,), keepdim=True)
 
         return grad_alpha, grad_y
 
 
 if __name__ == '__main__':
-    a = torch.ones((1, 1, 1, 1), requires_grad=True)
-    aa = torch.ones((1, 1, 1, 1), requires_grad=True) * 2
+    a = torch.ones((2, 3), requires_grad=True)
+    aa = torch.ones((2, 3), requires_grad=True) * 2
 
-    b = torch.nn.Parameter(torch.ones(1, 1, 1))
+    b = torch.nn.Parameter(torch.ones(3))
 
-    c = ChannelScaling2d().apply(b, a)
+    c = ChannelScaling1d().apply(b, a)
     c = c.view(-1).mean()
 
-    cc = ChannelScaling2d().apply(b, aa)
+    cc = ChannelScaling1d().apply(b, aa)
     cc = cc.view(-1).mean()
 
     c.backward()

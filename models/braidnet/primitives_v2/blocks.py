@@ -8,7 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
-           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY', 'AA3Block',
+           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY', 'AA3Block', 'AA4Block',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -544,6 +544,26 @@ class AA2Block(nn.Module):
         z = self.square_max_y(x)
         out = torch.cat((y, z), dim=1)
         return out
+
+
+class AA4Block(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(AA4Block, self).__init__()
+        self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.cs = ChanelScaling(channel_out, linear=True)
+        self.relu = nn.ReLU(inplace=True)
+        self.max_y = MaxY(channel_out, linear=True)
+        self.square_max_y = SquareMaxY(channel_in, linear=True)
+
+    def forward(self, x):
+        y = self.wlinear(x)
+        y = [self.cs(i) for i in y]
+        y = [self.relu(i) for i in y]
+        y = self.max_y(y)
+        z = self.square_max_y(x)
+        out = torch.cat((y, z), dim=1)
+        return out
+
 
 #
 # class ResMaxY(SumY):

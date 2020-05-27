@@ -8,7 +8,7 @@ from torch.nn import BatchNorm2d as BatchNorm2d
 from .functions import *
 
 __all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d', 'SoftMinLinear', 'MinBNLinear',
-           'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear', 'MinLinear', 'Min2Linear']
+           'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear', 'MinLinear', 'Min2Linear', 'ChanelScaling']
 
 POOLS_DICT = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
 
@@ -41,6 +41,25 @@ class SoftMax(nn.Module):
             return torch.max(a, b)
         else:
             return torch.max(b, a)
+
+
+class ChanelScaling(nn.Module):
+    def __init__(self, channels=10, linear=True):
+        super(ChanelScaling, self).__init__()
+        self.linear = linear
+        if linear:
+            self.alpha = nn.Parameter(torch.zeros((channels, 1)))
+            self.cs = ChannelScaling1d()
+        else:
+            self.alpha = nn.Parameter(torch.zeros((channels, 1, 1)))
+            self.cs = ChannelScaling2d()
+
+    def forward(self, input_):
+        if self.linear:
+            cs = ChannelScaling1d()
+        else:
+            cs = ChannelScaling2d()
+        return cs.apply(self.alpha, input_)
 
 
 class WConv2d(nn.Module):

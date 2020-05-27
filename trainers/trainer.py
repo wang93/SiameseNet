@@ -167,6 +167,8 @@ class _Trainer:
         from sklearn.metrics import confusion_matrix
         from pprint import pprint
         from prettytable import PrettyTable
+        import matplotlib.pyplot as plt
+        import os
 
         best_epoch, best_rank1 = self._adapt_to_best()
         print('check discriminant based on the best model (rank-1 {:.1%}, achieved at epoch {}).'
@@ -196,6 +198,8 @@ class _Trainer:
         field_names = ('Attribute', 'Accuracy', 'The Worst Precision')
         table = PrettyTable(field_names=field_names)
 
+        x = []
+        y = []
         for key, labels in attributes_new.items():
             labels_train = labels[:split_border]
             labels_test = labels[split_border:]
@@ -227,6 +231,9 @@ class _Trainer:
                                '{0:.3%}'.format(accuracy),
                                '{0:.3%}'.format(worst_precision)])
 
+                x.append(label2word[key][class_])
+                y.append(worst_precision * 100)
+
                 print('accuracy: {0:.3%}'.format(accuracy))
                 print('worst_precision: {0:.3%}'.format(worst_precision))
                 print('confusion matrix:')
@@ -234,6 +241,17 @@ class _Trainer:
                 print()
 
         print(table)
+
+        plt.bar(x, y, width=0.2)
+        plt.xticks(x, x, rotation=30)
+        plt.xlabel('Attribute', fontsize=14)
+        plt.ylabel('The Worst Precision (%)', fontsize=14)
+        plt.ylim(0., 1.)
+
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize')
+        os.makedirs(save_dir, exist_ok=True)
+
+        plt.savefig(os.path.join(save_dir, 'discriminant_analysis_on_{0}_set.png'.format(set_name)))
 
         print('The whole process should be terminated.')
 

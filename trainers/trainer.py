@@ -453,6 +453,8 @@ class _Trainer:
         # plt.colorbar()
         plt.title('{0}_PE_{1}'.format(self.opt.exp_name, set_name))
 
+        plt.tight_layout()
+
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 

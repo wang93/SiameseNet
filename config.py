@@ -73,11 +73,13 @@ class DefaultConfig(object):
             setattr(self, k, v)
         # print(self.dataset)
         self.exp_dir = join('./exps', self.exp_name)
-        #self.fig_dir = join(self.exp_dir, 'visualize')
+        # self.fig_dir = join(self.exp_dir, 'visualize')
 
         if self.dataset[0] == '[':
             self.dataset = eval(self.dataset)
             # print(self.dataset)
+
+        self.trade_off = eval(self.trade_off)
 
         self.datatype = 'person'
 

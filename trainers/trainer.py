@@ -4,7 +4,6 @@ import random
 import time
 from pprint import pprint
 
-import matplotlib.colors as col
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -423,31 +422,29 @@ class _Trainer:
                 effects.append(effects_)
 
         # cmap = plt.cm.Blues
-        cdict = {'red': ((0.0, 1.0, 1.0),
-                         (0.3, 0.95, 0.95),
-                         (0.6, 0.8, 0.8),
-                         (0.9, 0.5, 0.5),
-                         (1.0, 0.0, 0.0)),
-                 'green': ((0.0, 1.0, 1.0),
-                           (0.3, 1.0, 1.0),
-                           (0.6, 1.0, 1.0),
-                           (0.9, 1.0, 1.0),
-                           (1.0, 1.0, 1.0)),
-                 'blue': ((0.0, 1.0, 1.0),
-                          (0.3, 1.0, 1.0),
-                          (0.6, 1.0, 1.0),
-                          (0.9, 1.0, 1.0),
-                          (1.0, 1.0, 1.0))}
+        # cdict = {'red': ((0.0, 1.0, 1.0),
+        #                  (0.3, 0.95, 0.95),
+        #                  (0.6, 0.8, 0.8),
+        #                  (0.9, 0.5, 0.5),
+        #                  (1.0, 0.0, 0.0)),
+        #          'green': ((0.0, 1.0, 1.0),
+        #                    (0.3, 1.0, 1.0),
+        #                    (0.6, 1.0, 1.0),
+        #                    (0.9, 1.0, 1.0),
+        #                    (1.0, 1.0, 1.0)),
+        #          'blue': ((0.0, 1.0, 1.0),
+        #                   (0.3, 1.0, 1.0),
+        #                   (0.6, 1.0, 1.0),
+        #                   (0.9, 1.0, 1.0),
+        #                   (1.0, 1.0, 1.0))}
+        #
+        # cmap = col.LinearSegmentedColormap('my_colormap', cdict, N=256, gamma=0.75)
 
-        cmap = col.LinearSegmentedColormap('my_colormap', cdict, N=256, gamma=0.75)
+        # plt.matshow(effects, cmap=cmap)
+        # plt.colorbar(cmap=cmap)
 
-        # norm = mpl.colors.Normalize(vmin=0., vmax=6.)
-        plt.matshow(effects, cmap=cmap)
-        # plt.colorbar(cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])
-        plt.colorbar(cmap=cmap)
-        # plt.xticks(np.arange(len(words)), words, rotation=90)
-        # plt.yticks(np.arange(len(words)), words)
-        # plt.tight_layout()
+        plt.matshow(effects)
+        plt.colorbar()
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)

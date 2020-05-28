@@ -578,8 +578,8 @@ class BraidCrossIDETrainer(BraidCrossTrainer):
         else:
             raise ValueError
 
-        self.loss = self.trade_off * self.criterion[0](predics, self.target) \
-                    + (1 - self.trade_off) * self.criterion[1](score_mat, self.target)
+        self.loss = self.trade_off[0] * self.criterion[0](predics, self.target) \
+                    + self.trade_off[1] * self.criterion[1](score_mat, self.target)
 
 
 class NormalTrainer(_Trainer):

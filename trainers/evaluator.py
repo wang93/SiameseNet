@@ -261,7 +261,7 @@ class ReIDEvaluator:
                 sub_fa = slice_tensor(a, a_indices)
                 sub_fb = slice_tensor(a, b_indices)
                 sub_fa, sub_fb = tensor_cuda((sub_fa, sub_fb))
-                scores = fun(sub_fa, sub_fb).cpu()
+                scores = fun(sub_fa, sub_fb).cpu().float()
                 score_mat[a_indices, b_indices] = scores
                 score_mat[b_indices, a_indices] = scores
 

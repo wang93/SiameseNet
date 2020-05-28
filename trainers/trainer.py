@@ -450,7 +450,7 @@ class _Trainer:
         # plt.colorbar(cmap=cmap)
 
         plt.matshow(effects, vmin=-1., vmax=1.)
-        # plt.colorbar()
+        plt.colorbar()
         plt.title('{0}_PE_{1}'.format(self.opt.exp_name, set_name))
 
         plt.tight_layout()

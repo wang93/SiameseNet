@@ -354,7 +354,7 @@ class _Trainer:
         params = {'figure.figsize': '24, 6'}
         plt.rcParams.update(params)
 
-        fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9)
+        plt.tight_layout()
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)

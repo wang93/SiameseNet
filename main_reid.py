@@ -20,6 +20,10 @@ def train(**kwargs):
         reid_trainer.check_element_discriminant_best(opt.check_element_discriminant)
         return
 
+    if opt.check_pair_effect:
+        reid_trainer.check_pair_effect(opt.check_pair_effect)
+        return
+
     reid_trainer.continue_train()
 
 

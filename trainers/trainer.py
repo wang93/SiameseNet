@@ -4,6 +4,7 @@ import random
 import time
 from pprint import pprint
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -376,6 +377,64 @@ class _Trainer:
         elif set_name == 'test':
             data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
         features, ids = self._get_feature_with_id(data_loader)
+        features = torch.tensor(features)
+
+        score_mat = self.evaluator.compare_features_symmetry(features)
+        score_mat = score_mat.numpy()
+        score_mean = np.mean(score_mat, axis=(0, 1), keepdims=False)
+        score_std = np.std(score_mat, axis=(0, 1), keepdims=False)
+
+        attributes, label2word = get_market_attributes(set_name=set_name)
+        attribute_ids = attributes.pop('image_index')
+        index_map = [attribute_ids.index(i) for i in ids]
+        attributes_new = dict()
+        for key, label in attributes.items():
+            label_new = [label[i] for i in index_map]
+            attributes_new[key] = np.array(label_new)
+
+        words = []
+        effects = []
+        for key, labels in attributes_new.items():
+            classes = set(labels)
+            for class_ in classes:
+                word = label2word[key][class_]
+                print(word)
+                words.append(word)
+                hitted = (labels == class_)
+                effects_ = []
+
+                for key2, labels2 in attributes_new.items():
+                    classes2 = set(labels2)
+                    for class2_ in classes2:
+                        hitted2 = (labels2 == class2_)
+
+                        if (not any(hitted)) or (not any(hitted2)):
+                            effects_.append(0.)
+                            continue
+
+                        scores = score_mat[hitted][:, hitted2]
+                        score = np.mean(scores, axis=(0, 1), keepdims=False)
+
+                        e = ((score - score_mean) / score_std) ** 2
+                        effects_.append(float(e))
+
+                effects.append(effects_)
+
+        cmap = plt.cm.Blues
+        norm = mpl.colors.Normalize(vmin=0., vmax=6.)
+        im = plt.matshow(effects, cmap=cmap)
+        plt.colorbar(im, cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])
+        im.xticks(np.arange(len(words)), words, rotation=90)
+        im.yticks(np.arange(len(words)), words)
+        im.tight_layout()
+
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize')
+        os.makedirs(save_dir, exist_ok=True)
+
+        im.savefig(os.path.join(save_dir, '{0}_PE_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.close(im)
+
+        print('The whole process should be terminated.')
 
     def _parse_data(self, inputs):
         raise NotImplementedError

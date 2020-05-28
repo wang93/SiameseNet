@@ -21,7 +21,7 @@ def train(**kwargs):
         return
 
     if opt.check_pair_effect:
-        reid_trainer.check_pair_effect(opt.check_pair_effect)
+        reid_trainer.check_attribute_pair_effect(opt.check_pair_effect)
         return
 
     reid_trainer.continue_train()

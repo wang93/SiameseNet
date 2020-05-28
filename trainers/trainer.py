@@ -4,6 +4,7 @@ import random
 import time
 from pprint import pprint
 
+import matplotlib.colors as col
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -399,7 +400,7 @@ class _Trainer:
             classes = set(labels)
             for class_ in classes:
                 word = label2word[key][class_]
-                print(word)
+                # print(word)
                 words.append(word)
                 hitted = (labels == class_)
                 effects_ = []
@@ -421,7 +422,25 @@ class _Trainer:
 
                 effects.append(effects_)
 
-        cmap = plt.cm.Blues
+        # cmap = plt.cm.Blues
+        cdict = {'red': ((0.0, 0.0, 0.0),
+                         (0.3, 0.5, 0.5),
+                         (0.6, 0.7, 0.7),
+                         (0.9, 0.8, 0.8),
+                         (1.0, 0.8, 0.8)),
+                 'green': ((0.0, 0.0, 0.0),
+                           (0.3, 0.8, 0.8),
+                           (0.6, 0.7, 0.7),
+                           (0.9, 0.0, 0.0),
+                           (1.0, 0.7, 0.7)),
+                 'blue': ((0.0, 1.0, 1.0),
+                          (0.3, 1.0, 1.0),
+                          (0.6, 0.0, 0.0),
+                          (0.9, 0.0, 0.0),
+                          (1.0, 1.0, 1.0))}
+
+        cmap = col.LinearSegmentedColormap('my_colormap', cdict, N=256, gamma=0.75)
+
         # norm = mpl.colors.Normalize(vmin=0., vmax=6.)
         plt.matshow(effects, cmap=cmap)
         # plt.colorbar(cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])

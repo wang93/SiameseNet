@@ -449,7 +449,7 @@ class _Trainer:
         # plt.matshow(effects, cmap=cmap)
         # plt.colorbar(cmap=cmap)
 
-        plt.matshow(effects, vmin=-2., vmax=2.)
+        plt.matshow(effects, vmin=-1., vmax=1.)
         # plt.colorbar()
         plt.title('{0}_PE_{1}'.format(self.opt.exp_name, set_name))
 
@@ -458,7 +458,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_v3.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_v4.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')

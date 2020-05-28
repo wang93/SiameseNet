@@ -378,7 +378,7 @@ class _Trainer:
         features, ids = self._get_feature_with_id(data_loader)
         features = features[:1000]
         ids = ids[:1000]
-        features = torch.tensor(features)
+        features = torch.FloatTensor(features)
 
         score_mat = self.evaluator.compare_features_symmetry(features)
         score_mat = score_mat.numpy()

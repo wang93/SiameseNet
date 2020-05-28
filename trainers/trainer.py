@@ -400,6 +400,7 @@ class _Trainer:
                 print(word)
                 words.append(word)
                 hitted = (labels == class_)
+                scores_i = score_mat[hitted, :]
                 num1 = sum(hitted)
                 effects_ = []
 
@@ -413,7 +414,7 @@ class _Trainer:
                             effects_.append(0.)
                             continue
 
-                        scores = score_mat[hitted, :][:, hitted2]
+                        scores = scores_i[:, hitted2]
                         score = np.mean(scores, axis=(0, 1), keepdims=False)
 
                         num = min(num1, num2)

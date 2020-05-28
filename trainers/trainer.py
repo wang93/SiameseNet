@@ -418,7 +418,7 @@ class _Trainer:
                         score = np.mean(scores, axis=(0, 1), keepdims=False)
 
                         e = ((score - score_mean) / score_std) ** 2
-                        effects_.append(float(e))
+                        effects_.append(float(np.log(e)))
 
                 effects.append(effects_)
 

@@ -4,7 +4,6 @@ import random
 import time
 from pprint import pprint
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -423,17 +422,18 @@ class _Trainer:
                 effects.append(effects_)
 
         cmap = plt.cm.Blues
-        norm = mpl.colors.Normalize(vmin=0., vmax=6.)
+        # norm = mpl.colors.Normalize(vmin=0., vmax=6.)
         plt.matshow(effects, cmap=cmap)
-        plt.colorbar(cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])
-        plt.xticks(np.arange(len(words)), words, rotation=90)
-        plt.yticks(np.arange(len(words)), words)
-        plt.tight_layout()
+        # plt.colorbar(cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])
+        plt.colorbar(cmap=cmap)
+        # plt.xticks(np.arange(len(words)), words, rotation=90)
+        # plt.yticks(np.arange(len(words)), words)
+        # plt.tight_layout()
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig( os.path.join(save_dir, '{0}_PE_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_PE_{1}.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')

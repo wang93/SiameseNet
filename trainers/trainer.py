@@ -376,8 +376,6 @@ class _Trainer:
         elif set_name == 'test':
             data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
         features, ids = self._get_feature_with_id(data_loader)
-        features = features[:1000]
-        ids = ids[:1000]
         features = torch.FloatTensor(features)
 
         score_mat = self.evaluator.compare_features_symmetry(features)
@@ -399,7 +397,7 @@ class _Trainer:
             classes = set(labels)
             for class_ in classes:
                 word = label2word[key][class_]
-                # print(word)
+                print(word)
                 words.append(word)
                 hitted = (labels == class_)
                 num1 = sum(hitted)

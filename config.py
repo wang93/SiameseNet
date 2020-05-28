@@ -79,8 +79,6 @@ class DefaultConfig(object):
             self.dataset = eval(self.dataset)
             # print(self.dataset)
 
-        self.trade_off = eval(self.trade_off)
-
         self.datatype = 'person'
 
         if isinstance(self.gpus, int):

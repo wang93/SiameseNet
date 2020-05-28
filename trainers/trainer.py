@@ -418,7 +418,7 @@ class _Trainer:
 
                         num = min(num1, num2)
 
-                        e = abs((score - score_mean) / score_std) * num / (num + 1)
+                        e = ((score - score_mean) / score_std) * num / (num + 1)
                         effects_.append(float(e))
 
                 effects.append(effects_)
@@ -445,7 +445,7 @@ class _Trainer:
         # plt.matshow(effects, cmap=cmap)
         # plt.colorbar(cmap=cmap)
 
-        plt.matshow(effects, vmin=0., vmax=6.)
+        plt.matshow(effects, vmin=-5., vmax=5.)
         plt.colorbar()
         plt.title('{0}_PE_{1}'.format(self.opt.exp_name, set_name))
 

@@ -380,7 +380,7 @@ class _Trainer:
 
         score_mat = self.evaluator.compare_features_symmetry(features)
         score_mat = score_mat.numpy()
-        if self.opt.model == 'osnet':
+        if self.opt.model_name == 'osnet':
             score_mat = -np.log(-score_mat)
 
         score_mean = np.mean(score_mat, axis=(0, 1), keepdims=False)

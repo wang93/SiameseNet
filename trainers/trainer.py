@@ -449,8 +449,8 @@ class _Trainer:
         # plt.matshow(effects, cmap=cmap)
         # plt.colorbar(cmap=cmap)
 
-        plt.matshow(effects, vmin=-5., vmax=5.)
-        plt.colorbar()
+        plt.matshow(effects, vmin=-2., vmax=2.)
+        # plt.colorbar()
         plt.title('{0}_PE_{1}'.format(self.opt.exp_name, set_name))
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')

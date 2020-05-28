@@ -377,6 +377,8 @@ class _Trainer:
         elif set_name == 'test':
             data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
         features, ids = self._get_feature_with_id(data_loader)
+        features = features[:1000]
+        ids = ids[:1000]
         features = torch.tensor(features)
 
         score_mat = self.evaluator.compare_features_symmetry(features)
@@ -422,17 +424,17 @@ class _Trainer:
 
         cmap = plt.cm.Blues
         norm = mpl.colors.Normalize(vmin=0., vmax=6.)
-        im = plt.matshow(effects, cmap=cmap)
-        plt.colorbar(im, cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])
-        im.xticks(np.arange(len(words)), words, rotation=90)
-        im.yticks(np.arange(len(words)), words)
-        im.tight_layout()
+        plt.matshow(effects, cmap=cmap)
+        plt.colorbar(cmap=cmap, norm=norm, ticks=[0., 2., 4., 6.])
+        plt.xticks(np.arange(len(words)), words, rotation=90)
+        plt.yticks(np.arange(len(words)), words)
+        plt.tight_layout()
 
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        im.savefig(os.path.join(save_dir, '{0}_PE_{1}.png'.format(self.opt.exp_name, set_name)))
-        plt.close(im)
+        plt.savefig( os.path.join(save_dir, '{0}_PE_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.close()
 
         print('The whole process should be terminated.')
 

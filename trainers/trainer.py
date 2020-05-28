@@ -141,7 +141,8 @@ class _Trainer:
     def _get_feature_with_id(self, dataloader):
         self.model.eval()
         with torch.no_grad():
-            mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'
+            # mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'
+            mode = 'extract'
             fun = lambda d: self.model(d, None, mode=mode)
             records = [(tensor_cpu(fun(tensor_cuda(data))), identity) for data, identity, _ in dataloader]
 
@@ -211,14 +212,13 @@ class _Trainer:
                 print('checking the discriminant for {0} ...'.format(label2word[key][class_]))
                 hitted_train = (labels_train == class_).astype(int)
                 hitted_test = (labels_test == class_).astype(int)
-
-                model = svm.SVC(kernel='linear', max_iter=1000000)
-                try:
-                    model.fit(features_train, hitted_train)
-                except ValueError:
+                if sum(hitted_train) == 0 or sum(hitted_train) == len(hitted_train):
                     print('skip it due to missing pos/neg samples')
                     print()
                     continue
+
+                model = svm.SVC(kernel='linear', max_iter=1000000)
+                model.fit(features_train, hitted_train)
                 prediction = model.predict(features_test)
 
                 cm = confusion_matrix(y_pred=prediction, y_true=hitted_test)
@@ -259,7 +259,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -344,8 +344,6 @@ class _Trainer:
 
         print(table)
 
-        fig, ax = plt.subplots()
-
         plt.bar(x, y, width=0.2)
         plt.xticks(x, x, rotation=90)
         plt.xlabel('Attribute', fontsize=14)
@@ -359,10 +357,25 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
+
+    def check_attribute_pair_effect(self, set_name='train'):
+        if self.opt.dataset is not 'market1501':
+            raise NotImplementedError
+
+        best_epoch, best_rank1 = self._adapt_to_best()
+        print("check attribute pairs' effect based on the best model (rank-1 {:.1%}, "
+              "which was achieved at epoch {})."
+              .format(best_rank1, best_epoch))
+
+        if set_name == 'train':
+            data_loader = self.train_loader
+        elif set_name == 'test':
+            data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
+        features, ids = self._get_feature_with_id(data_loader)
 
     def _parse_data(self, inputs):
         raise NotImplementedError

@@ -402,12 +402,14 @@ class _Trainer:
                 # print(word)
                 words.append(word)
                 hitted = (labels == class_)
+                num1 = sum(hitted)
                 effects_ = []
 
                 for key2, labels2 in attributes_new.items():
                     classes2 = set(labels2)
                     for class2_ in classes2:
                         hitted2 = (labels2 == class2_)
+                        num2 = sum(hitted2)
 
                         if (not any(hitted)) or (not any(hitted2)):
                             effects_.append(0.)
@@ -416,8 +418,10 @@ class _Trainer:
                         scores = score_mat[hitted][:, hitted2]
                         score = np.mean(scores, axis=(0, 1), keepdims=False)
 
-                        e = ((score - score_mean) / score_std) ** 2
-                        effects_.append(float(np.sqrt(e)))
+                        num = min(num1, num2)
+
+                        e = abs((score - score_mean) / score_std) * num / (num + 1)
+                        effects_.append(float(e))
 
                 effects.append(effects_)
 

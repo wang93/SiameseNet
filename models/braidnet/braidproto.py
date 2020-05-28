@@ -5,6 +5,8 @@ import torch.nn as nn
 from torch.nn import BatchNorm3d, BatchNorm2d, BatchNorm1d
 from torch.optim import SGD, Adam, AdamW
 
+from .primitives_v2.subblocks import ChanelScaling
+
 
 def weights_init_kaiming(m: nn.Module):
     if isinstance(m, (nn.Linear,)):
@@ -42,6 +44,8 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                     continue
 
                 if k in ('weight',) and isinstance(model, (nn.Conv2d, nn.Linear, nn.Conv3d)):
+                    self.reg_params.append(v)
+                elif k in ('alpha',) and isinstance(model, (ChanelScaling,)):
                     self.reg_params.append(v)
                 else:
                     self.noreg_params.append(v)

@@ -52,7 +52,7 @@ class ChanelScaling(nn.Module):
             # self.cs = ChannelScaling1d()
         else:
             self.alpha = nn.Parameter(torch.zeros((channels, 1, 1)))
-            #self.cs = ChannelScaling2d()
+            # self.cs = ChannelScaling2d()
 
     def forward(self, input_):
         return input_ * self.alpha.exp()

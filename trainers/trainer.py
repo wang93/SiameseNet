@@ -264,7 +264,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract_v7.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract_v8.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -362,7 +362,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract_v7.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract_v8.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -383,14 +383,6 @@ class _Trainer:
         features, ids = self._get_feature_with_id(data_loader, norm=False)
         features = torch.FloatTensor(features)
 
-        score_mat = self.evaluator.compare_features_symmetry(features)
-        score_mat = score_mat.numpy()
-        # if self.opt.model_name == 'osnet':
-        #     score_mat = -np.log(-score_mat)
-
-        score_mean = np.mean(score_mat, axis=(0, 1), keepdims=False)
-        score_std = np.std(score_mat, axis=(0, 1), keepdims=False)
-
         attributes, label2word = get_market_attributes(set_name=set_name)
         attribute_ids = attributes.pop('image_index')
         index_map = [attribute_ids.index(i) for i in ids]
@@ -399,8 +391,28 @@ class _Trainer:
             label_new = [label[i] for i in index_map]
             attributes_new[key] = np.array(label_new)
 
+        score_mat = self.evaluator.compare_features_symmetry(features)
+        N = score_mat.size(0)
+        labels = torch.Tensor(ids)
+        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.uint8)
+
+        pos_scores = score_mat[is_pos].numpy()
+        neg_scores = score_mat[1 - is_pos].numpy()
+
+        pos_score_mean = np.mean(pos_scores, axis=(0, 1), keepdims=False)
+        neg_score_mean = np.mean(neg_scores, axis=(0, 1), keepdims=False)
+
+        pos_score_std = np.std(pos_scores, axis=(0, 1), keepdims=False)
+        neg_score_std = np.std(neg_scores, axis=(0, 1), keepdims=False)
+
+        # score_mean = np.mean(score_mat, axis=(0, 1), keepdims=False)
+        # score_std = np.std(score_mat, axis=(0, 1), keepdims=False)
+        score_mat = score_mat.numpy()
+        is_pos = is_pos.numpy().astype(bool)
+
         words = []
-        effects = []
+        pos_effects = []
+        neg_effects = []
         for key, labels in attributes_new.items():
             classes = set(labels)
             for class_ in classes:
@@ -409,64 +421,55 @@ class _Trainer:
                 words.append(word)
                 hitted = (labels == class_)
                 scores_i = score_mat[hitted, :]
+                is_pos_i = is_pos[hitted, :]
                 num1 = sum(hitted)
-                effects_ = []
+                pos_effects_ = []
+                neg_effects_ = []
 
                 for key2, labels2 in attributes_new.items():
                     classes2 = set(labels2)
                     for class2_ in classes2:
                         hitted2 = (labels2 == class2_)
-                        num2 = sum(hitted2)
 
                         if (not any(hitted)) or (not any(hitted2)):
-                            effects_.append(0.)
+                            pos_effects_.append(0.)
+                            neg_effects_.append(0.)
                             continue
 
                         scores = scores_i[:, hitted2]
-                        score = np.mean(scores, axis=(0, 1), keepdims=False)
+                        is_pos_i_j = is_pos_i[:, hitted2]
+                        pos_num_i_j = np.sum(is_pos_i_j, axis=(0, 1), keepdims=False)
+                        neg_num_i_j = np.sum(1 - is_pos_i_j, axis=(0, 1), keepdims=False)
 
-                        num = min(num1, num2)
+                        pos_score = np.mean(scores[is_pos_i_j], axis=(0, 1), keepdims=False)
+                        neg_score = np.mean(scores[np.invert(is_pos_i_j)], axis=(0, 1), keepdims=False)
 
-                        e = ((score - score_mean) / score_std) * num / (num + 1)
-                        effects_.append(float(e))
+                        pos_num = min(num1, pos_num_i_j)
+                        neg_num = min(num1, neg_num_i_j)
 
-                effects.append(effects_)
+                        pos_e = ((pos_score - pos_score_mean) / pos_score_std) * pos_num / (pos_num + 1)
+                        neg_e = ((neg_score - neg_score_mean) / neg_score_std) * neg_num / (neg_num + 1)
+                        pos_effects_.append(float(pos_e))
+                        neg_effects_.append(float(neg_e))
 
-        # cmap = plt.cm.Blues
-        # cdict = {'red': ((0.0, 1.0, 1.0),
-        #                  (0.3, 0.95, 0.95),
-        #                  (0.6, 0.8, 0.8),
-        #                  (0.9, 0.5, 0.5),
-        #                  (1.0, 0.0, 0.0)),
-        #          'green': ((0.0, 1.0, 1.0),
-        #                    (0.3, 1.0, 1.0),
-        #                    (0.6, 1.0, 1.0),
-        #                    (0.9, 1.0, 1.0),
-        #                    (1.0, 1.0, 1.0)),
-        #          'blue': ((0.0, 1.0, 1.0),
-        #                   (0.3, 1.0, 1.0),
-        #                   (0.6, 1.0, 1.0),
-        #                   (0.9, 1.0, 1.0),
-        #                   (1.0, 1.0, 1.0))}
-        #
-        # cmap = col.LinearSegmentedColormap('my_colormap', cdict, N=256, gamma=0.75)
+                pos_effects.append(pos_effects_)
+                neg_effects.append(neg_effects_)
 
-        # plt.matshow(effects, cmap=cmap)
-        # plt.colorbar(cmap=cmap)
+        for amplitude in (2, 1, 0.5, 0.2):
+            for label, effects in zip(['POS', 'NEG'], [pos_effects, neg_effects]):
+                plt.matshow(effects, vmin=-amplitude, vmax=amplitude)
+                plt.colorbar()
+                plt.title('{0}_PE_{1}_{2}'.format(self.opt.exp_name, label, set_name))
 
-        plt.matshow(effects, vmin=-0.5, vmax=0.5)
-        plt.colorbar()
-        plt.title('{0}_PE_{1}'.format(self.opt.exp_name, set_name))
+                plt.tight_layout()
 
-        plt.tight_layout()
+                save_dir = os.path.join(self.opt.exp_dir, 'visualize')
+                os.makedirs(save_dir, exist_ok=True)
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize')
-        os.makedirs(save_dir, exist_ok=True)
+                plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_{2}_v8.png'.format(self.opt.exp_name, label, set_name)))
+                plt.close()
 
-        plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_v7.png'.format(self.opt.exp_name, set_name)))
-        plt.close()
-
-        print('The whole process should be terminated.')
+                print('The whole process should be terminated.')
 
     def _parse_data(self, inputs):
         raise NotImplementedError

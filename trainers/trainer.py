@@ -394,7 +394,7 @@ class _Trainer:
         score_mat = self.evaluator.compare_features_symmetry(features)
         N = score_mat.size(0)
         labels = torch.Tensor([int(i) for i in ids])
-        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.uint8)
+        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.bool)
 
         pos_scores = score_mat[is_pos].numpy()
         neg_scores = score_mat[1 - is_pos].numpy()

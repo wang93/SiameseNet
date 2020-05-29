@@ -367,6 +367,7 @@ class _Trainer:
 
         print('The whole process should be terminated.')
 
+    @print_time
     def check_attribute_pair_effect(self, set_name='train'):
         if self.opt.dataset is not 'market1501':
             raise NotImplementedError

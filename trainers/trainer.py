@@ -481,7 +481,7 @@ class _Trainer:
                 plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_{2}_v8.png'.format(self.opt.exp_name, label, set_name)))
                 plt.close()
 
-                print('The whole process should be terminated.')
+        print('The whole process should be terminated.')
 
     def _parse_data(self, inputs):
         raise NotImplementedError

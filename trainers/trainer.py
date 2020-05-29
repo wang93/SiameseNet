@@ -439,16 +439,28 @@ class _Trainer:
                         scores = scores_i[:, hitted2]
                         is_pos_i_j = is_pos_i[:, hitted2]
                         pos_num_i_j = np.sum(is_pos_i_j, axis=(0, 1), keepdims=False)
-                        neg_num_i_j = np.sum(1 - is_pos_i_j, axis=(0, 1), keepdims=False)
-
-                        pos_score = np.mean(scores[is_pos_i_j], axis=(0,), keepdims=False)
-                        neg_score = np.mean(scores[np.invert(is_pos_i_j)], axis=(0,), keepdims=False)
+                        neg_num_i_j = np.sum(np.invert(is_pos_i_j), axis=(0, 1), keepdims=False)
 
                         pos_num = min(num1, pos_num_i_j)
                         neg_num = min(num1, neg_num_i_j)
 
-                        pos_e = ((pos_score - pos_score_mean) / pos_score_std) * pos_num / (pos_num + 1)
-                        neg_e = ((neg_score - neg_score_mean) / neg_score_std) * neg_num / (neg_num + 1)
+                        if pos_num > 0:
+                            pos_score = np.mean(scores[is_pos_i_j], axis=(0,), keepdims=False)
+                            pos_e = ((pos_score - pos_score_mean) / pos_score_std) * pos_num / (pos_num + 1)
+                        else:
+                            pos_e = 0.
+
+                        if neg_num > 0:
+                            neg_score = np.mean(scores[np.invert(is_pos_i_j)], axis=(0,), keepdims=False)
+                            neg_e = ((neg_score - neg_score_mean) / neg_score_std) * neg_num / (neg_num + 1)
+                        else:
+                            neg_e = 0.
+
+                        # pos_score = np.mean(scores[is_pos_i_j], axis=(0,), keepdims=False)
+                        # neg_score = np.mean(scores[np.invert(is_pos_i_j)], axis=(0,), keepdims=False)
+                        #
+                        # pos_e = ((pos_score - pos_score_mean) / pos_score_std) * pos_num / (pos_num + 1)
+                        # neg_e = ((neg_score - neg_score_mean) / neg_score_std) * neg_num / (neg_num + 1)
                         pos_effects_.append(float(pos_e))
                         neg_effects_.append(float(neg_e))
 

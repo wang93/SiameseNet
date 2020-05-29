@@ -139,7 +139,7 @@ class _Trainer:
             rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=eval_flip)
             return rank1
 
-    def _get_feature_with_id(self, dataloader):
+    def _get_feature_with_id(self, dataloader, norm=True):
         self.model.eval()
         with torch.no_grad():
             # mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'
@@ -166,7 +166,8 @@ class _Trainer:
         ids = [ids[i] for i in indices]
 
         features = np.array(features)
-        features = preprocessing.scale(features)
+        if norm:
+            features = preprocessing.scale(features)
 
         return features, ids
 
@@ -379,7 +380,7 @@ class _Trainer:
             data_loader = self.train_loader
         elif set_name == 'test':
             data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
-        features, ids = self._get_feature_with_id(data_loader)
+        features, ids = self._get_feature_with_id(data_loader, norm=False)
         features = torch.FloatTensor(features)
 
         score_mat = self.evaluator.compare_features_symmetry(features)

@@ -399,11 +399,11 @@ class _Trainer:
         pos_scores = score_mat[is_pos].numpy()
         neg_scores = score_mat[1 - is_pos].numpy()
 
-        pos_score_mean = np.mean(pos_scores, axis=(0, 1), keepdims=False)
-        neg_score_mean = np.mean(neg_scores, axis=(0, 1), keepdims=False)
+        pos_score_mean = np.mean(pos_scores, axis=(0,), keepdims=False)
+        neg_score_mean = np.mean(neg_scores, axis=(0,), keepdims=False)
 
-        pos_score_std = np.std(pos_scores, axis=(0, 1), keepdims=False)
-        neg_score_std = np.std(neg_scores, axis=(0, 1), keepdims=False)
+        pos_score_std = np.std(pos_scores, axis=(0,), keepdims=False)
+        neg_score_std = np.std(neg_scores, axis=(0,), keepdims=False)
 
         # score_mean = np.mean(score_mat, axis=(0, 1), keepdims=False)
         # score_std = np.std(score_mat, axis=(0, 1), keepdims=False)
@@ -441,8 +441,8 @@ class _Trainer:
                         pos_num_i_j = np.sum(is_pos_i_j, axis=(0, 1), keepdims=False)
                         neg_num_i_j = np.sum(1 - is_pos_i_j, axis=(0, 1), keepdims=False)
 
-                        pos_score = np.mean(scores[is_pos_i_j], axis=(0, 1), keepdims=False)
-                        neg_score = np.mean(scores[np.invert(is_pos_i_j)], axis=(0, 1), keepdims=False)
+                        pos_score = np.mean(scores[is_pos_i_j], axis=(0,), keepdims=False)
+                        neg_score = np.mean(scores[np.invert(is_pos_i_j)], axis=(0,), keepdims=False)
 
                         pos_num = min(num1, pos_num_i_j)
                         neg_num = min(num1, neg_num_i_j)

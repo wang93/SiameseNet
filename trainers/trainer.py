@@ -397,7 +397,7 @@ class _Trainer:
         is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.bool)
 
         pos_scores = score_mat[is_pos].numpy()
-        neg_scores = score_mat[1 - is_pos].numpy()
+        neg_scores = score_mat[~is_pos].numpy()
 
         pos_score_mean = np.mean(pos_scores, axis=(0,), keepdims=False)
         neg_score_mean = np.mean(neg_scores, axis=(0,), keepdims=False)

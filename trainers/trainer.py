@@ -264,7 +264,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract_v8.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract_v9.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -362,7 +362,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract_v8.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract_v9.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -472,14 +472,16 @@ class _Trainer:
             for label, effects in zip(['POS', 'NEG'], [pos_effects, neg_effects]):
                 plt.matshow(effects, vmin=-amplitude, vmax=amplitude)
                 plt.colorbar()
-                plt.title('{0}_PE_{1}_{2}'.format(self.opt.exp_name, label, set_name))
+                plt.title('{0}_PE_{1}_{2}_{3}'.format(self.opt.exp_name, label, set_name, amplitude))
 
                 plt.tight_layout()
 
                 save_dir = os.path.join(self.opt.exp_dir, 'visualize')
                 os.makedirs(save_dir, exist_ok=True)
 
-                plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_{2}_v8.png'.format(self.opt.exp_name, label, set_name)))
+                plt.savefig(os.path.join(save_dir,
+                                         '{0}_PE_{1}_{2}_{3}_v9.png'.format(self.opt.exp_name, label, set_name,
+                                                                            amplitude)))
                 plt.close()
 
         print('The whole process should be terminated.')

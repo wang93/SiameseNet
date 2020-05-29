@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from prettytable import PrettyTable
+from sklearn import preprocessing
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
 
@@ -164,7 +165,10 @@ class _Trainer:
         features = [features[i] for i in indices]
         ids = [ids[i] for i in indices]
 
-        return np.array(features), ids
+        features = np.array(features)
+        features = preprocessing.scale(features)
+
+        return features, ids
 
     @print_time
     def check_discriminant_best(self, set_name='train'):
@@ -259,7 +263,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_DA_{1}_extract_v7.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -357,7 +361,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_EDA_{1}_extract_v7.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')
@@ -458,7 +462,7 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize')
         os.makedirs(save_dir, exist_ok=True)
 
-        plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_v5.png'.format(self.opt.exp_name, set_name)))
+        plt.savefig(os.path.join(save_dir, '{0}_PE_{1}_v7.png'.format(self.opt.exp_name, set_name)))
         plt.close()
 
         print('The whole process should be terminated.')

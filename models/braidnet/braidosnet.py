@@ -526,7 +526,7 @@ class AABOSS(BraidOSNet):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=256, fc=(1,), num_classes=1000, score2prob=nn.Sigmoid()):
+    def __init__(self, feats=256, w_num=1, fc=(1,), num_classes=1000, score2prob=nn.Sigmoid()):
         nn.Module.__init__(self)
 
         self.meta = {
@@ -539,7 +539,7 @@ class AABOSS(BraidOSNet):
         self.pair2braid = Pair2Braid()
         self.bi = osnet_x1_0(feats=feats, num_classes=num_classes)
         self.bi2braid = Bi2Braid()
-        self.braid = AABlock(feats, feats)
+        self.braid = AABlock(feats, feats, w_num=w_num)
         # self.y = MinMaxY(feats, linear=True)
 
         fc_blocks = []

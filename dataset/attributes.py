@@ -48,3 +48,20 @@ def get_market_attributes(set_name='train'):
                   }
 
     return attributes, label2word
+
+
+if __name__ == '__main__':
+    att, l2w = get_market_attributes('test')
+    for key, labels in att.items():
+        if key is 'image_index':
+            continue
+        print('----------')
+        print(key)
+        label_set = list(set(labels))
+        nums = [0, ] * len(label_set)
+        for l in labels:
+            nums[l - 1] += 1
+        for i in range(len(label_set)):
+            word = l2w[key][i + 1]
+            num = nums[i]
+            print('{0} person images are {1}'.format(num, word))

@@ -147,8 +147,8 @@ class ReIDEvaluator:
             num_rel.append(m.sum())
             results.append(m[:max_rank].unsqueeze(0))
 
-        matches = torch.cat(results, dim=0)
-        num_rel = torch.Tensor(num_rel)
+        matches = torch.cat(results, dim=0).cuda()
+        num_rel = torch.Tensor(num_rel).cuda()
 
         # num_rel = torch.sum(matches, dim=(1,))
         # matches = matches[:, :max_rank]

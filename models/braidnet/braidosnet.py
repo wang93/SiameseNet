@@ -35,8 +35,12 @@ class OSNet(BraidProto):
         init_pretrained_weights(self.bi, key='osnet_x1_0')
 
     def extract(self, ims):
-        x = self.bi(ims)
-        return x
+        if self.training:
+            y, _ = self.bi(ims)
+            return y
+        else:
+            v = self.bi(ims)
+            return v
 
     def metric(self, feat_a, feat_b):
         if self.training:

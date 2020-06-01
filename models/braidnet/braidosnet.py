@@ -60,6 +60,7 @@ class OSNet(BraidProto):
             raise NotImplementedError
 
         x = self.pair2bi(a, b)
+
         x = self.bi(x)
         a, b = torch.chunk(x, 2, dim=0)
         return - self.dist(a, b)

@@ -139,7 +139,7 @@ class _Trainer:
             rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=eval_flip)
             return rank1
 
-    def _get_feature_with_id(self, dataloader, norm=True):
+    def _get_feature_with_id(self, dataloader, norm=True, return_im_path=False):
         self.model.eval()
         with torch.no_grad():
             # mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'

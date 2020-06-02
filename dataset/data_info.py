@@ -10,7 +10,6 @@ from collections import defaultdict
 from os import path as osp
 
 """Dataset classes"""
-'''Note: relabel is not necessary, so retruned non-combined dataset may have not been relabeled'''
 
 ROOT = '/data/home/wyc/wyc-datasets/Person'
 

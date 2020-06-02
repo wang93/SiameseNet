@@ -157,7 +157,7 @@ class ReIDEvaluator:
         cmc[cmc > 1] = 1
         all_cmc = cmc.sum(dim=0) / cmc.size(0)
 
-        pos = torch.Tensor(range(1, max_rank + 1))
+        pos = torch.Tensor(range(1, max_rank + 1)).cuda()
         temp_cmc = matches.cumsum(dim=1) / pos * matches
         AP = temp_cmc.sum(dim=1) / num_rel
         mAP = AP.sum() / AP.size(0)

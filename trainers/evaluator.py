@@ -161,7 +161,7 @@ class ReIDEvaluator:
         temp_cmc = matches.cumsum(dim=1) / pos * matches
         AP = temp_cmc.sum(dim=1) / num_rel
         mAP = AP.sum() / AP.size(0)
-        return all_cmc.numpy(), mAP.item()
+        return all_cmc.cpu().numpy(), mAP.cpu().item()
 
     @staticmethod
     def _get_eer(matches, scores):

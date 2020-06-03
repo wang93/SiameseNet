@@ -498,7 +498,7 @@ class AABlock(nn.Module):
     def get_y(self, x):
         y = self.wlinear(x)
         y = self.wbn(y)
-        y = [self.relu(i) for i in y]
+        # y = [self.relu(i) for i in y]
         y = self.max_y(y)
         return y
 

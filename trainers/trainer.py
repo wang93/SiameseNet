@@ -512,7 +512,7 @@ class _Trainer:
         width = 32
         height = 64
         margin = 4
-        block = 12
+        block = 36
         pairs_num = 16
         total_width = (width + margin) * 2 + block
         total_height = (height + margin) * pairs_num

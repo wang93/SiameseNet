@@ -474,34 +474,31 @@ class SquareMaxY(SumY):
 
 
 class AABlock(nn.Module):
-    def __init__(self, channel_in, channel_out, w_num=1):
+    def __init__(self, channel_in, channel_out):
         super(AABlock, self).__init__()
-        channel_num = channel_in
-        wblocks = []
-        for i in range(w_num):
-            wblocks.append(MinLinear(channel_num, channel_out, bias=False))
-            channel_num = channel_out
-            wblocks.append(WBatchNorm1d(channel_out,
-                                        eps=1e-05,
-                                        momentum=0.1,
-                                        affine=True,
-                                        track_running_stats=True))
-            wblocks.append(ReLU(inplace=True))
-
-        self.wblocks = nn.Sequential(*wblocks)
-
+        self.wlinear = MinLinear(channel_in, channel_out, bias=False)
+        self.wbn = WBatchNorm1d(channel_out,
+                                eps=1e-05,
+                                momentum=0.1,
+                                affine=True,
+                                track_running_stats=True)
+        self.relu = nn.ReLU(inplace=True)
         self.max_y = MaxY(channel_out, linear=True)
         self.min_max_y = MinMaxY(channel_in, linear=True)
 
     def forward(self, x):
-        y = self.wblocks(x)
+        y = self.wlinear(x)
+        y = self.wbn(y)
+        y = [self.relu(i) for i in y]
         y = self.max_y(y)
         z = self.min_max_y(x)
         out = torch.cat((y, z), dim=1)
         return out
 
     def get_y(self, x):
-        y = self.wblocks(x)
+        y = self.wlinear(x)
+        y = self.wbn(y)
+        y = [self.relu(i) for i in y]
         y = self.max_y(y)
         return y
 

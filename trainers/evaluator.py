@@ -235,6 +235,7 @@ class ReIDEvaluator:
         return score_mat
 
     def compare_features_symmetry(self, a):
+        self.model.eval()
         # only compute the lower triangular of the distmat
         l_a = tensor_size(a, 0)
         score_mat = torch.zeros(l_a, l_a)
@@ -268,6 +269,7 @@ class ReIDEvaluator:
         return score_mat
 
     def compare_features_symmetry_y(self, features):
+        self.model.eval()
         # only compute the lower triangular of the distmat
         l_a = tensor_size(features, 0)
         score_mat = torch.zeros(l_a, l_a, self.opt.feats)

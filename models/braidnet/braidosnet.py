@@ -503,6 +503,8 @@ class AABraidOSNet(BraidOSNet):
             return self.half_forward(a)
         elif mode == 'metric':
             return self.metric(a, b)
+        elif mode == 'y':
+            return self.get_y(a, b)
 
         x = self.pair2bi(a, b)
         x = self.bi(x)
@@ -551,7 +553,7 @@ class AABOSS(BraidOSNet):
         self.pair2braid = Pair2Braid()
         self.bi = osnet_x1_0(feats=feats, num_classes=num_classes)
         self.bi2braid = Bi2Braid()
-        self.braid = AABlock(feats, feats, w_num=w_num)
+        self.braid = AABlock(feats, feats)
         # self.y = MinMaxY(feats, linear=True)
 
         fc_blocks = []
@@ -594,6 +596,8 @@ class AABOSS(BraidOSNet):
             return self.half_forward(a)
         elif mode == 'metric':
             return self.metric(a, b)
+        elif mode == 'y':
+            return self.get_y(a, b)
 
         raise NotImplementedError('phase_num==1 demands too complicated implementation')
 

@@ -286,7 +286,7 @@ class ReIDEvaluator:
         tasks = [task_1, task_2]
 
         with torch.no_grad():
-            fun = lambda a, b: self.model.get_y(a, b)
+            fun = lambda a, b: self.model(a, b, mode='y')
             batch_size = get_optimized_batchsize(fun, slice_tensor(features, [0]), slice_tensor(features, [0]))
 
             for start in range(0, task_num, batch_size):

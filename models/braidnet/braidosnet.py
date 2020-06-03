@@ -525,6 +525,13 @@ class AABraidOSNet(BraidOSNet):
         else:
             return self.score2prob(x)
 
+    def get_y(self, a, b):
+        if self.training:
+            raise AttributeError
+        x = self.pair2braid(a, b)
+        y = self.braid.get_y(x)
+        return y
+
 
 class AABOSS(BraidOSNet):
     reg_params = []

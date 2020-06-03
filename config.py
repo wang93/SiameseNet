@@ -66,6 +66,7 @@ class DefaultConfig(object):
     check_discriminant = ''
     check_element_discriminant = ''
     check_pair_effect = ''
+    sort_pairs_by_scores = ''
 
     def parse_(self, kwargs):
         for k, v in kwargs.items():

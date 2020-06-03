@@ -251,7 +251,7 @@ class ReIDEvaluator:
         tasks = [task_1, task_2]
 
         with torch.no_grad():
-            fun = lambda a, b: self.model(a, b, mode='metric').view(-1)
+            fun = lambda x, y: self.model(x, y, mode='metric').view(-1)
             batch_size = get_optimized_batchsize(fun, slice_tensor(a, [0]), slice_tensor(a, [0]))
 
             for start in range(0, task_num, batch_size):
@@ -260,6 +260,39 @@ class ReIDEvaluator:
                 b_indices = tasks[1][start:end]
                 sub_fa = slice_tensor(a, a_indices)
                 sub_fb = slice_tensor(a, b_indices)
+                sub_fa, sub_fb = tensor_cuda((sub_fa, sub_fb))
+                scores = fun(sub_fa, sub_fb).cpu().float()
+                score_mat[a_indices, b_indices] = scores
+                score_mat[b_indices, a_indices] = scores
+
+        return score_mat
+
+    def compare_features_symmetry_y(self, features):
+        # only compute the lower triangular of the distmat
+        l_a = tensor_size(features, 0)
+        score_mat = torch.zeros(l_a, l_a, self.opt.feats)
+
+        task_1 = []
+        task_2 = []
+        for i in range(l_a):
+            sub_1 = [i, ] * (i + 1)
+            sub_2 = [k for k in range(i + 1)]
+            task_1.extend(sub_1)
+            task_2.extend(sub_2)
+
+        task_num = len(task_1)
+        tasks = [task_1, task_2]
+
+        with torch.no_grad():
+            fun = lambda a, b: self.model.get_y(a, b)
+            batch_size = get_optimized_batchsize(fun, slice_tensor(features, [0]), slice_tensor(features, [0]))
+
+            for start in range(0, task_num, batch_size):
+                end = min(start + batch_size, task_num)
+                a_indices = tasks[0][start:end]
+                b_indices = tasks[1][start:end]
+                sub_fa = slice_tensor(features, a_indices)
+                sub_fb = slice_tensor(features, b_indices)
                 sub_fa, sub_fb = tensor_cuda((sub_fa, sub_fb))
                 scores = fun(sub_fa, sub_fb).cpu().float()
                 score_mat[a_indices, b_indices] = scores

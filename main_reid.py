@@ -24,6 +24,10 @@ def train(**kwargs):
         reid_trainer.check_attribute_pair_effect(opt.check_pair_effect)
         return
 
+    if opt.sort_pairs_by_scores:
+        reid_trainer.sort_pairs_by_scores(opt.sort_pairs_by_scores)
+        return
+
     reid_trainer.continue_train()
 
 

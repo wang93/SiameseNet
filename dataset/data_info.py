@@ -117,7 +117,6 @@ class __Dataset(object):
 
             pid_maps.append(pid_map)
 
-
         dataset_new = []
         for dataset, pid_map in zip([oriset, addset], pid_maps):
             for im_path, pid, pcamid in dataset:

@@ -571,6 +571,13 @@ class AABOSS(BraidOSNet):
         x = self.braid.half_forward(x)
         return x
 
+    def get_y(self, a, b):
+        if self.training:
+            raise AttributeError
+        x = self.pair2braid(a, b)
+        y = self.braid.get_y(x)
+        return y
+
     def forward(self, a=None, b=None, mode='normal'):
         if a is None:
             return self._default_output

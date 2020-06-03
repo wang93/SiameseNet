@@ -500,6 +500,11 @@ class AABlock(nn.Module):
         out = torch.cat((y, z), dim=1)
         return out
 
+    def get_y(self, x):
+        y = self.wblocks(x)
+        y = self.max_y(y)
+        return y
+
     def half_forward(self, x):
         """this method is used in checking discriminant"""
         raise NotImplementedError

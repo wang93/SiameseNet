@@ -7,6 +7,7 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from PIL import Image, ImageDraw
 from prettytable import PrettyTable
 from sklearn import preprocessing
 from sklearn import svm
@@ -169,7 +170,12 @@ class _Trainer:
         if norm:
             features = preprocessing.scale(features)
 
-        return features, ids
+        if return_im_path:
+            paths = [p for p, _, _ in dataloader.dataset.dataset]
+            paths = [paths[i] for i in indices]
+            return features, ids, paths
+        else:
+            return features, ids
 
     @print_time
     def check_discriminant_best(self, set_name='train'):
@@ -473,18 +479,79 @@ class _Trainer:
                 plt.matshow(effects, vmin=-amplitude, vmax=amplitude)
                 plt.colorbar()
                 plt.title('{0}_PE_{1}_{2}_{3}'.format(self.opt.exp_name, label, set_name, amplitude))
-
                 plt.tight_layout()
-
                 save_dir = os.path.join(self.opt.exp_dir, 'visualize')
                 os.makedirs(save_dir, exist_ok=True)
-
                 plt.savefig(os.path.join(save_dir,
                                          '{0}_PE_{1}_{2}_{3}_v9.png'.format(self.opt.exp_name, label, set_name,
                                                                             amplitude)))
                 plt.close()
 
         print('The whole process should be terminated.')
+
+    @print_time
+    def sort_pairs_by_scores(self, set_name='train'):
+        best_epoch, best_rank1 = self._adapt_to_best()
+        print("sort_pairs_by_scores based on the best model (rank-1 {:.1%}, "
+              "which was achieved at epoch {})."
+              .format(best_rank1, best_epoch))
+
+        if set_name == 'train':
+            data_loader = self.train_loader
+        elif set_name == 'test':
+            data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
+
+        features, ids, ims_path = self._get_feature_with_id(data_loader, norm=False, return_im_path=True)
+        features = torch.FloatTensor(features)
+
+        score_mat = self.evaluator.compare_features_symmetry_y(features)
+        N = score_mat.size(0)
+        indices_i = torch.Tensor([float(i) for i in range(N)]).expand(N, N).contiguous().view(-1)
+        indices_j = torch.Tensor([float(i) for i in range(N)]).expand(N, N).t().contiguous().view(-1)
+
+        width = 32
+        height = 64
+        margin = 4
+        block = 12
+        pairs_num = 16
+        total_width = (width + margin) * 2 + block
+        total_height = (height + margin) * pairs_num
+
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores')
+        os.makedirs(save_dir, exist_ok=True)
+
+        border = pairs_num // 2
+        for f in range(self.opt.feats):
+            canvas = Image.new('RGB', (total_width, total_height))
+            draw = ImageDraw.Draw(canvas)
+
+            scores = score_mat[:, :, f].view(-1)
+            scores, indices = scores.sort(descending=True)
+            idx_i = indices_i[indices]
+            idx_j = indices_j[indices]
+
+            for row, (i, j, s) in enumerate(zip(idx_i[:border], idx_j[:border], scores[:border])):
+                im_i = Image.open(ims_path[i]).resize((width, height))
+                im_j = Image.open(ims_path[j]).resize((width, height))
+                canvas.paste(im_i, (0, (height + margin) * row))
+                canvas.paste(im_j, (width + margin, (height + margin) * row))
+                draw.text(((width + margin) * 2, (height + margin) * row), '{.3f}'.format(s), (0, 255, 0))
+
+            for row, (i, j, s) in enumerate(zip(idx_i[-border:], idx_j[-border:], scores[-border:])):
+                row += border
+                im_i = Image.open(ims_path[i]).resize((width, height))
+                im_j = Image.open(ims_path[j]).resize((width, height))
+                canvas.paste(im_i, (0, (height + margin) * row))
+                canvas.paste(im_j, (width + margin, (height + margin) * row))
+                draw.text(((width + margin) * 2, (height + margin) * row), '{.3f}'.format(s), (255, 0, 0))
+
+            canvas.save(os.path.join(save_dir, '{0}_{1}_pairs_with_scores.png'.format(self.opt.exp_name, set_name)),
+                        'PNG')
+
+        # scores, indices = scores.sort(descending=True)
+        #
+        # labels = torch.Tensor([int(i) for i in ids])
+        # is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.bool)
 
     def _parse_data(self, inputs):
         raise NotImplementedError

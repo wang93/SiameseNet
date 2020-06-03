@@ -33,9 +33,9 @@ def get_dataloaders(opt, model_meta):
 
     if opt.check_discriminant or opt.check_element_discriminant or opt.check_pair_effect:
         trainloader = DataLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=None)),
             batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=True, shuffle=True
+            pin_memory=pin_memory,
         )
 
         dataset.query.extend(dataset.gallery)

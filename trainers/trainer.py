@@ -535,7 +535,7 @@ class _Trainer:
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, (height + margin) * row))
                 canvas.paste(im_j, (width + margin, (height + margin) * row))
-                draw.text(((width + margin) * 2, (height + margin) * row), '{.3f}'.format(s), (0, 255, 0))
+                draw.text(((width + margin) * 2, (height + margin) * row), '{:.3f}'.format(s), (0, 255, 0))
 
             for row, (i, j, s) in enumerate(zip(idx_i[-border:], idx_j[-border:], scores[-border:])):
                 row += border

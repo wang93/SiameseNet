@@ -140,7 +140,7 @@ class _Trainer:
             rank1 = self.evaluator.evaluate(re_ranking=self.opt.re_ranking, eval_flip=eval_flip)
             return rank1
 
-    def _get_feature_with_id(self, dataloader, norm=True, return_im_path=False):
+    def _get_feature_with_id(self, dataloader, norm=True, return_im_path=False, sub_num=-1):
         self.model.eval()
         with torch.no_grad():
             # mode = 'half' if self.opt.model_name in ['aabraidosnet', ] else 'extract'
@@ -168,6 +168,8 @@ class _Trainer:
         num = len(ids)
         indices = [i for i in range(num)]
         random.shuffle(indices)
+        if sub_num >= 0:
+            indices = indices[:sub_num]
         features = [features[i] for i in indices]
         ids = [ids[i] for i in indices]
         paths = [paths[i] for i in indices]
@@ -505,7 +507,7 @@ class _Trainer:
         elif set_name == 'test':
             data_loader = self.evaluator.queryloader  # has already been merged with galleryloader
 
-        features, ids, ims_path = self._get_feature_with_id(data_loader, norm=False, return_im_path=True)
+        features, ids, ims_path = self._get_feature_with_id(data_loader, norm=False, return_im_path=True, sub_num=1000)
         features = torch.FloatTensor(features)
 
         score_mat = self.evaluator.compare_features_symmetry_y(features)

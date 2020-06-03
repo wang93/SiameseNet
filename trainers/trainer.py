@@ -147,17 +147,22 @@ class _Trainer:
             mode = 'extract'
             fun = lambda d: self.model(d, None, mode=mode)
             records = [(tensor_cpu(fun(tensor_cuda(data))), identity) for data, identity, _ in dataloader]
+            tpaths = [p for p, _, _ in dataloader.dataset.dataset]
 
             features = []
             ids = []
+            paths = []
+            cur_i = -1
             for features_, ids_ in records:
                 features_ = features_.tolist()
                 ids_ = [str(i.item()) for i in ids_]
                 for id_, feature_ in zip(ids_, features_):
+                    cur_i += 1
                     if id_ == '0':
                         continue
                     features.append(feature_)
                     ids.append(id_)
+                    paths.append(tpaths[cur_i])
 
         # shuffle
         num = len(ids)
@@ -165,14 +170,13 @@ class _Trainer:
         random.shuffle(indices)
         features = [features[i] for i in indices]
         ids = [ids[i] for i in indices]
+        paths = [paths[i] for i in indices]
 
         features = np.array(features)
         if norm:
             features = preprocessing.scale(features)
 
         if return_im_path:
-            paths = [p for p, _, _ in dataloader.dataset.dataset]
-            paths = [paths[i] for i in indices]
             return features, ids, paths
         else:
             return features, ids

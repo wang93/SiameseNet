@@ -11,7 +11,8 @@ def get_dataloaders(opt, model_meta):
     # train_relabel = (opt.train_mode == 'normal' or opt.loss == 'lsce_bce') and (not opt.check_discriminant)
     train_relabel = not (opt.check_discriminant
                          or opt.check_element_discriminant
-                         or opt.check_pair_effect)
+                         or opt.check_pair_effect
+                         or opt.sort_pairs_by_scores)
 
     if train_relabel:
         print('note: the training set is relabeled!')

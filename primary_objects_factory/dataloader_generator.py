@@ -31,7 +31,7 @@ def get_dataloaders(opt, model_meta):
 
     pin_memory = True
 
-    if opt.check_discriminant or opt.check_element_discriminant or opt.check_pair_effect:
+    if opt.check_discriminant or opt.check_element_discriminant or opt.check_pair_effect or opt.sort_pairs_by_scores:
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=None)),
             batch_size=opt.train_batch, num_workers=opt.workers,

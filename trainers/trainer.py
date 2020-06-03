@@ -522,6 +522,7 @@ class _Trainer:
 
         border = pairs_num // 2
         for f in range(self.opt.feats):
+            print('{0}/{1}'.format(f, self.opt.feats))
             canvas = Image.new('RGB', (total_width, total_height))
             draw = ImageDraw.Draw(canvas)
 

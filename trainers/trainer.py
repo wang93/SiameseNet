@@ -506,8 +506,8 @@ class _Trainer:
 
         score_mat = self.evaluator.compare_features_symmetry_y(features)
         N = score_mat.size(0)
-        indices_i = torch.Tensor([float(i) for i in range(N)]).expand(N, N).contiguous().view(-1)
-        indices_j = torch.Tensor([float(i) for i in range(N)]).expand(N, N).t().contiguous().view(-1)
+        indices_i = torch.Tensor([i for i in range(N)]).expand(N, N).contiguous().view(-1)
+        indices_j = torch.Tensor([i for i in range(N)]).expand(N, N).t().contiguous().view(-1)
 
         width = 32
         height = 64
@@ -545,8 +545,9 @@ class _Trainer:
                 canvas.paste(im_j, (width + margin, (height + margin) * row))
                 draw.text(((width + margin) * 2, (height + margin) * row), '{.3f}'.format(s), (255, 0, 0))
 
-            canvas.save(os.path.join(save_dir, '{0}_{1}_pairs_with_scores.png'.format(self.opt.exp_name, set_name)),
-                        'PNG')
+            canvas.save(
+                os.path.join(save_dir, '{0}_{1}_{2}_pairs_with_scores.png'.format(self.opt.exp_name, set_name, f)),
+                'PNG')
 
         # scores, indices = scores.sort(descending=True)
         #

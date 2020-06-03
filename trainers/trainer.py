@@ -543,7 +543,7 @@ class _Trainer:
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, (height + margin) * row))
                 canvas.paste(im_j, (width + margin, (height + margin) * row))
-                draw.text(((width + margin) * 2, (height + margin) * row), '{.3f}'.format(s), (255, 0, 0))
+                draw.text(((width + margin) * 2, (height + margin) * row), '{:.3f}'.format(s), (255, 0, 0))
 
             canvas.save(
                 os.path.join(save_dir, '{0}_{1}_{2}_pairs_with_scores.png'.format(self.opt.exp_name, set_name, f)),

@@ -629,7 +629,7 @@ class _Trainer:
                 draw.text((0,
                            head + (height + margin) * cur_num + height + 1),
                           '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
-                          (0, 255, 0), font=font2)
+                          (255, 0, 0), font=font2)
 
                 cur_num += 1
                 if cur_num >= pairs_num:

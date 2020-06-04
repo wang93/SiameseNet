@@ -523,7 +523,7 @@ class _Trainer:
         total_width = (width + margin) * 2 + block
         total_height = (height + margin) * pairs_num
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v2')
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v3')
         os.makedirs(save_dir, exist_ok=True)
 
         border = pairs_num // 2
@@ -554,13 +554,19 @@ class _Trainer:
 
             pre_score = None
             cur_num = 0
+            used_indices = set()
             for row in range(len(scores)):
                 i = idx_i[row]
                 j = idx_j[row]
                 s = scores[row].item()
+                if i in used_indices or j in used_indices:
+                    continue
                 if s == pre_score:
                     continue
                 pre_score = s
+                used_indices.add(i)
+                used_indices.add(j)
+
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, (height + margin) * cur_num))
@@ -571,13 +577,19 @@ class _Trainer:
                     break
 
             pre_score = None
+            used_indices = set()
             for row in range(len(scores) - 1, 0, -1):
                 i = idx_i[row]
                 j = idx_j[row]
                 s = scores[row].item()
+                if i in used_indices or j in used_indices:
+                    continue
                 if s == pre_score:
                     continue
                 pre_score = s
+                used_indices.add(i)
+                used_indices.add(j)
+
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, (height + margin) * cur_num))

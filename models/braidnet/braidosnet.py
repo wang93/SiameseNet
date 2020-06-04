@@ -539,7 +539,7 @@ class AABraidOSNet(BraidOSNet):
             raise AttributeError
         if len(self.fc) != 1:
             raise NotImplementedError
-        weight = torch.tensor(self.fc[0].fc.weight).view(-1)
+        weight = self.fc[0].fc.weight.view(-1)
 
         mask = self.braid.get_y_mask()
 

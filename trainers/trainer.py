@@ -524,11 +524,11 @@ class _Trainer:
         total_width = ((width + margin) * 2 + block) * 2
         total_height = (height + margin) * pairs_num + head
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v6')
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v7', set_name)
         os.makedirs(save_dir, exist_ok=True)
 
-        font1 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 20)
-        font2 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 10)
+        font1 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 10)
+        font2 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 5)
 
         border = pairs_num // 2
         for f in range(self.opt.feats):

@@ -527,8 +527,8 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v6')
         os.makedirs(save_dir, exist_ok=True)
 
-        font1 = ImageFont.truetype("consola.ttf", 10, encoding="unic")
-        font2 = ImageFont.truetype("consola.ttf", 3, encoding="unic")
+        font1 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 20)
+        font2 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 10)
 
         border = pairs_num // 2
         for f in range(self.opt.feats):

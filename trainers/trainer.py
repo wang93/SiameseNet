@@ -512,8 +512,8 @@ class _Trainer:
 
         score_mat, weights = self.evaluator.compare_features_symmetry_y(features)
         N = score_mat.size(0)
-        indices_i = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).contiguous().view(-1)
-        indices_j = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).t().contiguous().view(-1)
+        indices_j = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).contiguous().view(-1)
+        indices_i = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).t().contiguous().view(-1)
 
         head = 32
         width = 32

@@ -300,7 +300,7 @@ class ReIDEvaluator:
                 score_mat[a_indices, b_indices] = scores
                 # score_mat[b_indices, a_indices] = scores # comment it to avoid duplicated pairs
 
-        weights = self.model.get_y_effect()
+        weights = self.model.module.get_y_effect()
 
         assert self.opt.feats != len(weights)
 

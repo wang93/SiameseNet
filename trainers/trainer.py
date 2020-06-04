@@ -524,7 +524,7 @@ class _Trainer:
         total_width = ((width + margin) * 2 + block) * 2
         total_height = (height + margin) * pairs_num + head
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v5')
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v6')
         os.makedirs(save_dir, exist_ok=True)
 
         border = pairs_num // 2
@@ -539,7 +539,7 @@ class _Trainer:
             idx_i = indices_i[indices]
             idx_j = indices_j[indices]
 
-            draw.text((2, 2), '{:.3f}'.format(weight), (255, 255, 255))
+            draw.text((10, 10), '{:.3f}'.format(weight), (255, 255, 255))
 
             pre_score = None
             cur_num = 0
@@ -548,6 +548,7 @@ class _Trainer:
                 i = idx_i[row].item()
                 j = idx_j[row].item()
                 s = scores[row].item()
+
                 if i in used_indices or j in used_indices:
                     continue
                 if s == pre_score:
@@ -561,6 +562,22 @@ class _Trainer:
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
                 draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
+
+                score_same = (scores == s)
+                i_same = (idx_i == i)
+                j_same = (idx_j == j)
+
+                i_s_same_num = (i_same * score_same).sum().item()
+                j_s_same_num = (j_same * score_same).sum().item()
+
+                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
+                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+
+                draw.text(((width + margin) * 2,
+                           head + (height + margin) * cur_num + height // 2 + 1),
+                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          (0, 255, 0))
+
                 cur_num += 1
                 if cur_num >= border:
                     break
@@ -584,6 +601,22 @@ class _Trainer:
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
                 draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0))
+
+                score_same = (scores == s)
+                i_same = (idx_i == i)
+                j_same = (idx_j == j)
+
+                i_s_same_num = (i_same * score_same).sum().item()
+                j_s_same_num = (j_same * score_same).sum().item()
+
+                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
+                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+
+                draw.text(((width + margin) * 2,
+                           head + (height + margin) * cur_num + height // 2 + 1),
+                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          (0, 255, 0))
+
                 cur_num += 1
                 if cur_num >= pairs_num:
                     break
@@ -598,6 +631,21 @@ class _Trainer:
                 draw.text((left + (width + margin) * 2, head + (height + margin) * row), '{:.3f}'.format(s),
                           (0, 255, 0))
 
+                score_same = (scores == s)
+                i_same = (idx_i == i)
+                j_same = (idx_j == j)
+
+                i_s_same_num = (i_same * score_same).sum().item()
+                j_s_same_num = (j_same * score_same).sum().item()
+
+                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
+                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+
+                draw.text((left + (width + margin) * 2,
+                           head + (height + margin) * row + height // 2 + 1),
+                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          (0, 255, 0))
+
             for row, (i, j, s) in enumerate(
                     zip(reversed(idx_i[-border:]), reversed(idx_j[-border:]), reversed(scores[-border:]))):
                 row += border
@@ -607,6 +655,21 @@ class _Trainer:
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))
                 draw.text((left + (width + margin) * 2, head + (height + margin) * row), '{:.3f}'.format(s),
                           (255, 0, 0))
+
+                score_same = (scores == s)
+                i_same = (idx_i == i)
+                j_same = (idx_j == j)
+
+                i_s_same_num = (i_same * score_same).sum().item()
+                j_s_same_num = (j_same * score_same).sum().item()
+
+                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
+                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+
+                draw.text((left + (width + margin) * 2,
+                           head + (height + margin) * row + height // 2 + 1),
+                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          (0, 255, 0))
 
             canvas.save(
                 os.path.join(save_dir, '{0}_{1}_{2}_pairs_with_scores.png'.format(self.opt.exp_name, set_name, f)),

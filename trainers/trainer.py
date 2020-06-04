@@ -574,8 +574,10 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
-                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                                                i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                                                j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
 
                 # draw.text(((width + margin) * 2,
                 #            head + (height + margin) * cur_num + height // 2 + 1),
@@ -584,7 +586,7 @@ class _Trainer:
 
                 draw.text((0,
                            head + (height + margin) * cur_num + height + 1),
-                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0}          {1}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
 
                 cur_num += 1
@@ -619,8 +621,10 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
-                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                                                i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                                                j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
 
                 # draw.text(((width + margin) * 2,
                 #            head + (height + margin) * cur_num + height // 2 + 1),
@@ -628,7 +632,7 @@ class _Trainer:
                 #           (255, 0, 0), font=font2)
                 draw.text((0,
                            head + (height + margin) * cur_num + height + 1),
-                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0}          {1}'.format(i_same_ratio, j_same_ratio),
                           (255, 0, 0), font=font2)
 
                 cur_num += 1
@@ -652,8 +656,10 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
-                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                                                i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                                                j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
 
                 # draw.text((left + (width + margin) * 2,
                 #            head + (height + margin) * row + height // 2 + 1),
@@ -662,7 +668,7 @@ class _Trainer:
 
                 draw.text((left,
                            head + (height + margin) * row + height + 1),
-                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0}          {1}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
 
             for row, (i, j, s) in enumerate(
@@ -682,16 +688,17 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
-                j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
-
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                                                i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                                                j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
                 # draw.text((left + (width + margin) * 2,
                 #            head + (height + margin) * row + height // 2 + 1),
                 #           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
                 #           (255, 0, 0), font=font2)
                 draw.text((left,
                            head + (height + margin) * row + height + 1),
-                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0}          {1}'.format(i_same_ratio, j_same_ratio),
                           (255, 0, 0), font=font2)
 
             canvas.save(

@@ -523,7 +523,7 @@ class _Trainer:
         total_width = (width + margin) * 2 + block
         total_height = (height + margin) * pairs_num
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores')
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v2')
         os.makedirs(save_dir, exist_ok=True)
 
         border = pairs_num // 2
@@ -537,20 +537,56 @@ class _Trainer:
             idx_i = indices_i[indices]
             idx_j = indices_j[indices]
 
-            for row, (i, j, s) in enumerate(zip(idx_i[:border], idx_j[:border], scores[:border])):
-                im_i = Image.open(ims_path[i]).resize((width, height))
-                im_j = Image.open(ims_path[j]).resize((width, height))
-                canvas.paste(im_i, (0, (height + margin) * row))
-                canvas.paste(im_j, (width + margin, (height + margin) * row))
-                draw.text(((width + margin) * 2, (height + margin) * row), '{:.3f}'.format(s), (0, 255, 0))
+            # for row, (i, j, s) in enumerate(zip(idx_i[:border], idx_j[:border], scores[:border])):
+            #     im_i = Image.open(ims_path[i]).resize((width, height))
+            #     im_j = Image.open(ims_path[j]).resize((width, height))
+            #     canvas.paste(im_i, (0, (height + margin) * row))
+            #     canvas.paste(im_j, (width + margin, (height + margin) * row))
+            #     draw.text(((width + margin) * 2, (height + margin) * row), '{:.3f}'.format(s), (0, 255, 0))
+            #
+            # for row, (i, j, s) in enumerate(zip(idx_i[-border:], idx_j[-border:], scores[-border:])):
+            #     row += border
+            #     im_i = Image.open(ims_path[i]).resize((width, height))
+            #     im_j = Image.open(ims_path[j]).resize((width, height))
+            #     canvas.paste(im_i, (0, (height + margin) * row))
+            #     canvas.paste(im_j, (width + margin, (height + margin) * row))
+            #     draw.text(((width + margin) * 2, (height + margin) * row), '{:.3f}'.format(s), (255, 0, 0))
 
-            for row, (i, j, s) in enumerate(zip(idx_i[-border:], idx_j[-border:], scores[-border:])):
-                row += border
+            pre_score = None
+            cur_num = 0
+            for row in range(len(scores)):
+                i = idx_i[row]
+                j = idx_j[row]
+                s = scores[row]
+                if s == pre_score:
+                    continue
+                pre_score = s
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
-                canvas.paste(im_i, (0, (height + margin) * row))
-                canvas.paste(im_j, (width + margin, (height + margin) * row))
-                draw.text(((width + margin) * 2, (height + margin) * row), '{:.3f}'.format(s), (255, 0, 0))
+                canvas.paste(im_i, (0, (height + margin) * cur_num))
+                canvas.paste(im_j, (width + margin, (height + margin) * cur_num))
+                draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
+                cur_num += 1
+                if cur_num >= border:
+                    break
+
+            pre_score = None
+            cur_num = 0
+            for row in range(len(scores) - 1, 0, -1):
+                i = idx_i[row]
+                j = idx_j[row]
+                s = scores[row]
+                if s == pre_score:
+                    continue
+                pre_score = s
+                im_i = Image.open(ims_path[i]).resize((width, height))
+                im_j = Image.open(ims_path[j]).resize((width, height))
+                canvas.paste(im_i, (0, (height + margin) * cur_num))
+                canvas.paste(im_j, (width + margin, (height + margin) * cur_num))
+                draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
+                cur_num += 1
+                if cur_num >= border:
+                    break
 
             canvas.save(
                 os.path.join(save_dir, '{0}_{1}_{2}_pairs_with_scores.png'.format(self.opt.exp_name, set_name, f)),

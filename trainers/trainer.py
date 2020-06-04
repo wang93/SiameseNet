@@ -582,7 +582,7 @@ class _Trainer:
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, (height + margin) * cur_num))
-                draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
+                draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0))
                 cur_num += 1
                 if cur_num >= pairs_num:
                     break

@@ -574,9 +574,9 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num,
                                                 i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
-                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num,
                                                 j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
 
                 # draw.text(((width + margin) * 2,
@@ -621,9 +621,9 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num,
                                                 i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
-                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num,
                                                 j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
 
                 # draw.text(((width + margin) * 2,
@@ -656,9 +656,9 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num,
                                                 i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
-                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num,
                                                 j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
 
                 # draw.text((left + (width + margin) * 2,
@@ -688,9 +688,9 @@ class _Trainer:
                 i_s_same_num = (i_same * score_same).sum().item()
                 j_s_same_num = (j_same * score_same).sum().item()
 
-                i_same_ratio = '{0}/{1}'.format(i_s_same_num * 2,
+                i_same_ratio = '{0}/{1}'.format(i_s_same_num,
                                                 i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
-                j_same_ratio = '{0}/{1}'.format(j_s_same_num * 2,
+                j_same_ratio = '{0}/{1}'.format(j_s_same_num,
                                                 j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
                 # draw.text((left + (width + margin) * 2,
                 #            head + (height + margin) * row + height // 2 + 1),

@@ -7,7 +7,7 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from prettytable import PrettyTable
 from sklearn import preprocessing
 from sklearn import svm
@@ -527,6 +527,9 @@ class _Trainer:
         save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v6')
         os.makedirs(save_dir, exist_ok=True)
 
+        font1 = ImageFont.truetype("consola.ttf", 10, encoding="unic")
+        font2 = ImageFont.truetype("consola.ttf", 3, encoding="unic")
+
         border = pairs_num // 2
         for f in range(self.opt.feats):
             print('{0}/{1}'.format(f + 1, self.opt.feats))
@@ -561,7 +564,8 @@ class _Trainer:
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
-                draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
+                draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0),
+                          font=font1)
 
                 score_same = (scores == s)
                 i_same = (idx_i == i)
@@ -576,7 +580,7 @@ class _Trainer:
                 draw.text(((width + margin) * 2,
                            head + (height + margin) * cur_num + height // 2 + 1),
                           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
-                          (0, 255, 0))
+                          (0, 255, 0), font=font2)
 
                 cur_num += 1
                 if cur_num >= border:
@@ -600,7 +604,8 @@ class _Trainer:
                 im_j = Image.open(ims_path[j]).resize((width, height))
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
-                draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0))
+                draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0),
+                          font=font1)
 
                 score_same = (scores == s)
                 i_same = (idx_i == i)
@@ -615,7 +620,7 @@ class _Trainer:
                 draw.text(((width + margin) * 2,
                            head + (height + margin) * cur_num + height // 2 + 1),
                           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
-                          (0, 255, 0))
+                          (255, 0, 0), font=font2)
 
                 cur_num += 1
                 if cur_num >= pairs_num:
@@ -629,7 +634,7 @@ class _Trainer:
                 canvas.paste(im_i, (left, head + (height + margin) * row))
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))
                 draw.text((left + (width + margin) * 2, head + (height + margin) * row), '{:.3f}'.format(s),
-                          (0, 255, 0))
+                          (0, 255, 0), font=font1)
 
                 score_same = (scores == s)
                 i_same = (idx_i == i)
@@ -644,7 +649,7 @@ class _Trainer:
                 draw.text((left + (width + margin) * 2,
                            head + (height + margin) * row + height // 2 + 1),
                           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
-                          (0, 255, 0))
+                          (0, 255, 0), font=font2)
 
             for row, (i, j, s) in enumerate(
                     zip(reversed(idx_i[-border:]), reversed(idx_j[-border:]), reversed(scores[-border:]))):
@@ -654,7 +659,7 @@ class _Trainer:
                 canvas.paste(im_i, (left, head + (height + margin) * row))
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))
                 draw.text((left + (width + margin) * 2, head + (height + margin) * row), '{:.3f}'.format(s),
-                          (255, 0, 0))
+                          (255, 0, 0), font=font1)
 
                 score_same = (scores == s)
                 i_same = (idx_i == i)
@@ -669,7 +674,7 @@ class _Trainer:
                 draw.text((left + (width + margin) * 2,
                            head + (height + margin) * row + height // 2 + 1),
                           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
-                          (0, 255, 0))
+                          (255, 0, 0), font=font2)
 
             canvas.save(
                 os.path.join(save_dir, '{0}_{1}_{2}_pairs_with_scores.png'.format(self.opt.exp_name, set_name, f)),

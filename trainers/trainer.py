@@ -518,7 +518,7 @@ class _Trainer:
         head = 32
         width = 32
         height = 64
-        margin = 4
+        margin = 10
         block = 36
         pairs_num = 16
         total_width = ((width + margin) * 2 + block) * 2
@@ -577,9 +577,14 @@ class _Trainer:
                 i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
                 j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
 
-                draw.text(((width + margin) * 2,
-                           head + (height + margin) * cur_num + height // 2 + 1),
-                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                # draw.text(((width + margin) * 2,
+                #            head + (height + margin) * cur_num + height // 2 + 1),
+                #           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                #           (0, 255, 0), font=font2)
+
+                draw.text((0,
+                           head + (height + margin) * cur_num + height + 1),
+                          '{0:.3f}  {1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
 
                 cur_num += 1
@@ -617,10 +622,14 @@ class _Trainer:
                 i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
                 j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
 
-                draw.text(((width + margin) * 2,
-                           head + (height + margin) * cur_num + height // 2 + 1),
-                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
-                          (255, 0, 0), font=font2)
+                # draw.text(((width + margin) * 2,
+                #            head + (height + margin) * cur_num + height // 2 + 1),
+                #           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                #           (255, 0, 0), font=font2)
+                draw.text((0,
+                           head + (height + margin) * cur_num + height + 1),
+                          '{0:.3f}  {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          (0, 255, 0), font=font2)
 
                 cur_num += 1
                 if cur_num >= pairs_num:
@@ -646,10 +655,16 @@ class _Trainer:
                 i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
                 j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
 
-                draw.text((left + (width + margin) * 2,
-                           head + (height + margin) * row + height // 2 + 1),
+                # draw.text((left + (width + margin) * 2,
+                #            head + (height + margin) * row + height // 2 + 1),
+                #           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                #           (0, 255, 0), font=font2)
+
+                draw.text((left,
+                           head + (height + margin) * row + height + 1),
                           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
+
 
             for row, (i, j, s) in enumerate(
                     zip(reversed(idx_i[-border:]), reversed(idx_j[-border:]), reversed(scores[-border:]))):
@@ -671,8 +686,12 @@ class _Trainer:
                 i_same_ratio = float(i_s_same_num) / float(i_same.sum().item())
                 j_same_ratio = float(j_s_same_num) / float(j_same.sum().item())
 
-                draw.text((left + (width + margin) * 2,
-                           head + (height + margin) * row + height // 2 + 1),
+                # draw.text((left + (width + margin) * 2,
+                #            head + (height + margin) * row + height // 2 + 1),
+                #           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                #           (255, 0, 0), font=font2)
+                draw.text((left,
+                           head + (height + margin) * row + height + 1),
                           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (255, 0, 0), font=font2)
 

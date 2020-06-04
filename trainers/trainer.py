@@ -528,7 +528,7 @@ class _Trainer:
         os.makedirs(save_dir, exist_ok=True)
 
         font1 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 10)
-        font2 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 5)
+        font2 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 7)
 
         border = pairs_num // 2
         for f in range(self.opt.feats):
@@ -584,7 +584,7 @@ class _Trainer:
 
                 draw.text((0,
                            head + (height + margin) * cur_num + height + 1),
-                          '{0:.3f}  {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
 
                 cur_num += 1
@@ -628,7 +628,7 @@ class _Trainer:
                 #           (255, 0, 0), font=font2)
                 draw.text((0,
                            head + (height + margin) * cur_num + height + 1),
-                          '{0:.3f}  {1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
 
                 cur_num += 1
@@ -662,9 +662,8 @@ class _Trainer:
 
                 draw.text((left,
                            head + (height + margin) * row + height + 1),
-                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
-
 
             for row, (i, j, s) in enumerate(
                     zip(reversed(idx_i[-border:]), reversed(idx_j[-border:]), reversed(scores[-border:]))):
@@ -692,7 +691,7 @@ class _Trainer:
                 #           (255, 0, 0), font=font2)
                 draw.text((left,
                            head + (height + margin) * row + height + 1),
-                          '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
+                          '{0:.3f}          {1:.3f}'.format(i_same_ratio, j_same_ratio),
                           (255, 0, 0), font=font2)
 
             canvas.save(

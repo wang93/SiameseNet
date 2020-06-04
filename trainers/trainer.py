@@ -571,7 +571,6 @@ class _Trainer:
                     break
 
             pre_score = None
-            cur_num = 0
             for row in range(len(scores) - 1, 0, -1):
                 i = idx_i[row]
                 j = idx_j[row]
@@ -585,7 +584,7 @@ class _Trainer:
                 canvas.paste(im_j, (width + margin, (height + margin) * cur_num))
                 draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
                 cur_num += 1
-                if cur_num >= border:
+                if cur_num >= pairs_num:
                     break
 
             canvas.save(

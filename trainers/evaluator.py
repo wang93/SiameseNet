@@ -302,7 +302,7 @@ class ReIDEvaluator:
 
         weights = self.model.module.get_y_effect()
 
-        assert self.opt.feats != len(weights)
+        assert self.opt.feats == len(weights)
 
         return score_mat, weights
 

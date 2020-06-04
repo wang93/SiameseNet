@@ -557,7 +557,7 @@ class _Trainer:
             for row in range(len(scores)):
                 i = idx_i[row]
                 j = idx_j[row]
-                s = scores[row]
+                s = scores[row].item()
                 if s == pre_score:
                     continue
                 pre_score = s
@@ -575,7 +575,7 @@ class _Trainer:
             for row in range(len(scores) - 1, 0, -1):
                 i = idx_i[row]
                 j = idx_j[row]
-                s = scores[row]
+                s = scores[row].item()
                 if s == pre_score:
                     continue
                 pre_score = s

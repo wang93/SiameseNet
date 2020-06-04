@@ -300,7 +300,11 @@ class ReIDEvaluator:
                 score_mat[a_indices, b_indices] = scores
                 # score_mat[b_indices, a_indices] = scores # comment it to avoid duplicated pairs
 
-        return score_mat
+        weights = self.model.get_y_effect()
+
+        assert self.opt.feats != len(weights)
+
+        return score_mat, weights
 
     def _compare_images(self, loader_a, loader_b):
         l_a = len(loader_a)

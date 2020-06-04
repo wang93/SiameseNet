@@ -476,6 +476,8 @@ class SquareMaxY(SumY):
 class AABlock(nn.Module):
     def __init__(self, channel_in, channel_out):
         super(AABlock, self).__init__()
+        self.channel_in = channel_in
+        self.channel_out = channel_out
         self.wlinear = MinLinear(channel_in, channel_out, bias=False)
         self.wbn = WBatchNorm1d(channel_out,
                                 eps=1e-05,
@@ -501,6 +503,10 @@ class AABlock(nn.Module):
         # y = [self.relu(i) for i in y]
         y = self.max_y(y)
         return y
+
+    def get_y_mask(self):
+        mask = [i for i in range(self.channel_out)]
+        return mask
 
     def half_forward(self, x):
         """this method is used in checking discriminant"""

@@ -534,6 +534,17 @@ class AABraidOSNet(BraidOSNet):
         y = self.braid.get_y(x)
         return y
 
+    def get_y_effect(self):
+        if self.training:
+            raise AttributeError
+        if len(self.fc) != 1:
+            raise NotImplementedError
+        weight = torch.tensor(self.fc[0].fc.weight).view(-1)
+
+        mask = self.braid.get_y_mask()
+
+        return weight[mask]
+
 
 class AABOSS(BraidOSNet):
     reg_params = []
@@ -580,6 +591,16 @@ class AABOSS(BraidOSNet):
         x = self.braid.half_forward(x)
         return x
 
+    def get_y_effect(self):
+        if self.training:
+            raise AttributeError
+        if len(self.fc) != 1:
+            raise NotImplementedError
+        weight = torch.tensor(self.fc[0].fc.weight).view(-1)
+        mask = self.braid.get_y_mask()
+
+        return weight[mask]
+
     def get_y(self, a, b):
         if self.training:
             raise AttributeError
@@ -600,20 +621,6 @@ class AABOSS(BraidOSNet):
             return self.get_y(a, b)
 
         raise NotImplementedError('phase_num==1 demands too complicated implementation')
-
-        # x = self.pair2bi(a, b)
-        # if self.training:
-        #     y, x = self.bi(x)
-        # else:
-        #     x = self.bi(x)
-        # x = self.bi2braid(x)
-        # x = self.braid(x)
-        # x = self.fc(x)
-        #
-        # if self.training:
-        #     return y, x
-        # else:
-        #     return self.score2prob(x)
 
     def extract(self, ims):
         return self.bi(ims)

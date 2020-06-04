@@ -510,20 +510,21 @@ class _Trainer:
         features, ids, ims_path = self._get_feature_with_id(data_loader, norm=False, return_im_path=True, sub_num=1000)
         features = torch.FloatTensor(features)
 
-        score_mat = self.evaluator.compare_features_symmetry_y(features)
+        score_mat, weights = self.evaluator.compare_features_symmetry_y(features)
         N = score_mat.size(0)
         indices_i = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).contiguous().view(-1)
         indices_j = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).t().contiguous().view(-1)
 
+        head = 32
         width = 32
         height = 64
         margin = 4
         block = 36
         pairs_num = 16
         total_width = (width + margin) * 2 + block
-        total_height = (height + margin) * pairs_num
+        total_height = (height + margin) * pairs_num + head
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v3')
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v4')
         os.makedirs(save_dir, exist_ok=True)
 
         border = pairs_num // 2
@@ -533,9 +534,12 @@ class _Trainer:
             draw = ImageDraw.Draw(canvas)
 
             scores = score_mat[:, :, f].view(-1)
+            weight = weights[f].item()
             scores, indices = scores.sort(descending=True)
             idx_i = indices_i[indices]
             idx_j = indices_j[indices]
+
+            draw.text((2, 2), '{:.3f}'.format(weight), (255, 255, 255))
 
             # for row, (i, j, s) in enumerate(zip(idx_i[:border], idx_j[:border], scores[:border])):
             #     im_i = Image.open(ims_path[i]).resize((width, height))
@@ -569,9 +573,9 @@ class _Trainer:
 
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
-                canvas.paste(im_i, (0, (height + margin) * cur_num))
-                canvas.paste(im_j, (width + margin, (height + margin) * cur_num))
-                draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
+                canvas.paste(im_i, (0, head + (height + margin) * cur_num))
+                canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
+                draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0))
                 cur_num += 1
                 if cur_num >= border:
                     break
@@ -592,9 +596,9 @@ class _Trainer:
 
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
-                canvas.paste(im_i, (0, (height + margin) * cur_num))
-                canvas.paste(im_j, (width + margin, (height + margin) * cur_num))
-                draw.text(((width + margin) * 2, (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0))
+                canvas.paste(im_i, (0, head + (height + margin) * cur_num))
+                canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
+                draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0))
                 cur_num += 1
                 if cur_num >= pairs_num:
                     break

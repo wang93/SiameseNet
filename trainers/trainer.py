@@ -528,7 +528,7 @@ class _Trainer:
 
         border = pairs_num // 2
         for f in range(self.opt.feats):
-            print('{0}/{1}'.format(f, self.opt.feats))
+            print('{0}/{1}'.format(f + 1, self.opt.feats))
             canvas = Image.new('RGB', (total_width, total_height))
             draw = ImageDraw.Draw(canvas)
 
@@ -556,8 +556,8 @@ class _Trainer:
             cur_num = 0
             used_indices = set()
             for row in range(len(scores)):
-                i = idx_i[row]
-                j = idx_j[row]
+                i = idx_i[row].item()
+                j = idx_j[row].item()
                 s = scores[row].item()
                 if i in used_indices or j in used_indices:
                     continue
@@ -579,8 +579,8 @@ class _Trainer:
             pre_score = None
             used_indices = set()
             for row in range(len(scores) - 1, 0, -1):
-                i = idx_i[row]
-                j = idx_j[row]
+                i = idx_i[row].item()
+                j = idx_j[row].item()
                 s = scores[row].item()
                 if i in used_indices or j in used_indices:
                     continue

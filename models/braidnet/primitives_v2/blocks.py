@@ -8,7 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
-           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY', 'AA3Block', 'AA4Block',
+           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY', 'AA3Block', 'AA4Block', 'AAABlock',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -500,6 +500,48 @@ class AABlock(nn.Module):
     def get_y(self, x):
         y = self.wlinear(x)
         y = self.wbn(y)
+        # y = [self.relu(i) for i in y]
+        y = self.max_y(y)
+        return y
+
+    def get_y_mask(self):
+        mask = [i for i in range(self.channel_out)]
+        return mask
+
+    def half_forward(self, x):
+        """this method is used in checking discriminant"""
+        raise NotImplementedError
+        y = self.wlinear.half_forward(x)
+        return torch.cat((x, y), dim=1)
+
+
+class AAABlock(nn.Module):
+    def __init__(self, channel_in, channel_out):
+        super(AAABlock, self).__init__()
+        self.channel_in = channel_in
+        self.channel_out = channel_out
+        self.wlinear = AndLinear(channel_in, channel_out, bias=False)
+        # self.wbn = WBatchNorm1d(channel_out,
+        #                         eps=1e-05,
+        #                         momentum=0.1,
+        #                         affine=True,
+        #                         track_running_stats=True)
+        # self.relu = nn.ReLU(inplace=True)
+        self.max_y = MaxY(channel_out, linear=True)
+        self.min_max_y = MinMaxY(channel_in, linear=True)
+
+    def forward(self, x):
+        y = self.wlinear(x)
+        # y = self.wbn(y)
+        # y = [self.relu(i) for i in y]
+        y = self.max_y(y)
+        z = self.min_max_y(x)
+        out = torch.cat((y, z), dim=1)
+        return out
+
+    def get_y(self, x):
+        y = self.wlinear(x)
+        # y = self.wbn(y)
         # y = [self.relu(i) for i in y]
         y = self.max_y(y)
         return y

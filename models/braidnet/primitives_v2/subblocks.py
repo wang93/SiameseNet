@@ -7,7 +7,7 @@ from torch.nn import BatchNorm2d as BatchNorm2d
 
 from .functions import *
 
-__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d', 'SoftMinLinear', 'MinBNLinear',
+__all__ = ['WConv2d', 'WLinear', 'WBatchNorm2d', 'MMConv2d', 'SoftMinLinear', 'MinBNLinear', 'AndLinear',
            'WBatchNorm1d', 'PartPool', 'ReLU', 'MMLinear', 'MinLinear', 'Min2Linear', 'ChanelScaling']
 
 POOLS_DICT = {'max': nn.AdaptiveMaxPool2d, 'avg': nn.AdaptiveAvgPool2d}
@@ -189,6 +189,27 @@ class MinLinear(WLinear):
 
         out_a = torch.min(p_a, q_b)
         out_b = torch.min(p_b, q_a)
+
+        return out_a, out_b
+
+
+class AndLinear(WLinear):
+    def __init__(self, in_features, out_features, bias=True):
+        super(AndLinear, self).__init__(in_features, out_features, bias)
+        self.and_ = lambda a, b: (torch.min(a, b) > 0).to(dtype=a.dtype) * (a + b)
+        # self.conv_p = nn.Linear(in_features, out_features, bias)
+        # self.conv_q = nn.Linear(in_features, out_features, False)
+
+    def forward(self, input_):
+        in_a, in_b = input_
+
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        out_a = self.and_(p_a, q_b)
+        out_b = self.and_(p_b, q_a)
 
         return out_a, out_b
 

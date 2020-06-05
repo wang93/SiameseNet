@@ -82,6 +82,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from models.braidnet.braidosnet import AABraidOSNet
         model = AABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
+    elif opt.model_name == 'aaabraidosnet':
+        from models.braidnet.braidosnet import AAABraidOSNet
+        model = AAABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
+
     elif opt.model_name == 'aaboss':
         from models.braidnet.braidosnet import AABOSS
         model = AABOSS(feats=opt.feats, w_num=opt.w_num, fc=fc, score2prob=score2prob, num_classes=id_num)

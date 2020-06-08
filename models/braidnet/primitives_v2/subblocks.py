@@ -195,7 +195,11 @@ class MinLinear(WLinear):
 
 class AndLinear(WLinear):
     def __init__(self, in_features, out_features, bias=True):
-        super(AndLinear, self).__init__(in_features, out_features, bias)
+        nn.Module.__init__(self)
+        self.conv_p = nn.Linear(in_features, out_features, bias)
+        self.conv_q = nn.Linear(in_features, out_features, bias)
+
+        # super(AndLinear, self).__init__(in_features, out_features, bias)
         self.and_ = lambda a, b: (torch.min(a, b) > 0).to(dtype=a.dtype) * (a + b)
         # self.conv_p = nn.Linear(in_features, out_features, bias)
         # self.conv_q = nn.Linear(in_features, out_features, False)

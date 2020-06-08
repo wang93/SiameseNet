@@ -520,7 +520,7 @@ class AAABlock(nn.Module):
         super(AAABlock, self).__init__()
         self.channel_in = channel_in
         self.channel_out = channel_out
-        self.wlinear = AndLinear(channel_in, channel_out, bias=False)
+        self.wlinear = AndLinear(channel_in, channel_out, bias=True)
         # self.wbn = WBatchNorm1d(channel_out,
         #                         eps=1e-05,
         #                         momentum=0.1,

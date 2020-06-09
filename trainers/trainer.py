@@ -530,6 +530,7 @@ class _Trainer:
 
         font1 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 10)
         font2 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 7)
+        font3 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 9)
 
         border = pairs_num // 2
         for f in range(self.opt.feats):
@@ -583,19 +584,19 @@ class _Trainer:
                 draw_a.text((2, 10),
                             '{:.3f}'.format(pa),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 draw_a.text((2, 40),
                             '{:.3f}'.format(qa),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 draw_b.text((2, 10),
                             '{:.3f}'.format(pb),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 draw_b.text((2, 40),
                             '{:.3f}'.format(qb),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 ##############################
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
@@ -656,20 +657,20 @@ class _Trainer:
 
                 draw_a.text((2, 10),
                             '{:.3f}'.format(pa),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 draw_a.text((2, 40),
                             '{:.3f}'.format(qa),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 draw_b.text((2, 10),
                             '{:.3f}'.format(pb),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 draw_b.text((2, 40),
                             '{:.3f}'.format(qb),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 ##############################
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
@@ -719,19 +720,19 @@ class _Trainer:
                 draw_a.text((2, 10),
                             '{:.3f}'.format(pa),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 draw_a.text((2, 40),
                             '{:.3f}'.format(qa),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 draw_b.text((2, 10),
                             '{:.3f}'.format(pb),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 draw_b.text((2, 40),
                             '{:.3f}'.format(qb),
                             (0, 255, 0),
-                            font=font2)
+                            font=font3)
                 ##############################
                 canvas.paste(im_i, (left, head + (height + margin) * row))
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))
@@ -779,20 +780,20 @@ class _Trainer:
 
                 draw_a.text((2, 10),
                             '{:.3f}'.format(pa),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 draw_a.text((2, 40),
                             '{:.3f}'.format(qa),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 draw_b.text((2, 10),
                             '{:.3f}'.format(pb),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 draw_b.text((2, 40),
                             '{:.3f}'.format(qb),
-                            (0, 255, 0),
-                            font=font2)
+                            (255, 0, 0),
+                            font=font3)
                 ##############################
                 canvas.paste(im_i, (left, head + (height + margin) * row))
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))

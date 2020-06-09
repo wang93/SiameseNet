@@ -506,7 +506,7 @@ class AABraidOSNet(BraidOSNet):
         elif mode == 'y':
             return self.get_y(a, b)
         elif mode == 'iy':
-            return self.get_intermediate_y(a, b)
+            return self.get_intermediate_vars(a, b)
 
         x = self.pair2bi(a, b)
         x = self.bi(x)

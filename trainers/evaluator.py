@@ -298,7 +298,7 @@ class ReIDEvaluator:
                 sub_fa, sub_fb = tensor_cuda((sub_fa, sub_fb))
                 scores = fun(sub_fa, sub_fb).cpu().float()
                 score_mat[a_indices, b_indices] = scores
-                score_mat[b_indices, a_indices] = scores  # comment it to avoid duplicated pairs
+                #score_mat[b_indices, a_indices] = scores  # comment it to avoid duplicated pairs
 
         weights = self.model.module.get_y_effect()
 
@@ -342,14 +342,14 @@ class ReIDEvaluator:
                 pa, qa, pb, qb = tensor_float(tensor_cpu(fun(sub_fa, sub_fb)))
 
                 pa_mat[a_indices, b_indices] = pa
-                pa_mat[b_indices, a_indices] = pa
+                # pa_mat[b_indices, a_indices] = pa
                 qa_mat[a_indices, b_indices] = qa
-                qa_mat[b_indices, a_indices] = qa
+                # qa_mat[b_indices, a_indices] = qa
 
                 pb_mat[a_indices, b_indices] = pb
-                pb_mat[b_indices, a_indices] = pb
+                # pb_mat[b_indices, a_indices] = pb
                 qb_mat[a_indices, b_indices] = qb
-                qb_mat[b_indices, a_indices] = qb
+                # qb_mat[b_indices, a_indices] = qb
 
         return pa_mat, qa_mat, pb_mat, qb_mat
 

@@ -505,6 +505,8 @@ class AABraidOSNet(BraidOSNet):
             return self.metric(a, b)
         elif mode == 'y':
             return self.get_y(a, b)
+        elif mode == 'iy':
+            return self.get_intermediate_y(a, b)
 
         x = self.pair2bi(a, b)
         x = self.bi(x)
@@ -533,6 +535,12 @@ class AABraidOSNet(BraidOSNet):
         x = self.pair2braid(a, b)
         y = self.braid.get_y(x)
         return y
+
+    def get_intermediate_y(self, a, b):
+        if self.training:
+            raise AttributeError
+        x = self.pair2braid(a, b)
+        return self.braid.get_intermediate_vars(x)
 
     def get_y_effect(self):
         if self.training:

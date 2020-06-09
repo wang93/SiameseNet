@@ -511,6 +511,7 @@ class _Trainer:
         features = torch.FloatTensor(features)
 
         score_mat, weights = self.evaluator.compare_features_symmetry_y(features)
+        pa_mat, qa_mat, pb_mat, qb_mat = self.evaluator.compare_features_symmetry_internal_y(features)
         N = score_mat.size(0)
         indices_j = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).contiguous().view(-1)
         indices_i = torch.Tensor([i for i in range(N)]).to(dtype=torch.long).expand(N, N).t().contiguous().view(-1)
@@ -524,7 +525,7 @@ class _Trainer:
         total_width = ((width + margin) * 2 + block) * 2
         total_height = (height + margin) * pairs_num + head
 
-        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v7', set_name)
+        save_dir = os.path.join(self.opt.exp_dir, 'visualize', 'pairs_with_scores_v8', set_name)
         os.makedirs(save_dir, exist_ok=True)
 
         font1 = ImageFont.truetype("utils/ubuntu-font-family-0.83/Ubuntu-B.ttf", 10)
@@ -537,8 +538,15 @@ class _Trainer:
             draw = ImageDraw.Draw(canvas)
 
             scores = score_mat[:, :, f].view(-1)
+            pas = pa_mat[:, :, f].view(-1)
+            qas = qa_mat[:, :, f].view(-1)
+            pbs = pb_mat[:, :, f].view(-1)
+            qbs = qb_mat[:, :, f].view(-1)
             weight = weights[f].item()
+
             scores, indices = scores.sort(descending=True)
+            pas, qas, pbs, qbs = slice_tensor((pas, qas, pbs, qbs), indices)
+
             idx_i = indices_i[indices]
             idx_j = indices_j[indices]
 
@@ -562,6 +570,33 @@ class _Trainer:
 
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
+                ##############################
+                # a patch
+                pa = pas[row].item()
+                qa = qas[row].item()
+                pb = pbs[row].item()
+                qb = qbs[row].item()
+
+                draw_a = ImageDraw.Draw(im_i)
+                draw_b = ImageDraw.Draw(im_j)
+
+                draw_a.text((2, 10),
+                            '{:.3f}'.format(pa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_a.text((2, 40),
+                            '{:.3f}'.format(qa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 10),
+                            '{:.3f}'.format(pb),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 40),
+                            '{:.3f}'.format(qb),
+                            (0, 255, 0),
+                            font=font2)
+                ##############################
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
                 draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (0, 255, 0),
@@ -609,6 +644,33 @@ class _Trainer:
 
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
+                ##############################
+                # a patch
+                pa = pas[row].item()
+                qa = qas[row].item()
+                pb = pbs[row].item()
+                qb = qbs[row].item()
+
+                draw_a = ImageDraw.Draw(im_i)
+                draw_b = ImageDraw.Draw(im_j)
+
+                draw_a.text((2, 10),
+                            '{:.3f}'.format(pa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_a.text((2, 40),
+                            '{:.3f}'.format(qa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 10),
+                            '{:.3f}'.format(pb),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 40),
+                            '{:.3f}'.format(qb),
+                            (0, 255, 0),
+                            font=font2)
+                ##############################
                 canvas.paste(im_i, (0, head + (height + margin) * cur_num))
                 canvas.paste(im_j, (width + margin, head + (height + margin) * cur_num))
                 draw.text(((width + margin) * 2, head + (height + margin) * cur_num), '{:.3f}'.format(s), (255, 0, 0),
@@ -644,6 +706,33 @@ class _Trainer:
             for row, (i, j, s) in enumerate(zip(idx_i[:border], idx_j[:border], scores[:border])):
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
+                ##############################
+                # a patch
+                pa = pas[row].item()
+                qa = qas[row].item()
+                pb = pbs[row].item()
+                qb = qbs[row].item()
+
+                draw_a = ImageDraw.Draw(im_i)
+                draw_b = ImageDraw.Draw(im_j)
+
+                draw_a.text((2, 10),
+                            '{:.3f}'.format(pa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_a.text((2, 40),
+                            '{:.3f}'.format(qa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 10),
+                            '{:.3f}'.format(pb),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 40),
+                            '{:.3f}'.format(qb),
+                            (0, 255, 0),
+                            font=font2)
+                ##############################
                 canvas.paste(im_i, (left, head + (height + margin) * row))
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))
                 draw.text((left + (width + margin) * 2, head + (height + margin) * row), '{:.3f}'.format(s),
@@ -671,11 +760,40 @@ class _Trainer:
                           '{0}          {1}'.format(i_same_ratio, j_same_ratio),
                           (0, 255, 0), font=font2)
 
-            for row, (i, j, s) in enumerate(
+            total_num = len(idx_i)
+            for row_, (i, j, s) in enumerate(
                     zip(reversed(idx_i[-border:]), reversed(idx_j[-border:]), reversed(scores[-border:]))):
-                row += border
+                row = row_ + border
                 im_i = Image.open(ims_path[i]).resize((width, height))
                 im_j = Image.open(ims_path[j]).resize((width, height))
+                ##############################
+                # a patch
+                l = total_num - border + row_
+                pa = pas[l].item()
+                qa = qas[l].item()
+                pb = pbs[l].item()
+                qb = qbs[l].item()
+
+                draw_a = ImageDraw.Draw(im_i)
+                draw_b = ImageDraw.Draw(im_j)
+
+                draw_a.text((2, 10),
+                            '{:.3f}'.format(pa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_a.text((2, 40),
+                            '{:.3f}'.format(qa),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 10),
+                            '{:.3f}'.format(pb),
+                            (0, 255, 0),
+                            font=font2)
+                draw_b.text((2, 40),
+                            '{:.3f}'.format(qb),
+                            (0, 255, 0),
+                            font=font2)
+                ##############################
                 canvas.paste(im_i, (left, head + (height + margin) * row))
                 canvas.paste(im_j, (left + width + margin, head + (height + margin) * row))
                 draw.text((left + (width + margin) * 2, head + (height + margin) * row), '{:.3f}'.format(s),
@@ -692,10 +810,7 @@ class _Trainer:
                                                 i_same.sum())  # float(i_s_same_num) / float(i_same.sum().item()) * 2
                 j_same_ratio = '{0}/{1}'.format(j_s_same_num,
                                                 j_same.sum())  # float(j_s_same_num) / float(j_same.sum().item()) * 2
-                # draw.text((left + (width + margin) * 2,
-                #            head + (height + margin) * row + height // 2 + 1),
-                #           '{0:.3f}_{1:.3f}'.format(i_same_ratio, j_same_ratio),
-                #           (255, 0, 0), font=font2)
+
                 draw.text((left,
                            head + (height + margin) * row + height + 1),
                           '{0}          {1}'.format(i_same_ratio, j_same_ratio),
@@ -704,11 +819,6 @@ class _Trainer:
             canvas.save(
                 os.path.join(save_dir, '{0}_{1}_{2}_pairs_with_scores.png'.format(self.opt.exp_name, set_name, f)),
                 'PNG')
-
-        # scores, indices = scores.sort(descending=True)
-        #
-        # labels = torch.Tensor([int(i) for i in ids])
-        # is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).to(dtype=torch.bool)
 
     def _parse_data(self, inputs):
         raise NotImplementedError

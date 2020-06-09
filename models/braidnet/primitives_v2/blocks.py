@@ -504,6 +504,9 @@ class AABlock(nn.Module):
         y = self.max_y(y)
         return y
 
+    def get_intermediate_y(self, x):
+        return self.wlinear.get_intermediate_vars(x)
+
     def get_y_mask(self):
         mask = [i for i in range(self.channel_out)]
         return mask

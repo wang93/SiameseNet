@@ -192,6 +192,15 @@ class MinLinear(WLinear):
 
         return out_a, out_b
 
+    def get_intermediate_vars(self, input_):
+        in_a, in_b = input_
+        p_a = self.conv_p(in_a)
+        q_b = self.conv_q(in_b)
+        p_b = self.conv_p(in_b)
+        q_a = self.conv_q(in_a)
+
+        return p_a, q_a, p_b, q_b
+
 
 class AndLinear(WLinear):
     def __init__(self, in_features, out_features, bias=True):

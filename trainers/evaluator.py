@@ -306,6 +306,53 @@ class ReIDEvaluator:
 
         return score_mat, weights
 
+    def compare_features_symmetry_internal_y(self, features):
+        self.model.eval()
+        # only compute the lower triangular of the distmat
+        l_a = tensor_size(features, 0)
+
+        # p_a, q_a, p_b, q_b
+        pa_mat = torch.zeros(l_a, l_a, self.opt.feats)
+        qa_mat = torch.zeros(l_a, l_a, self.opt.feats)
+        pb_mat = torch.zeros(l_a, l_a, self.opt.feats)
+        qb_mat = torch.zeros(l_a, l_a, self.opt.feats)
+
+        task_1 = []
+        task_2 = []
+        for i in range(l_a):
+            sub_1 = [i, ] * (i + 1)
+            sub_2 = [k for k in range(i + 1)]
+            task_1.extend(sub_1)
+            task_2.extend(sub_2)
+
+        task_num = len(task_1)
+        tasks = [task_1, task_2]
+
+        with torch.no_grad():
+            fun = lambda a, b: self.model(a, b, mode='iy')
+            batch_size = get_optimized_batchsize(fun, slice_tensor(features, [0]), slice_tensor(features, [0]))
+
+            for start in range(0, task_num, batch_size):
+                end = min(start + batch_size, task_num)
+                a_indices = tasks[0][start:end]
+                b_indices = tasks[1][start:end]
+                sub_fa = slice_tensor(features, a_indices)
+                sub_fb = slice_tensor(features, b_indices)
+                sub_fa, sub_fb = tensor_cuda((sub_fa, sub_fb))
+                pa, qa, pb, qb = tensor_float(tensor_cpu(fun(sub_fa, sub_fb)))
+
+                pa_mat[a_indices, b_indices] = pa
+                pa_mat[b_indices, a_indices] = pa
+                qa_mat[a_indices, b_indices] = qa
+                qa_mat[b_indices, a_indices] = qa
+
+                pb_mat[a_indices, b_indices] = pb
+                pb_mat[b_indices, a_indices] = pb
+                qb_mat[a_indices, b_indices] = qb
+                qb_mat[b_indices, a_indices] = qb
+
+        return pa_mat, qa_mat, pb_mat, qb_mat
+
     def _compare_images(self, loader_a, loader_b):
         l_a = len(loader_a)
         l_b = len(loader_b)

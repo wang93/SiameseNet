@@ -3,7 +3,7 @@ from torch import Tensor
 
 __all__ = ['slice_tensor', 'split_tensor', 'cat_tensor_pair', 'cat_tensors',
            'tensor_cpu', 'tensor_cuda', 'tensor_repeat', 'tensor_size',
-           'tensor_memory', 'tensor_attr', 'combine_tensor_pair']
+           'tensor_memory', 'tensor_attr', 'combine_tensor_pair', 'tensor_float']
 
 
 def slice_tensor(data, indices):
@@ -92,6 +92,17 @@ def tensor_cuda(data):
         return [tensor_cuda(d) for d in data]
     elif isinstance(data, dict):
         return {k: tensor_cuda(v) for k, v in data.items()}
+    else:
+        raise TypeError('type {0} is not supported'.format(type(data)))
+
+
+def tensor_float(data):
+    if isinstance(data, Tensor):
+        return data.float()
+    elif isinstance(data, (list, tuple)):
+        return [tensor_float(d) for d in data]
+    elif isinstance(data, dict):
+        return {k: tensor_float(v) for k, v in data.items()}
     else:
         raise TypeError('type {0} is not supported'.format(type(data)))
 

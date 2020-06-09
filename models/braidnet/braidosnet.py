@@ -540,7 +540,7 @@ class AABraidOSNet(BraidOSNet):
         if self.training:
             raise AttributeError
         x = self.pair2braid(a, b)
-        return self.braid.get_intermediate_vars(x)
+        return self.braid.get_intermediate_y(x)
 
     def get_y_effect(self):
         if self.training:

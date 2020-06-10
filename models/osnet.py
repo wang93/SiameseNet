@@ -427,7 +427,7 @@ class OSNet(nn.Module):
         if not self.training:
             return v
 
-        y = self.classifier(v)
+        #y = self.classifier(v)
         # if isinstance(self.classifier, nn.Identity):
         #     return y
         # else:

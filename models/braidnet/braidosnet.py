@@ -212,6 +212,15 @@ class BBOSNet(BraidOSNet):
             return self.score2prob(y)
 
 
+class BBMOSNet(BBOSNet):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+        super(BBMOSNet, self).__init__(feats=feats,
+                                       fc=fc,
+                                       score2prob=score2prob,
+                                       num_classes=num_classes)
+        self.braid = LinearMinBlock(feats, feats)
+
+
 class MinMaxOSNet(BraidOSNet):
     reg_params = []
     noreg_params = []

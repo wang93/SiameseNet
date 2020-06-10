@@ -80,7 +80,7 @@ class BraidOSNet(BraidProto):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), **kwargs):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
         nn.Module.__init__(self)
 
         self.meta = {
@@ -91,7 +91,7 @@ class BraidOSNet(BraidProto):
 
         self.pair2bi = Pair2Bi()
         self.pair2braid = Pair2Braid()
-        self.bi = osnet_x1_0(feats=feats)
+        self.bi = osnet_x1_0(feats=feats, num_classes=num_classes)
         self.bi.classifier = nn.Identity()
         self.bi2braid = Bi2Braid()
         self.braid = LinearBraidBlock(feats, feats)
@@ -118,8 +118,12 @@ class BraidOSNet(BraidProto):
         init_pretrained_weights(self.bi, key='osnet_x1_0')
 
     def extract(self, ims):
-        x = self.bi(ims)
-        return x
+        if self.training:
+            y, _ = self.bi(ims)
+            return y
+        else:
+            v = self.bi(ims)
+            return v
 
     def metric(self, feat_a, feat_b):
         x = self.pair2braid(feat_a, feat_b)
@@ -160,6 +164,52 @@ class BraidOSNet(BraidProto):
 
     def train(self, mode=True):
         torch.nn.Module.train(self, mode)
+
+
+class BBOSNet(BraidOSNet):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+        super(BBOSNet, self).__init__(feats=feats,
+                                      fc=fc,
+                                      score2prob=score2prob,
+                                      num_classes=num_classes)
+
+        self.fc_normal = FCBlock(feats, feats, is_tail=False)
+        self.dist = nn.CosineSimilarity(dim=1, eps=1e-6)
+
+    def metric(self, feat_a, feat_b):
+        x = self.pair2braid(feat_a, feat_b)
+        x = self.braid(x)
+        x = self.y(x)
+        x = self.fc(x)
+
+        x += self.dist(self.fc_normal(feat_a), self.fc_normal(feat_b))
+
+        if self.training:
+            return x
+        else:
+            return self.score2prob(x)
+
+    def forward(self, a=None, b=None, mode='normal'):
+        if a is None:
+            return self._default_output
+        if mode == 'extract':
+            return self.extract(a)
+        elif mode == 'metric':
+            return self.metric(a, b)
+
+        x = self.pair2bi(a, b)
+        x = self.bi(x)
+        x = self.bi2braid(x)
+        y = self.braid(x)
+        y = self.y(y)
+        y = self.fc(y)
+
+        y += self.dist(self.fc_normal(x[0]), self.fc_normal(x[1]))
+
+        if self.training:
+            return y
+        else:
+            return self.score2prob(y)
 
 
 class MinMaxOSNet(BraidOSNet):

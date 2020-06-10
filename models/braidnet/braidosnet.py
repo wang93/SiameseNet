@@ -176,6 +176,10 @@ class BBOSNet(BraidOSNet):
         self.fc_normal = FCBlock(feats, feats, is_tail=False)
         self.dist = nn.CosineSimilarity(dim=1, eps=1e-6)
 
+        # initialize parameters
+        for m in [self.fc_normal, ]:
+            weights_init_kaiming(m)
+
     def metric(self, feat_a, feat_b):
         x = self.pair2braid(feat_a, feat_b)
         x = self.braid(x)
@@ -219,6 +223,12 @@ class BBMOSNet(BBOSNet):
                                        score2prob=score2prob,
                                        num_classes=num_classes)
         self.braid = LinearMinBlock(feats, feats)
+
+        # initialize parameters
+        for m in [self.braid, ]:
+            weights_init_kaiming(m)
+
+        self.correct_params()
 
 
 class MinMaxOSNet(BraidOSNet):

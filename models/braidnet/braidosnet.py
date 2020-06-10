@@ -182,7 +182,7 @@ class BBOSNet(BraidOSNet):
         x = self.y(x)
         x = self.fc(x)
 
-        x += self.dist(self.fc_normal(feat_a), self.fc_normal(feat_b)).view(-1)
+        x += self.dist(self.fc_normal(feat_a), self.fc_normal(feat_b)).view(-1, 1)
 
         if self.training:
             return x
@@ -204,7 +204,7 @@ class BBOSNet(BraidOSNet):
         y = self.y(y)
         y = self.fc(y)
 
-        y += self.dist(self.fc_normal(x[0]), self.fc_normal(x[1])).view(-1)
+        y += self.dist(self.fc_normal(x[0]), self.fc_normal(x[1])).view(-1, 1)
 
         if self.training:
             return y

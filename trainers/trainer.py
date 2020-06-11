@@ -932,13 +932,13 @@ class BraidCrossIDETrainer(BraidCrossTrainer):
             raise NotImplementedError('In most cases, it will waste too much computation.')
 
         elif self.phase_num == 2:
-            predics, features = self._extract_feature(self.data)
+            predicts, features = self._extract_feature(self.data)
             score_mat = self._compare_feature(features)
 
         else:
             raise ValueError
 
-        self.loss = self.trade_off[0] * self.criterion[0](predics, self.target) \
+        self.loss = self.trade_off[0] * self.criterion[0](predicts, self.target) \
                     + self.trade_off[1] * self.criterion[1](score_mat, self.target)
 
 

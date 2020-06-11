@@ -245,9 +245,7 @@ class WBBMOSNet(BBMOSNet):
         x = self.braid(x)
         x = self.y(x)
         y = self.fc(x)
-
         z = self.dist(self.fc_normal(feat_a), self.fc_normal(feat_b)).view(-1, 1)
-
         s = self.weighted_sum(y, z)
 
         if self.training:
@@ -269,15 +267,26 @@ class WBBMOSNet(BBMOSNet):
         y = self.braid(x)
         y = self.y(y)
         y = self.fc(y)
-
         z = self.dist(self.fc_normal(x[0]), self.fc_normal(x[1])).view(-1, 1)
-
         s = self.weighted_sum(y, z)
 
         if self.training:
             return s
         else:
             return self.score2prob(s)
+
+
+class WBBOSS(WBBMOSNet):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+        super(WBBOSS, self).__init__(feats=feats,
+                                     fc=fc,
+                                     score2prob=score2prob,
+                                     num_classes=num_classes)
+
+        self.fc_normal = nn.Identity()
+
+    def extract(self, ims):
+        return self.bi(ims)
 
 
 class MinMaxOSNet(BraidOSNet):

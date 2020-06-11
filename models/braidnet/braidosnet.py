@@ -231,6 +231,55 @@ class BBMOSNet(BBOSNet):
         self.correct_params()
 
 
+class WBBMOSNet(BBMOSNet):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+        super(WBBMOSNet, self).__init__(feats=feats,
+                                        fc=fc,
+                                        score2prob=score2prob,
+                                        num_classes=num_classes)
+
+        self.weighted_sum = ADD()
+
+    def metric(self, feat_a, feat_b):
+        x = self.pair2braid(feat_a, feat_b)
+        x = self.braid(x)
+        x = self.y(x)
+        y = self.fc(x)
+
+        z = self.dist(self.fc_normal(feat_a), self.fc_normal(feat_b)).view(-1, 1)
+
+        s = self.weighted_sum(y, z)
+
+        if self.training:
+            return s
+        else:
+            return self.score2prob(s)
+
+    def forward(self, a=None, b=None, mode='normal'):
+        if a is None:
+            return self._default_output
+        if mode == 'extract':
+            return self.extract(a)
+        elif mode == 'metric':
+            return self.metric(a, b)
+
+        x = self.pair2bi(a, b)
+        x = self.bi(x)
+        x = self.bi2braid(x)
+        y = self.braid(x)
+        y = self.y(y)
+        y = self.fc(y)
+
+        z = self.dist(self.fc_normal(x[0]), self.fc_normal(x[1])).view(-1, 1)
+
+        s = self.weighted_sum(y, z)
+
+        if self.training:
+            return s
+        else:
+            return self.score2prob(s)
+
+
 class MinMaxOSNet(BraidOSNet):
     reg_params = []
     noreg_params = []

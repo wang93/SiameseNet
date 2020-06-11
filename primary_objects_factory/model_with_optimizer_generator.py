@@ -84,6 +84,13 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
                          num_classes=id_num,
                          score2prob=score2prob)
 
+    elif opt.model_name == 'wbbmosnet':
+        from models.braidnet.braidosnet import WBBMOSNet
+        model = WBBMOSNet(feats=opt.feats,
+                          fc=fc,
+                          num_classes=id_num,
+                          score2prob=score2prob)
+
     elif opt.model_name == 'sumsquareosnet':
         from models.braidnet.braidosnet import SumSquareOSNet
         model = SumSquareOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)

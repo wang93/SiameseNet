@@ -8,7 +8,7 @@ from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',
            'BraidBlock', 'LinearBraidBlock', 'SumY', 'MMBlock', 'LinearMMBlock', 'LinearMinBlock', 'AABlock',
-           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY', 'AA3Block', 'AA4Block', 'AAABlock', 'AAASBlock',
+           'AA2Block', 'SquareY', 'SumSquareY', 'MeanSquareY', 'AA3Block', 'AA4Block', 'AAABlock', 'AAASBlock', 'ADD',
            'MinMaxY', 'FCBlock', 'DenseLinearBraidBlock', 'ResLinearBraidBlock', 'MaxY', 'MinY', 'LinearMinBN2Block']
 
 
@@ -713,3 +713,14 @@ class FCBlock(nn.Module):
             x = self.bn(x)
             x = self.relu(x)
         return x
+
+
+class ADD(nn.Module):
+    def __init__(self):
+        super(ADD, self).__init__()
+        self.lambda_ = nn.Parameter(torch.zeros(1), requires_grad=True)
+
+    def forward(self, x, y):
+        weight = torch.sigmoid(self.lambda_)
+        z = weight * x + (1. - weight) * y
+        return z

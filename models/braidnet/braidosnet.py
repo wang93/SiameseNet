@@ -235,12 +235,12 @@ class BBMOSNet(BBOSNet):
 
 
 class WBBMOSNet(BBMOSNet):
-    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, no_classifer=True, **kwargs):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, no_classifier=True, **kwargs):
         super(WBBMOSNet, self).__init__(feats=feats,
                                         fc=fc,
                                         score2prob=score2prob,
                                         num_classes=num_classes,
-                                        no_classifer=no_classifer)
+                                        no_classifier=no_classifier)
 
         self.weighted_sum = ADD()
 
@@ -286,7 +286,7 @@ class WBBOSS(WBBMOSNet):
                                      fc=fc,
                                      score2prob=score2prob,
                                      num_classes=num_classes,
-                                     no_classifer=False)
+                                     no_classifier=False)
 
         self.fc_normal = nn.Identity()
 

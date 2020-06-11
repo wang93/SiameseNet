@@ -80,7 +80,7 @@ class BraidOSNet(BraidProto):
     noreg_params = []
     freeze_pretrained = True
 
-    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, no_classifier=True, **kwargs):
         nn.Module.__init__(self)
 
         self.meta = {
@@ -92,7 +92,8 @@ class BraidOSNet(BraidProto):
         self.pair2bi = Pair2Bi()
         self.pair2braid = Pair2Braid()
         self.bi = osnet_x1_0(feats=feats, num_classes=num_classes)
-        self.bi.classifier = nn.Identity()
+        if no_classifier:
+            self.bi.classifier = nn.Identity()
         self.bi2braid = Bi2Braid()
         self.braid = LinearBraidBlock(feats, feats)
         self.y = MinMaxY(feats, linear=True)
@@ -167,11 +168,12 @@ class BraidOSNet(BraidProto):
 
 
 class BBOSNet(BraidOSNet):
-    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, no_classifier=True, **kwargs):
         super(BBOSNet, self).__init__(feats=feats,
                                       fc=fc,
                                       score2prob=score2prob,
-                                      num_classes=num_classes)
+                                      num_classes=num_classes,
+                                      no_classifier=no_classifier)
 
         self.fc_normal = FCBlock(feats, feats, is_tail=False)
         self.dist = nn.CosineSimilarity(dim=1, eps=1e-6)
@@ -217,11 +219,12 @@ class BBOSNet(BraidOSNet):
 
 
 class BBMOSNet(BBOSNet):
-    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, no_classifier=True, **kwargs):
         super(BBMOSNet, self).__init__(feats=feats,
                                        fc=fc,
                                        score2prob=score2prob,
-                                       num_classes=num_classes)
+                                       num_classes=num_classes,
+                                       no_classifier=no_classifier)
         self.braid = LinearMinBlock(feats, feats)
 
         # initialize parameters
@@ -232,11 +235,12 @@ class BBMOSNet(BBOSNet):
 
 
 class WBBMOSNet(BBMOSNet):
-    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, **kwargs):
+    def __init__(self, feats=512, fc=(1,), score2prob=nn.Sigmoid(), num_classes=1, no_classifer=True, **kwargs):
         super(WBBMOSNet, self).__init__(feats=feats,
                                         fc=fc,
                                         score2prob=score2prob,
-                                        num_classes=num_classes)
+                                        num_classes=num_classes,
+                                        no_classifer=no_classifer)
 
         self.weighted_sum = ADD()
 
@@ -281,7 +285,8 @@ class WBBOSS(WBBMOSNet):
         super(WBBOSS, self).__init__(feats=feats,
                                      fc=fc,
                                      score2prob=score2prob,
-                                     num_classes=num_classes)
+                                     num_classes=num_classes,
+                                     no_classifer=False)
 
         self.fc_normal = nn.Identity()
 

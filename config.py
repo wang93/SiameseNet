@@ -74,7 +74,7 @@ class DefaultConfig(object):
                 warnings.warn("Warning: opt does not have attribute %s" % k)
             setattr(self, k, v)
         # print(self.dataset)
-        self.exp_dir = join('./exps', self.exp_name)
+        self.exp_dir = join('../../exps', self.exp_name)
         # self.fig_dir = join(self.exp_dir, 'visualize')
 
         if self.dataset[0] == '[':
@@ -96,7 +96,7 @@ class DefaultConfig(object):
             self.eval_phase_num = 2
 
         if self.model_name == 'aabraidosnet':
-            self.loss = 'bce'
+            #self.loss = 'bce'
             self.train_mode = 'cross'
             self.train_phase_num = 2
             self.eval_phase_num = 2

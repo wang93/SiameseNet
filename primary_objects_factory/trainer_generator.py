@@ -41,6 +41,10 @@ def get_trainer(opt):
             from utils.loss import CrossSimilarityBCELoss
             criterion = CrossSimilarityBCELoss()
 
+        elif opt.loss == 'lbce':
+            from utils.loss import CrossSimilarityLBCELoss
+            criterion = CrossSimilarityLBCELoss()
+
         elif opt.loss == 'triplet':
             from utils.loss import TripletLoss4Braid
             criterion = TripletLoss4Braid(opt.margin)

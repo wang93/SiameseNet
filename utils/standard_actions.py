@@ -43,7 +43,6 @@ def _random_seed(seed):
 
 def prepare_running(**kwargs):
     opt.parse_(kwargs)
-
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in opt.gpus])
 
     if not torch.cuda.is_available():
@@ -54,6 +53,8 @@ def prepare_running(**kwargs):
     opt.print_()
     _random_seed(opt.seed)
     torch.backends.cudnn.benchmark = True
+
+    torch.autograd.set_detect_anomaly(True)
 
     return opt
 

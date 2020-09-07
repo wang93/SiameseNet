@@ -163,6 +163,46 @@ class CrossSimilarityBCELoss(object):
         return loss
 
 
+class CrossSimilarityLBCELoss(object):
+    # learnable BCELoss
+    def __init__(self, alpha=0.05):
+        self.sigmoid = nn.Sigmoid()
+        self.bce_loss = nn.BCELoss()
+        self.pos_center = 1.#0.#torch.tensor(0.).cuda()
+        self.neg_center = 1.#0.#torch.tensor(0.).cuda()
+        self.alpha = alpha
+
+    def __call__(self, score_mat, labels):
+        N = score_mat.size(0)
+        is_pos = labels.expand(N, N).eq(labels.expand(N, N).t()).detach_()
+        if len(score_mat.size()) > 2:
+            for _ in range(len(score_mat.size()) - 2):
+                is_pos = is_pos.unsqueeze(2)
+            is_pos = is_pos.expand_as(score_mat)
+
+        # pos_mean = score_mat[is_pos].mean().item()
+        # neg_mean = score_mat[~is_pos].mean().item()
+        # if pos_mean is None:
+        #     pos_mean = self.pos_center
+        # if neg_mean is None:
+        #     neg_mean = self.neg_center
+
+        is_pos = is_pos.to(dtype=score_mat.dtype).detach_()
+
+        m = is_pos * self.pos_center + (1-is_pos) * self.neg_center
+
+        score_mat = score_mat - m
+        score_mat = self.sigmoid(score_mat)
+        loss = self.bce_loss(score_mat, is_pos)
+
+        # self.pos_center = ((1 - self.alpha) * self.pos_center + self.alpha * pos_mean)
+        # self.neg_center = ((1 - self.alpha) * self.neg_center + self.alpha * neg_mean)
+
+        # print('pos_center: {:.3f}, neg_center: {:.3f}'.format(self.pos_center, self.neg_center))
+
+        return loss
+
+
 class PairSimilarityBCELoss(object):
     def __init__(self):
         self.sigmoid = nn.Sigmoid()

@@ -11,7 +11,7 @@ from os import path as osp
 
 """Dataset classes"""
 
-ROOT = '/data/home/wyc/wyc-datasets/Person'
+ROOT = '../../data'
 
 
 class __Dataset(object):

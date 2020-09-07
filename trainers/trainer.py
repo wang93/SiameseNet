@@ -18,6 +18,7 @@ from utils.meters import AverageMeter
 from utils.serialization import save_best_model, save_current_status, get_best_model
 from utils.standard_actions import print_time
 from utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cuda, tensor_cpu
+from utils.loss import CrossSimilarityLBCELoss
 
 
 class _Trainer:
@@ -87,6 +88,10 @@ class _Trainer:
         data_time = AverageMeter()
         losses = AverageMeter()
         self.lr_strategy(self.optimizer, epoch)
+
+        if isinstance(self.criterion, CrossSimilarityLBCELoss):
+            print('pos center: {0:.3f}, neg center: {1:.3f}'.format(self.criterion.pos_center, self.criterion.neg_center))
+
         for i, inputs in enumerate(self.train_loader):
             data_time.update(time.time() - start)
             # model optimizer

@@ -61,12 +61,19 @@ def get_dataloaders(opt, model_meta):
         )
 
     elif opt.train_mode == 'pair':
-        from dataset.samplers import PosNegPairSampler
+        if opt.srl:
+            print('Make Sampler With Sample Rate Learning!')
+            from SampleRateLearning.sampler import SampleRateSampler
+            sampler = SampleRateSampler(data_source=dataset.train,
+                                        sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
+        else:
+            from dataset.samplers import PosNegPairSampler
+            sampler = PosNegPairSampler(data_source=dataset.train,
+                                        pos_rate=opt.pos_rate,
+                                        sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
-            sampler=PosNegPairSampler(data_source=dataset.train,
-                                      pos_rate=opt.pos_rate,
-                                      sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch),
+            sampler=sampler,
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=False
         )

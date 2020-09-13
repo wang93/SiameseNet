@@ -168,8 +168,8 @@ class CrossSimilarityLBCELoss(object):
     def __init__(self, alpha=0.05):
         self.sigmoid = nn.Sigmoid()
         self.bce_loss = nn.BCELoss()
-        self.pos_center = 1.#0.#torch.tensor(0.).cuda()
-        self.neg_center = 1.#0.#torch.tensor(0.).cuda()
+        self.pos_center = 3.#0.#torch.tensor(0.).cuda()
+        self.neg_center = 3.#0.#torch.tensor(0.).cuda()
         self.alpha = alpha
 
     def __call__(self, score_mat, labels):
@@ -188,10 +188,9 @@ class CrossSimilarityLBCELoss(object):
         #     neg_mean = self.neg_center
 
         is_pos = is_pos.to(dtype=score_mat.dtype).detach_()
+        # m = is_pos * self.pos_center + (1 - is_pos) * self.neg_center
 
-        m = is_pos * self.pos_center + (1-is_pos) * self.neg_center
-
-        score_mat = score_mat - m
+        score_mat = score_mat - 3.
         score_mat = self.sigmoid(score_mat)
         loss = self.bce_loss(score_mat, is_pos)
 

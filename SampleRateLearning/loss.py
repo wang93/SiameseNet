@@ -1,0 +1,65 @@
+from torch import nn
+import torch
+from torch.optim import SGD, Adam, AdamW
+from .sampler import SampleRateSampler
+
+
+class SRL_BCELoss(nn.Module):
+    def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0.):
+        if not isinstance(sampler, SampleRateSampler):
+            raise TypeError
+
+        super(SRL_BCELoss, self).__init__()
+
+        self.bce_loss = nn.BCELoss(reduction='none')
+        self.alpha = nn.Parameter(torch.tensor(0.).cuda())
+        self.pos_rate = self.alpha.sigmoid()
+        self.sampler = sampler
+        self.sampler.update(self.pos_rate)
+
+        param_groups = [{'params': [self.alpha]}]
+        if optim == "sgd":
+            default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
+            optimizer = SGD(param_groups, **default)
+
+        elif optim == 'adam':
+            default = {'lr': lr, 'weight_decay': weight_decay}
+            optimizer = Adam(param_groups, **default,
+                             betas=(0.9, 0.999),
+                             eps=1e-8,
+                             amsgrad=False)
+
+        elif optim == 'amsgrad':
+            default = {'lr': lr, 'weight_decay': weight_decay}
+            optimizer = Adam(param_groups, **default,
+                             betas=(0.9, 0.999),
+                             eps=1e-8,
+                             amsgrad=True)
+
+        elif optim == 'adamw':
+            default = {'lr': lr, 'weight_decay': weight_decay}
+            optimizer = AdamW(param_groups, **default,
+                              betas=(0.9, 0.999),
+                              eps=1e-8,
+                              amsgrad=False)
+        else:
+            raise NotImplementedError
+
+        self.optimizer = optimizer
+
+    def forward(self, scores, labels):
+        losses = self.bce_loss(scores.sigmoid(), labels)
+        pos_loss = losses[labels].mean()
+        neg_loss = losses[~labels].mean()
+        loss = (pos_loss + neg_loss) / 2.
+
+        # update pos_rate
+        grad = (pos_loss - neg_loss).detach()
+        self.optimizer.zero_grad()
+        self.pos_rate.backward(grad)
+        self.optimizer.step()
+        self.pos_rate = self.alpha.sigmoid()
+        self.sampler.update(self.pos_rate)
+        print('pos rate: {:.4f}'.format(self.sampler.pos_rate))
+
+        return loss

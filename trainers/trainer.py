@@ -20,6 +20,8 @@ from utils.standard_actions import print_time
 from utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cuda, tensor_cpu
 from utils.loss import CrossSimilarityLBCELoss
 
+from SampleRateLearning.serialization import save_current_srl_status
+
 
 class _Trainer:
     def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy,
@@ -135,6 +137,8 @@ class _Trainer:
                 self.best_epoch = epoch
 
         save_current_status(self.model, self.optimizer, self.opt.exp_dir, epoch, self.opt.eval_step)
+        if self.opt.srl:
+            save_current_srl_status(self.criterion, self.opt.exp_dir, epoch, self.opt.eval_step)
 
     @print_time
     def evaluate(self, eval_flip=None):

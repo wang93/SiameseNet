@@ -36,6 +36,13 @@ class DefaultConfig(object):
     margin = None
     sync_bn = False
 
+    # sample rate learning options
+    srl = False
+    srl_optim = 'sgd'
+    srl_lr = 0.1
+    srl_momentum = 0.
+    srl_weight_decay = 0.
+
     # evaluation optionsgit
     savefig = False
     re_ranking = False

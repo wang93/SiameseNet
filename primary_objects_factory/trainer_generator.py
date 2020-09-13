@@ -22,8 +22,18 @@ def get_trainer(opt):
 
     if opt.train_mode == 'pair':
         if opt.loss == 'bce':
-            from utils.loss import PairSimilarityBCELoss
-            criterion = PairSimilarityBCELoss()
+            if opt.srl:
+                print('Make Loss With Sample Rate Learning!')
+                from SampleRateLearning.loss import SRL_BCELoss
+                criterion = SRL_BCELoss(sampler=data_loaders['trainloader'].sampler,
+                                        optim=opt.srl_optim,
+                                        lr=opt.srl_lr,
+                                        momentum=opt.srl_momentum,
+                                        weight_decay=opt.srl_weight_decay)
+
+            else:
+                from utils.loss import PairSimilarityBCELoss
+                criterion = PairSimilarityBCELoss()
 
         elif opt.loss == 'ce':
             from torch.nn import CrossEntropyLoss
@@ -93,5 +103,12 @@ def get_trainer(opt):
 
     else:
         raise NotImplementedError
+
+    if opt.srl:
+        from SampleRateLearning.serialization import parse_srl_checkpoints
+        start_epoch, srl_state_dict = parse_srl_checkpoints(opt.exp_dir)
+        if srl_state_dict is not None:
+            print('SRL mechanism comes to the state after epoch {0}'.format(start_epoch))
+            criterion.load_state_dict(srl_state_dict)
 
     return reid_trainer

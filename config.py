@@ -103,8 +103,8 @@ class DefaultConfig(object):
             self.eval_phase_num = 2
 
         if self.model_name == 'aabraidosnet':
-            #self.loss = 'bce'
-            self.train_mode = 'cross'
+            # self.loss = 'bce'
+            # self.train_mode = 'cross'
             self.train_phase_num = 2
             self.eval_phase_num = 2
 

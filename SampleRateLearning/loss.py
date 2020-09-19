@@ -6,6 +6,7 @@ from .sampler import SampleRateSampler
 
 class SRL_BCELoss(nn.Module):
     def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0.):
+        print('using SRL_BCELoss')
         if not isinstance(sampler, SampleRateSampler):
             raise TypeError
 
@@ -54,7 +55,7 @@ class SRL_BCELoss(nn.Module):
         loss = (pos_loss + neg_loss) / 2.
 
         # update pos_rate
-        grad = (pos_loss - neg_loss).detach()
+        grad = (neg_loss - pos_loss).detach()
         self.optimizer.zero_grad()
         self.pos_rate.backward(grad)
         self.optimizer.step()

@@ -170,6 +170,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         raise NotImplementedError
 
     if naive:
+
         return model
 
     if opt.pretrained_subparams:

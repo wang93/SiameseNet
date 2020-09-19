@@ -120,7 +120,8 @@ class BraidOSNet(BraidProto):
 
     def extract(self, ims):
         if self.training:
-            y, _ = self.bi(ims)
+            y = self.bi(ims)
+            # y, _ = self.bi(ims)
             return y
         else:
             v = self.bi(ims)

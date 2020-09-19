@@ -42,7 +42,7 @@ class _BatchNorm(origin_BN):
             data = input.detach()
             for group in indices:
                 if len(group) == 0:
-                    warn('There is no sample of one class in current batch, which may .')
+                    warn('There is no sample of at least one class in current batch, which is incompatible with SRL.')
                     continue
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
@@ -63,7 +63,7 @@ class _BatchNorm(origin_BN):
 
         sz = input.size()
         y = (input - self.expand(self.running_mean, sz)) \
-            / self.expand(self.eps +torch.sqrt(self.running_var), sz)
+            / self.expand(self.eps + torch.sqrt(self.running_var), sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

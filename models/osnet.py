@@ -427,14 +427,14 @@ class OSNet(nn.Module):
         if not self.training:
             return v
 
-        #y = self.classifier(v)
-        # if isinstance(self.classifier, nn.Identity):
-        #     return y
-        # else:
-        #     return y, v
-
         y = self.classifier(v)
-        return y, v
+        if isinstance(self.classifier, nn.Identity):
+            return y
+        else:
+            return y, v
+
+        # y = self.classifier(v)
+        # return y, v
 
 
 def init_pretrained_weights(model, key=''):

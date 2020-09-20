@@ -62,6 +62,5 @@ class SRL_BCELoss(nn.Module):
         self.optimizer.step()
         self.pos_rate = self.alpha.sigmoid()
         self.sampler.update(self.pos_rate)
-        print('pos rate: {:.4f}'.format(self.sampler.pos_rate))
 
         return loss

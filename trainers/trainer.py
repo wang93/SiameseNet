@@ -21,6 +21,7 @@ from utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cud
 from utils.loss import CrossSimilarityLBCELoss
 
 from SampleRateLearning.serialization import save_current_srl_status
+from SampleRateLearning.loss import SRL_BCELoss
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
 class _Trainer:
@@ -91,9 +92,6 @@ class _Trainer:
         losses = AverageMeter()
         self.lr_strategy(self.optimizer, epoch)
 
-        if isinstance(self.criterion, CrossSimilarityLBCELoss):
-            print('pos center: {0:.3f}, neg center: {1:.3f}'.format(self.criterion.pos_center, self.criterion.neg_center))
-
         for i, inputs in enumerate(self.train_loader):
             data_time.update(time.time() - start)
             # model optimizer
@@ -127,6 +125,11 @@ class _Trainer:
         print('Epoch: [{}]\tEpoch Time {:.3f} s\tLoss {:.6f}\t'
               'Lr {:.2e}'
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
+
+        if isinstance(self.criterion, CrossSimilarityLBCELoss):
+            print('pos center: {0:.3f}, neg center: {1:.3f}'.format(self.criterion.pos_center, self.criterion.neg_center))
+        elif isinstance(self.criterion, SRL_BCELoss):
+            print('pos rate: {:.4f}'.format(self.criterion.sampler.pos_rate))
 
         if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
             rank1 = self.evaluate(eval_flip=False)

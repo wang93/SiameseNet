@@ -48,10 +48,11 @@ class SRL_BCELoss(nn.Module):
 
         self.optimizer = optimizer
 
-    def forward(self, scores, labels):
+    def forward(self, scores, labels: torch.Tensor):
         losses = self.bce_loss(scores.sigmoid(), labels)
-        pos_loss = losses[labels].mean()
-        neg_loss = losses[~labels].mean()
+        is_pos = labels.type(torch.bool)
+        pos_loss = losses[is_pos].mean()
+        neg_loss = losses[~is_pos].mean()
         loss = (pos_loss + neg_loss) / 2.
 
         # update pos_rate

@@ -35,6 +35,9 @@ def MileStoneLR_LinearWarmUp(optimizer, ep_from_1, gamma, warmup_till, milseston
             if ep_from_1 <= m:
                 break
 
+        if ep_from_1 > milsestones[-1]:
+            i += 1
+
         mul = gamma ** i
 
     for p in optimizer.param_groups:

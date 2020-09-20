@@ -57,10 +57,11 @@ class SRL_BCELoss(nn.Module):
 
         # update pos_rate
         grad = (neg_loss - pos_loss).detach()
-        self.optimizer.zero_grad()
-        self.pos_rate.backward(grad)
-        self.optimizer.step()
-        self.pos_rate = self.alpha.sigmoid()
-        self.sampler.update(self.pos_rate)
+        if not torch.isnan(grad):
+            self.optimizer.zero_grad()
+            self.pos_rate.backward(grad)
+            self.optimizer.step()
+            self.pos_rate = self.alpha.sigmoid()
+            self.sampler.update(self.pos_rate)
 
         return loss

@@ -2,7 +2,7 @@ import torch
 from torch import Tensor
 
 __all__ = ['slice_tensor', 'split_tensor', 'cat_tensor_pair', 'cat_tensors',
-           'tensor_cpu', 'tensor_cuda', 'tensor_repeat', 'tensor_size',
+           'tensor_cpu', 'tensor_cuda', 'tensor_repeat', 'tensor_size', 'dimidiation_tensor',
            'tensor_memory', 'tensor_attr', 'combine_tensor_pair', 'tensor_float']
 
 
@@ -41,6 +41,17 @@ def cat_tensor_pair(a, b, dim):
         return [cat_tensor_pair(i, j, dim) for i, j in zip(a, b)]
     elif isinstance(a, dict):
         return {k: cat_tensor_pair(v, b[k], dim) for k, v in a.items()}
+    else:
+        raise TypeError('type {0} is not supported'.format(type(a)))
+
+
+def dimidiation_tensor(data, dim):
+    if isinstance(data, Tensor):
+        return torch.chunk(data, 2, dim=dim)
+    elif isinstance(data, (list, tuple)):
+        raise NotImplementedError
+    elif isinstance(data, dict):
+        raise NotImplementedError
     else:
         raise TypeError('type {0} is not supported'.format(type(a)))
 

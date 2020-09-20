@@ -21,7 +21,7 @@ from utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cud
 from utils.loss import CrossSimilarityLBCELoss
 
 from SampleRateLearning.serialization import save_current_srl_status
-
+from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
 class _Trainer:
     def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy,
@@ -853,6 +853,8 @@ class BraidPairTrainer(_Trainer):
         target = [1. if a == b else 0. for a, b in zip(pids_a, pids_b)]
         self.data = (imgs_a.cuda(), imgs_b.cuda())
         self.target = torch.tensor(target).cuda().unsqueeze(1)
+        self.pair2bi = Pair2Bi()
+        self.bi2pair = Bi2Pair()
 
     def _extract_feature(self, data):
         return self.model(data, mode='extract')
@@ -865,8 +867,11 @@ class BraidPairTrainer(_Trainer):
             score = self.model(*self.data, mode='normal')
 
         elif self.phase_num == 2:
-            feat_a = self._extract_feature(self.data[0])
-            feat_b = self._extract_feature(self.data[1])
+            data = self.pair2bi(self.data[0], self.data[1])
+            feat = self._extract_feature(data)
+            feat_a, feat_b = self.bi2pair(feat)
+            # feat_a = self._extract_feature(self.data[0])
+            # feat_b = self._extract_feature(self.data[1])
             score = self._compare_feature(feat_a, feat_b)
 
         else:

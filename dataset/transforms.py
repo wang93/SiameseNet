@@ -93,6 +93,23 @@ class TrainTransform(object):
         x = self.augment(x)
         return x
 
+    def pre_process(self, x):
+        if self.data == 'person':
+            x = T.Resize(self.imageSize)(x)
+            # x = bbox_worse(x, (384, 128), 0.5)
+        else:
+            raise NotImplementedError
+
+        x = T.ToTensor()(x)
+        x = T.Normalize(mean=self.mean, std=self.std)(x)
+
+        return x
+
+    def post_process(self, x):
+        x = T.RandomHorizontalFlip()(x)
+        x = self.augment(x)
+        return x
+
 
 class TestTransform(object):
     def __init__(self, data, meta, flip=False):

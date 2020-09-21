@@ -44,6 +44,7 @@ class PreLoadedImageData(Dataset):
         print('preloading images.....')
         for img, pid, camid in dataset:
             img = read_image(img)
+            img = self.transform.pre_process(img)
             self.dataset.append((img, pid, camid))
         print('done!')
 
@@ -53,7 +54,7 @@ class PreLoadedImageData(Dataset):
         img, pid, camid = self.dataset[item]
 
         if self.transform is not None:
-            img = self.transform(img)
+            img = self.transform.post_process(img)
 
         return img, pid, camid
 

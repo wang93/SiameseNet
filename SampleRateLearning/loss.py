@@ -53,13 +53,13 @@ class SRL_BCELoss(nn.Module):
         pos_loss = losses[is_pos].mean()
         neg_loss = losses[~is_pos].mean()
 
-        if torch.isnan(pos_loss):
-            loss = neg_loss
-        elif torch.isnan((neg_loss)):
-            loss = pos_loss
-        else:
-            loss = (pos_loss + neg_loss) / 2.
-        #loss = losses.mean()
+        # if torch.isnan(pos_loss):
+        #     loss = neg_loss
+        # elif torch.isnan((neg_loss)):
+        #     loss = pos_loss
+        # else:
+        #     loss = (pos_loss + neg_loss) / 2.
+        loss = losses.mean()
 
         # update pos_rate
         grad = (neg_loss - pos_loss).detach()

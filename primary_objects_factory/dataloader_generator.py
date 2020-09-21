@@ -72,6 +72,7 @@ def get_dataloaders(opt, model_meta):
                 batch_size=opt.train_batch, num_workers=0,
                 pin_memory=pin_memory, drop_last=False
             )
+            print('num_workers=0 in the training loader.')
 
         else:
             from dataset.samplers import PosNegPairSampler

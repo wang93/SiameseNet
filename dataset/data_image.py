@@ -34,3 +34,28 @@ class ImageData(Dataset):
 
     def __len__(self):
         return len(self.dataset)
+
+
+class PreLoadedImageData(Dataset):
+    def __init__(self, dataset, transform):
+        self.transform = transform
+        self.dataset = []
+
+        print('preloading images.....')
+        for img, pid, camid in dataset:
+            img = read_image(img)
+            self.dataset.append((img, pid, camid))
+        print('done!')
+
+    def __getitem__(self, item):
+        if isinstance(item, (list, tuple)):
+            return [self[i] for i in item]
+        img, pid, camid = self.dataset[item]
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        return img, pid, camid
+
+    def __len__(self):
+        return len(self.dataset)

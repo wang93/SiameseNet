@@ -114,6 +114,9 @@ class DefaultConfig(object):
             self.train_phase_num = 2
             self.eval_phase_num = 2
 
+        if self.srl and self.workers > 0:
+            raise AttributeError('When using SRL, num of workers must be 0!')
+
     def state_dict_(self):
         return {k: getattr(self, k) for k, _ in DefaultConfig.__dict__.items()
                 if not k.endswith('_')}

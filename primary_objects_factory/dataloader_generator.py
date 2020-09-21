@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 
 from dataset import data_info
-from dataset.data_image import ImageData
+from dataset.data_image import ImageData, PreLoadedImageData
 from dataset.transforms import TestTransform, TrainTransform
 
 
@@ -62,21 +62,27 @@ def get_dataloaders(opt, model_meta):
 
     elif opt.train_mode == 'pair':
         if opt.srl:
-            print('Make Sampler With Sample Rate Learning!')
+            print('Sampler supports SRL!')
             from SampleRateLearning.sampler import SampleRateSampler
             sampler = SampleRateSampler(data_source=dataset.train,
                                         sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
+            trainloader = DataLoader(
+                PreLoadedImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+                sampler=sampler,
+                batch_size=opt.train_batch, num_workers=opt.workers,
+                pin_memory=pin_memory, drop_last=False
+            )
         else:
             from dataset.samplers import PosNegPairSampler
             sampler = PosNegPairSampler(data_source=dataset.train,
                                         pos_rate=opt.pos_rate,
                                         sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
-        trainloader = DataLoader(
-            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
-            sampler=sampler,
-            batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=False
-        )
+            trainloader = DataLoader(
+                ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+                sampler=sampler,
+                batch_size=opt.train_batch, num_workers=opt.workers,
+                pin_memory=pin_memory, drop_last=False
+            )
 
     elif opt.train_mode in ['cross', 'ide_cross']:
         from dataset.samplers import RandomIdentitySampler

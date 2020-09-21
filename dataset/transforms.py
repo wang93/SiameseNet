@@ -131,3 +131,21 @@ class TestTransform(object):
         x = T.ToTensor()(x)
         x = T.Normalize(mean=self.mean, std=self.std)(x)
         return x
+
+    def pre_process(self, x):
+        if self.data == 'person':
+            x = T.Resize(self.imageSize)(x)
+            # x = bbox_worse(x, (384, 128), 0.5)
+        else:
+            raise NotImplementedError
+
+        if self.flip:
+            x = T.functional.hflip(x)
+
+        x = T.ToTensor()(x)
+        x = T.Normalize(mean=self.mean, std=self.std)(x)
+
+        return x
+
+    def post_process(self, x):
+        return x

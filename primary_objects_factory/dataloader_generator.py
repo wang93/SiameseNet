@@ -32,14 +32,9 @@ def get_dataloaders(opt, model_meta):
 
     pin_memory = True
 
-    if opt.srl:
-        image_data = PreLoadedImageData
-    else:
-        image_data = ImageData
-
     if opt.check_discriminant or opt.check_element_discriminant or opt.check_pair_effect or opt.sort_pairs_by_scores:
         trainloader = DataLoader(
-            image_data(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=None)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=None)),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory,
         )
@@ -47,7 +42,7 @@ def get_dataloaders(opt, model_meta):
         dataset.query.extend(dataset.gallery)
 
         queryloader = DataLoader(
-            image_data(dataset.query, TestTransform(opt.datatype, model_meta)),
+            ImageData(dataset.query, TestTransform(opt.datatype, model_meta)),
             batch_size=opt.test_batch, num_workers=opt.workers,
             pin_memory=pin_memory
         )
@@ -60,7 +55,7 @@ def get_dataloaders(opt, model_meta):
 
     if opt.train_mode == 'normal':
         trainloader = DataLoader(
-            image_data(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True, shuffle=True
         )
@@ -71,6 +66,12 @@ def get_dataloaders(opt, model_meta):
             from SampleRateLearning.sampler import SampleRateSampler
             sampler = SampleRateSampler(data_source=dataset.train,
                                         sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
+            trainloader = DataLoader(
+                PreLoadedImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+                sampler=sampler,
+                batch_size=opt.train_batch, num_workers=0,
+                pin_memory=pin_memory, drop_last=False
+            )
 
         else:
             from dataset.samplers import PosNegPairSampler
@@ -78,17 +79,17 @@ def get_dataloaders(opt, model_meta):
                                         pos_rate=opt.pos_rate,
                                         sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
 
-        trainloader = DataLoader(
-            image_data(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
-            sampler=sampler,
-            batch_size=opt.train_batch, num_workers=opt.workers,
-            pin_memory=pin_memory, drop_last=False
-        )
+            trainloader = DataLoader(
+                ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+                sampler=sampler,
+                batch_size=opt.train_batch, num_workers=opt.workers,
+                pin_memory=pin_memory, drop_last=False
+            )
 
     elif opt.train_mode in ['cross', 'ide_cross']:
         from dataset.samplers import RandomIdentitySampler
         trainloader = DataLoader(
-            image_data(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
+            ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=RandomIdentitySampler(dataset.train, opt.num_instances),
             batch_size=opt.train_batch, num_workers=opt.workers,
             pin_memory=pin_memory, drop_last=True
@@ -98,25 +99,25 @@ def get_dataloaders(opt, model_meta):
         raise NotImplementedError
 
     queryloader = DataLoader(
-        image_data(dataset.query, TestTransform(opt.datatype, model_meta)),
+        ImageData(dataset.query, TestTransform(opt.datatype, model_meta)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
 
     galleryloader = DataLoader(
-        image_data(dataset.gallery, TestTransform(opt.datatype, model_meta)),
+        ImageData(dataset.gallery, TestTransform(opt.datatype, model_meta)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
 
     queryFliploader = DataLoader(
-        image_data(dataset.query, TestTransform(opt.datatype, model_meta, True)),
+        ImageData(dataset.query, TestTransform(opt.datatype, model_meta, True)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )
 
     galleryFliploader = DataLoader(
-        image_data(dataset.gallery, TestTransform(opt.datatype, model_meta, True)),
+        ImageData(dataset.gallery, TestTransform(opt.datatype, model_meta, True)),
         batch_size=opt.test_batch, num_workers=opt.workers,
         pin_memory=pin_memory
     )

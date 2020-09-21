@@ -110,5 +110,7 @@ def get_trainer(opt):
         if srl_state_dict is not None:
             print('SRL mechanism comes to the state after epoch {0}'.format(start_epoch))
             criterion.load_state_dict(srl_state_dict)
+            criterion.pos_rate = criterion.alpha.sigmoid()
+            criterion.sampler.update(criterion.pos_rate)
 
     return reid_trainer

@@ -875,7 +875,15 @@ class BraidPairTrainer(_Trainer):
                 else:
                     raise ValueError
 
+            batch_size = len(target)
+            braid_indices_0 = indices_0 + [i + batch_size for i in indices_0]
+            braid_indices_1 = indices_1 + [i + batch_size for i in indices_1]
+
             Labels.indices = [indices_0, indices_1]
+            Labels.braid_indices = [braid_indices_0, braid_indices_1]
+            Labels.batch_size = batch_size
+
+
 
     def _extract_feature(self, data):
         return self.model(data, mode='extract')

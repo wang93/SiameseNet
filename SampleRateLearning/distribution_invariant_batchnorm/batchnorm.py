@@ -41,7 +41,12 @@ class _BatchNorm(origin_BN):
                 raise NotImplementedError
 
             data = input.detach()
-            for group in labels.indices:
+            if input.size(0) == labels.batch_size:
+                indices = labels.indices
+            else:
+                indices = labels.braid_indices
+
+            for group in indices:
                 if len(group) == 0:
                     warn('There is no sample of at least one class in current batch, which is incompatible with SRL.')
                     continue
@@ -58,6 +63,7 @@ class _BatchNorm(origin_BN):
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean
                 self.running_var = (1 - exponential_average_factor) * self.running_var + exponential_average_factor * di_var
+
             else:
                 self.running_mean = di_mean
                 self.running_var = di_var
@@ -88,24 +94,7 @@ class BatchNorm2d(_BatchNorm):
                              .format(input.dim()))
 
 
-
 def convert_model(module):
-    """Traverse the input module and its child recursively
-       and replace all instance of torch.nn.modules.batchnorm.BatchNorm*N*d
-       to SynchronizedBatchNorm*N*d
-
-    Args:
-        module: the input module needs to be convert to SyncBN model
-
-    Examples:
-        >>> import torch.nn as nn
-        >>> import torchvision
-        >>> # m is a standard pytorch model
-        >>> m = torchvision.models.resnet18(True)
-        >>> m = nn.DataParallel(m)
-        >>> # after convert, m is using SyncBN
-        >>> m = convert_model(m)
-    """
     if isinstance(module, torch.nn.DataParallel):
         mod = module.module
         mod = convert_model(mod)

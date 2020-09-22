@@ -1,2 +1,5 @@
 # encoding: utf-8
-indices = [[]]  # global variable
+# global variables
+indices = [[]]
+braid_indices = [[]]
+batch_size = None

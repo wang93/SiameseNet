@@ -57,8 +57,10 @@ class _BatchNorm(origin_BN):
                 means.append(mean)
                 vars.append(var)
 
-            di_mean = torch.tensor(means).detach().mean(dim=0, keepdim=False)
-            di_var = torch.tensor(vars).detach().mean(dim=0, keepdim=False)
+            di_mean = sum(means).detach() / len(means)
+            di_var = sum(vars).detach() / len(vars)
+            # di_mean = torch.tensor(means).detach().mean(dim=0, keepdim=False)
+            # di_var = torch.tensor(vars).detach().mean(dim=0, keepdim=False)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean

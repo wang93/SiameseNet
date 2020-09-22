@@ -1,2 +1,2 @@
 # encoding: utf-8
-indices = [[]]
+indices = [[]]  # global variable

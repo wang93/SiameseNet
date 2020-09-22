@@ -854,11 +854,11 @@ class _Trainer:
 class BraidPairTrainer(_Trainer):
     def __init__(self, *args, **kwargs):
         super(BraidPairTrainer, self).__init__(*args, **kwargs)
+        self.pair2bi = Pair2Bi()
+        self.bi2pair = Bi2Pair()
 
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs
-        self.pair2bi = Pair2Bi()
-        self.bi2pair = Bi2Pair()
 
         target = [1. if a == b else 0. for a, b in zip(pids_a, pids_b)]
         self.data = (imgs_a.cuda(), imgs_b.cuda())

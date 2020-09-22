@@ -12,7 +12,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('initializing model {0} and its optimizer...'.format(opt.model_name))
 
     if opt.loss in ['bce', 'lbce']:
-        fc = (opt.tail_times,)
+        fc = (opt.feats, opt.feats, opt.tail_times,)
         score2prob = lambda x: x.mean(dim=1)
         # score2prob = lambda x: nn.Sigmoid()(x).mean(dim=1)
 

@@ -24,6 +24,7 @@ from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
+
 class _Trainer:
     def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy,
                  criterion, summary_writer, phase_num=1, done_epoch=0):

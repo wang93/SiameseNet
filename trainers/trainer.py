@@ -22,6 +22,7 @@ from utils.loss import CrossSimilarityLBCELoss
 
 from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
+import SampleRateLearning.distribution_invariant_batchnorm.labels as Labels
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
 
@@ -851,14 +852,30 @@ class _Trainer:
 
 
 class BraidPairTrainer(_Trainer):
+    def __init__(self, *args, **kwargs):
+        super(BraidPairTrainer, self).__init__(*args, **kwargs)
+
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs
+        self.pair2bi = Pair2Bi()
+        self.bi2pair = Bi2Pair()
 
         target = [1. if a == b else 0. for a, b in zip(pids_a, pids_b)]
         self.data = (imgs_a.cuda(), imgs_b.cuda())
         self.target = torch.tensor(target).cuda().unsqueeze(1)
-        self.pair2bi = Pair2Bi()
-        self.bi2pair = Bi2Pair()
+
+        if self.opt.di_bn:
+            indices_0 = []
+            indices_1 = []
+            for i, e in enumerate(target):
+                if e == 0.:
+                    indices_0.append(i)
+                elif e == 1.:
+                    indices_1.append(i)
+                else:
+                    raise ValueError
+
+            Labels.indices = [indices_0, indices_1]
 
     def _extract_feature(self, data):
         return self.model(data, mode='extract')

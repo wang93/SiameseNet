@@ -34,7 +34,9 @@ class DefaultConfig(object):
     weight_decay = 5e-4
     momentum = 0.9
     margin = None
+
     sync_bn = False
+    di_bn = False
 
     # sample rate learning options
     srl = False

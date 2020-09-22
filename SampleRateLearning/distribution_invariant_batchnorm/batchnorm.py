@@ -1,6 +1,7 @@
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
+from . import labels
 
 
 class _BatchNorm(origin_BN):
@@ -18,7 +19,7 @@ class _BatchNorm(origin_BN):
     def _check_input_dim(self, input):
         raise NotImplementedError
 
-    def forward(self, input: torch.Tensor, indices):
+    def forward(self, input: torch.Tensor):
         self._check_input_dim(input)
         exponential_average_factor = 0.0
         if self.training and self.track_running_stats:
@@ -40,7 +41,7 @@ class _BatchNorm(origin_BN):
                 raise NotImplementedError
 
             data = input.detach()
-            for group in indices:
+            for group in labels.indices:
                 if len(group) == 0:
                     warn('There is no sample of at least one class in current batch, which is incompatible with SRL.')
                     continue
@@ -88,3 +89,43 @@ class BatchNorm2d(_BatchNorm):
 
 
 
+def convert_model(module):
+    """Traverse the input module and its child recursively
+       and replace all instance of torch.nn.modules.batchnorm.BatchNorm*N*d
+       to SynchronizedBatchNorm*N*d
+
+    Args:
+        module: the input module needs to be convert to SyncBN model
+
+    Examples:
+        >>> import torch.nn as nn
+        >>> import torchvision
+        >>> # m is a standard pytorch model
+        >>> m = torchvision.models.resnet18(True)
+        >>> m = nn.DataParallel(m)
+        >>> # after convert, m is using SyncBN
+        >>> m = convert_model(m)
+    """
+    if isinstance(module, torch.nn.DataParallel):
+        mod = module.module
+        mod = convert_model(mod)
+        mod = torch.nn.DataParallel(mod, device_ids=module.device_ids)
+        return mod
+
+    mod = module
+    for pth_module, id_module in zip([torch.nn.modules.batchnorm.BatchNorm1d,
+                                      torch.nn.modules.batchnorm.BatchNorm2d],
+                                     [BatchNorm1d,
+                                      BatchNorm2d]):
+        if isinstance(module, pth_module):
+            mod = id_module(module.num_features, module.eps, module.momentum, module.affine, module.track_running_stats)
+            mod.running_mean = module.running_mean
+            mod.running_var = module.running_var
+            if module.affine:
+                mod.weight.data = module.weight.data.clone().detach()
+                mod.bias.data = module.bias.data.clone().detach()
+
+    for name, child in module.named_children():
+        mod.add_module(name, convert_model(child))
+
+    return mod

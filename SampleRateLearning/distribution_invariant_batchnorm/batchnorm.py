@@ -1,7 +1,7 @@
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
-from . import labels
+from SampleRateLearning.distribution_invariant_batchnorm import global_variables as batch_labels
 
 
 class _BatchNorm(origin_BN):
@@ -41,26 +41,27 @@ class _BatchNorm(origin_BN):
                 raise NotImplementedError
 
             data = input.detach()
-            if input.size(0) == labels.batch_size:
-                indices = labels.indices
-            else:
-                indices = labels.braid_indices
+            # if input.size(0) == batch_labels.batch_size:
+            #     indices = batch_labels.indices
+            # else:
+            #     indices = batch_labels.braid_indices
 
-            for group in indices:
-                if len(group) == 0:
-                    warn('There is no sample of at least one class in current batch, which is incompatible with SRL.')
-                    continue
-                samples = data[group]
-                mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                var = torch.var(samples, dim=reduced_dim, keepdim=False)
+            # for group in indices:
+            #     if len(group) == 0:
+            #         warn('There is no sample of at least one class in current batch, which is incompatible with SRL.')
+            #         continue
+            #     samples = data[group]
+            #     mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
+            #     var = torch.var(samples, dim=reduced_dim, keepdim=False)
+            #
+            #     means.append(mean)
+            #     vars.append(var)
+            #
+            # di_mean = sum(means) / len(means)
+            # di_var = sum(vars) / len(vars)
 
-                means.append(mean)
-                vars.append(var)
-
-            di_mean = sum(means).detach() / len(means)
-            di_var = sum(vars).detach() / len(vars)
-            # di_mean = torch.tensor(means).detach().mean(dim=0, keepdim=False)
-            # di_var = torch.tensor(vars).detach().mean(dim=0, keepdim=False)
+            di_mean = torch.mean(data, dim=reduced_dim, keepdim=False)
+            di_var = torch.var(data, dim=reduced_dim, keepdim=False)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean

@@ -22,7 +22,7 @@ from utils.loss import CrossSimilarityLBCELoss
 
 from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
-import SampleRateLearning.distribution_invariant_batchnorm.labels as Labels
+from SampleRateLearning.distribution_invariant_batchnorm import global_variables as Labels
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
 
@@ -882,8 +882,6 @@ class BraidPairTrainer(_Trainer):
             Labels.indices = [indices_0, indices_1]
             Labels.braid_indices = [braid_indices_0, braid_indices_1]
             Labels.batch_size = batch_size
-
-
 
     def _extract_feature(self, data):
         return self.model(data, mode='extract')

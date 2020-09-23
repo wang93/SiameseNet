@@ -45,7 +45,7 @@ def get_memory_cost(fun, *samples):
     torch.backends.cudnn.benchmark = False  # conservatively estimate to avoid out of memory in the first calling
 
     for i in range(GPU_NUM):
-        cuda.reset_max_memory_allocated(i)
+        cuda.reset_peak_memory_stats(i)
 
     max_used_memory_pre = sum([cuda.max_memory_allocated(i) for i in range(GPU_NUM)])
     fun(*samples)

@@ -3,7 +3,7 @@ from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
 from SampleRateLearning.distribution_invariant_batchnorm import global_variables as batch_labels
 
-'''average stds but not vars of all classes'''
+'''average stds but not vars of all classes, .../max(eps, std)'''
 
 
 class _BatchNorm(origin_BN):

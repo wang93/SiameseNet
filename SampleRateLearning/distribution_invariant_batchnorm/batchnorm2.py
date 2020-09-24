@@ -64,7 +64,7 @@ class _BatchNorm(origin_BN):
                 stds.append(std)
 
             di_mean = sum(means) / len(means)
-            di_std = sum(std) / len(vars)
+            di_std = sum(std) / len(stds)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean

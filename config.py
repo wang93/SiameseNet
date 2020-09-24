@@ -37,6 +37,7 @@ class DefaultConfig(object):
 
     sync_bn = False
     di_bn = False
+    di_bn2 = False
 
     # sample rate learning options
     srl = False

@@ -3,6 +3,8 @@ from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
 from SampleRateLearning.distribution_invariant_batchnorm import global_variables as batch_labels
 
+'''average stds but not vars of all classes'''
+
 
 class _BatchNorm(origin_BN):
     @staticmethod
@@ -32,7 +34,7 @@ class _BatchNorm(origin_BN):
 
         if self.training:
             means = []
-            vars = []
+            stds = []
             if input.dim() == 4:
                 reduced_dim = (0, 2, 3)
             elif input.dim() == 2:
@@ -52,26 +54,26 @@ class _BatchNorm(origin_BN):
                     continue
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                var = torch.var(samples, dim=reduced_dim, keepdim=False)
+                std = torch.std(samples, dim=reduced_dim, keepdim=False)
 
                 means.append(mean)
-                vars.append(var)
+                stds.append(std)
 
             di_mean = sum(means) / len(means)
-            di_var = sum(vars) / len(vars)
-
+            di_std = sum(std) / len(vars)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean
-                self.running_var = (1 - exponential_average_factor) * self.running_var + exponential_average_factor * di_var
+                # the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
+                self.running_var = (1 - exponential_average_factor) * self.running_var + exponential_average_factor * di_std
 
             else:
                 self.running_mean = di_mean
-                self.running_var = di_var
+                self.running_var = di_std
 
         sz = input.size()
         y = (input - self.expand(self.running_mean, sz)) \
-            / self.expand(self.eps + torch.sqrt(self.running_var), sz)
+            / self.expand(self.eps + self.running_var, sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

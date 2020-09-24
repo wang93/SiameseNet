@@ -60,8 +60,6 @@ class _BatchNorm(origin_BN):
             di_mean = sum(means) / len(means)
             di_var = sum(vars) / len(vars)
 
-            # di_mean = torch.mean(data, dim=reduced_dim, keepdim=False)
-            # di_var = torch.var(data, dim=reduced_dim, keepdim=False)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean

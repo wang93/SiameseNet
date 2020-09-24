@@ -3,6 +3,7 @@ from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
 from SampleRateLearning.distribution_invariant_batchnorm import global_variables as batch_labels
 
+'''average means and vars of all classes'''
 
 class _BatchNorm(origin_BN):
     @staticmethod

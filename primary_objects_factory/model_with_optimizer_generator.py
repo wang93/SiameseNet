@@ -208,11 +208,19 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     if opt.sync_bn:
         from utils.sync_batchnorm.batchnorm import convert_model
         model = convert_model(model)
-    elif opt.di_bn:
+
+    elif opt.di_bn0:
         print('BN layers in Braid & FC structures are in distribution-invariant version 1.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm import convert_model
+        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm0 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
+
+    elif opt.di_bn1:
+        print('BN layers in Braid & FC structures are in distribution-invariant version 1.')
+        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm1 import convert_model
+        model.module.braid = convert_model(model.module.braid)
+        model.module.fc = convert_model(model.module.fc)
+
     elif opt.di_bn2:
         print('BN layers in Braid & FC structures are in distribution-invariant version 2.')
         from SampleRateLearning.distribution_invariant_batchnorm.batchnorm2 import convert_model

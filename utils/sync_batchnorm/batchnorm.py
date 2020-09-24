@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File   : batchnorm.py
+# File   : batchnorm1.py
 # Author : Jiayuan Mao
 # Email  : maojiayuan@gmail.com
 # Date   : 27/01/2018

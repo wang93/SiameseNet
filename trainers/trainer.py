@@ -129,7 +129,8 @@ class _Trainer:
               .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 
         if isinstance(self.criterion, CrossSimilarityLBCELoss):
-            print('pos center: {0:.3f}, neg center: {1:.3f}'.format(self.criterion.pos_center, self.criterion.neg_center))
+            print(
+                'pos center: {0:.3f}, neg center: {1:.3f}'.format(self.criterion.pos_center, self.criterion.neg_center))
         elif isinstance(self.criterion, SRL_BCELoss):
             print('pos rate: {:.4f}'.format(self.criterion.sampler.pos_rate))
 
@@ -864,24 +865,24 @@ class BraidPairTrainer(_Trainer):
         self.data = (imgs_a.cuda(), imgs_b.cuda())
         self.target = torch.tensor(target).cuda().unsqueeze(1)
 
-        if self.opt.di_bn:
-            indices_0 = []
-            indices_1 = []
-            for i, e in enumerate(target):
-                if e == 0.:
-                    indices_0.append(i)
-                elif e == 1.:
-                    indices_1.append(i)
-                else:
-                    raise ValueError
+        # for di_bn
+        indices_0 = []
+        indices_1 = []
+        for i, e in enumerate(target):
+            if e == 0.:
+                indices_0.append(i)
+            elif e == 1.:
+                indices_1.append(i)
+            else:
+                raise ValueError
 
-            batch_size = len(target)
-            braid_indices_0 = indices_0 + [i + batch_size for i in indices_0]
-            braid_indices_1 = indices_1 + [i + batch_size for i in indices_1]
+        batch_size = len(target)
+        braid_indices_0 = indices_0 + [i + batch_size for i in indices_0]
+        braid_indices_1 = indices_1 + [i + batch_size for i in indices_1]
 
-            Labels.indices = [indices_0, indices_1]
-            Labels.braid_indices = [braid_indices_0, braid_indices_1]
-            Labels.batch_size = batch_size
+        Labels.indices = [indices_0, indices_1]
+        Labels.braid_indices = [braid_indices_0, braid_indices_1]
+        Labels.batch_size = batch_size
 
     def _extract_feature(self, data):
         return self.model(data, mode='extract')

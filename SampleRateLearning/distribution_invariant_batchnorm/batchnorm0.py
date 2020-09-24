@@ -41,27 +41,9 @@ class _BatchNorm(origin_BN):
                 raise NotImplementedError
 
             data = input.detach()
-            if input.size(0) == batch_labels.batch_size:
-                indices = batch_labels.indices
-            else:
-                indices = batch_labels.braid_indices
 
-            for group in indices:
-                if len(group) == 0:
-                    warn('There is no sample of at least one class in current batch, which is incompatible with SRL.')
-                    continue
-                samples = data[group]
-                mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                var = torch.var(samples, dim=reduced_dim, keepdim=False)
-
-                means.append(mean)
-                vars.append(var)
-
-            di_mean = sum(means) / len(means)
-            di_var = sum(vars) / len(vars)
-
-            # di_mean = torch.mean(data, dim=reduced_dim, keepdim=False)
-            # di_var = torch.var(data, dim=reduced_dim, keepdim=False)
+            di_mean = torch.mean(data, dim=reduced_dim, keepdim=False)
+            di_var = torch.var(data, dim=reduced_dim, keepdim=False, unbiased=False)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean
@@ -73,7 +55,7 @@ class _BatchNorm(origin_BN):
 
         sz = input.size()
         y = (input - self.expand(self.running_mean, sz)) \
-            / self.expand(self.eps + torch.sqrt(self.running_var), sz)
+            / self.expand(torch.sqrt(self.eps + self.running_var), sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

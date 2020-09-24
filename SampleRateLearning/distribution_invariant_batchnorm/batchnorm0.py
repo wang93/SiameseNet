@@ -31,8 +31,6 @@ class _BatchNorm(origin_BN):
                     exponential_average_factor = self.momentum
 
         if self.training:
-            means = []
-            vars = []
             if input.dim() == 4:
                 reduced_dim = (0, 2, 3)
             elif input.dim() == 2:

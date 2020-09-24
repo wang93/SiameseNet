@@ -36,6 +36,7 @@ class DefaultConfig(object):
     margin = None
 
     sync_bn = False
+    di_bn0 = False
     di_bn1 = False
     di_bn2 = False
 

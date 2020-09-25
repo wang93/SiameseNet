@@ -32,6 +32,7 @@ class _BatchNorm(origin_BN):
                 else:  # use exponential moving average
                     exponential_average_factor = self.momentum
 
+        sz = input.size()
         if self.training:
             if input.dim() == 4:
                 reduced_dim = (0, 2, 3)
@@ -53,9 +54,12 @@ class _BatchNorm(origin_BN):
                 self.running_mean = di_mean
                 self.running_var = di_var
 
-        sz = input.size()
-        y = (input - self.expand(self.running_mean, sz)) \
-            / self.expand(torch.sqrt(self.eps + self.running_var), sz)
+            y = (input - self.expand(di_mean, sz)) \
+                / self.expand(torch.sqrt(self.eps + di_var), sz)
+
+        else:
+            y = (input - self.expand(self.running_mean, sz)) \
+                / self.expand(torch.sqrt(self.eps + self.running_var), sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

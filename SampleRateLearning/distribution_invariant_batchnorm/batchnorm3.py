@@ -36,6 +36,7 @@ class _BatchNorm(origin_BN):
                 else:  # use exponential moving average
                     exponential_average_factor = self.momentum
 
+        sz = input.size()
         if self.training:
             means = []
             stds = []
@@ -75,11 +76,14 @@ class _BatchNorm(origin_BN):
                 self.running_mean = di_mean
                 self.running_var = di_std
 
-        sz = input.size()
-        # the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
-        denominator = torch.full_like(self.running_var, self.eps).max(self.running_var)
-        y = (input - self.expand(self.running_mean, sz)) \
-            / self.expand(denominator, sz)
+            denominator = torch.full_like(di_std, self.eps).max(di_std)
+            y = (input - self.expand(di_mean, sz)) \
+                / self.expand(denominator, sz)
+        else:
+            # the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
+            denominator = torch.full_like(self.running_var, self.eps).max(self.running_var)
+            y = (input - self.expand(self.running_mean, sz)) \
+                / self.expand(denominator, sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

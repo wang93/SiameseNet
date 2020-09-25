@@ -430,6 +430,8 @@ class ReIDEvaluator:
         print("EER: {:.1%}, with threshold: {:.3f}".format(eer, threshold))
         print("----------------------------------------")
 
+        torch.cuda.empty_cache()
+
         return cmc[0]
 
     def visualize(self, eval_flip=False, re_ranking=False):

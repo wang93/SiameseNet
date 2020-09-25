@@ -53,7 +53,7 @@ class _BatchNorm(origin_BN):
                     continue
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                var = torch.var(samples, dim=reduced_dim, keepdim=False, unbiased=False)
+                var = torch.var(samples, dim=reduced_dim, keepdim=False, unbiased=True)
 
                 means.append(mean)
                 vars.append(var)

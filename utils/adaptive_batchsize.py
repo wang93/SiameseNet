@@ -108,4 +108,4 @@ def get_optimized_batchsize(fun, *samples):
     per_gpu_opti_batchsize = 2 ** max(int(math.log2(per_gpu_max_batchsize) - 0.5), 0)
     optimized_batchsize = GPU_NUM * per_gpu_opti_batchsize
 
-    return int(max(optimized_batchsize, 1))
+    return int(max(optimized_batchsize // 2, 1))

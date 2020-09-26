@@ -364,7 +364,7 @@ class ReIDEvaluator:
             fun = lambda a, b: self.model(a, b, mode='normal').view(-1)
             one_ima = slice_tensor(next(iter(loader_a))[0], [0])
             one_imb = slice_tensor(next(iter(loader_b))[0], [0])
-            batch_size = get_optimized_batchsize(fun, one_ima, one_imb) // 2
+            batch_size = get_optimized_batchsize(fun, one_ima, one_imb)
             del one_ima, one_imb
             self._change_batchsize(loader_a, batch_size)
             self._change_batchsize(loader_b, batch_size)
@@ -405,7 +405,7 @@ class ReIDEvaluator:
     def _get_feature(self, dataloader):
         with torch.no_grad():
             fun = lambda d: self.model(d, None, mode='extract')
-            batch_size = get_optimized_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0])) // 2
+            batch_size = get_optimized_batchsize(fun, slice_tensor(next(iter(dataloader))[0], [0]))
             batch_size = min(batch_size, len(dataloader))
             self._change_batchsize(dataloader, batch_size)
 

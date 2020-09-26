@@ -59,7 +59,7 @@ class _BatchNorm(origin_BN):
                     continue
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                std = torch.std(samples, dim=reduced_dim, keepdim=False, unbiased=True)
+                std = torch.std(samples, dim=reduced_dim, keepdim=False, unbiased=False)
 
                 means.append(mean)
                 stds.append(std)

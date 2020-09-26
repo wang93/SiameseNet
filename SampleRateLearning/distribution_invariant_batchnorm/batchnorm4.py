@@ -41,7 +41,7 @@ class _BatchNorm(origin_BN):
             data = input.detach()
 
             di_mean = torch.mean(data, dim=reduced_dim, keepdim=False)
-            di_var = torch.var(data, dim=reduced_dim, keepdim=False, unbiased=True)
+            di_var = torch.var(data, dim=reduced_dim, keepdim=False, unbiased=False)
 
             if self.track_running_stats:
 

@@ -27,10 +27,8 @@ class _BatchNorm(origin_BN):
         if self.training and self.track_running_stats:
             if self.num_batches_tracked is not None:
                 self.num_batches_tracked += 1
-                if self.momentum is None:  # use cumulative moving average
+                if self.momentum is None:
                     raise ValueError
-                else:  # use exponential moving average
-                    exponential_average_factor = 1. - self.momentum
 
             else:
                 raise ValueError
@@ -50,15 +48,15 @@ class _BatchNorm(origin_BN):
             di_var = torch.var(data, dim=reduced_dim, keepdim=False, unbiased=True)
 
             if self.track_running_stats:
-                self.running_mean = exponential_average_factor * self.running_mean + (1 - exponential_average_factor) * di_mean
-                self.running_var = exponential_average_factor * self.running_var + (1 - exponential_average_factor) * di_var
+                self.running_mean = (1. - self.momentum) * self.running_mean + self.momentum * di_mean
+                self.running_var = (1. - self.momentum) * self.running_var + self.momentum * di_var
 
             else:
                 raise NotImplementedError
                 # self.running_mean = di_mean
                 # self.running_var = di_var
 
-        correction_factor = 1. - exponential_average_factor ** self.num_batches_tracked
+        correction_factor = 1. - (1. - self.momentum) ** self.num_batches_tracked
 
         y = (input - self.expand(self.running_mean/correction_factor, sz)) \
             / self.expand(torch.sqrt(self.eps + self.running_var/correction_factor), sz)

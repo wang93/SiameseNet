@@ -5,7 +5,7 @@ braid_indices = [[]]
 batch_size = None
 
 
-def parse_target(target):
+def parse_target(target: list):
     global indices, braid_indices, batch_size
     indices_0 = []
     indices_1 = []

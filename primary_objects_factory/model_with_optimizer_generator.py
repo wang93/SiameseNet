@@ -233,6 +233,13 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 
+    elif opt.di_bn4:
+        print('BN layers in Braid & FC structures are in distribution-invariant version 4, which uses bias-corrected '
+              'running mean & var all the time.')
+        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm4 import convert_model
+        model.module.braid = convert_model(model.module.braid)
+        model.module.fc = convert_model(model.module.fc)
+
     # get optimizer
     optimizer = model.module.get_optimizer(optim=opt.optim,
                                            lr=opt.lr,

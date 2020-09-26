@@ -40,6 +40,7 @@ class DefaultConfig(object):
     di_bn1 = False
     di_bn2 = False
     di_bn3 = False
+    di_bn4 = False
 
     # sample rate learning options
     srl = False

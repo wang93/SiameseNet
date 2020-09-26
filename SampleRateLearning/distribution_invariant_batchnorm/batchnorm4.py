@@ -23,7 +23,7 @@ class _BatchNorm(origin_BN):
 
     def forward(self, input: torch.Tensor):
         self._check_input_dim(input)
-        exponential_average_factor = 0.0
+        # exponential_average_factor = 0.0
         if self.training and self.track_running_stats:
             if self.num_batches_tracked is not None:
                 self.num_batches_tracked += 1

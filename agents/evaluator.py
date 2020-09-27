@@ -423,7 +423,7 @@ class ReIDEvaluator:
             mAP, cmc, eer, threshold = self.measure_scores_on_minors(distmat, q_pids, g_pids, q_camids, g_camids)
 
         print("---------- Evaluation Report ----------")
-        print("mAP: {:.1%}".format(mAP))
+        print("mAP: {:.3%}".format(mAP))
         print("CMC curve")
         for r in self.ranks:
             print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))

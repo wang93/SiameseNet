@@ -7,6 +7,7 @@ batch_size = None
 
 
 def parse_target(target: list):
+    """each element of target target range from 0. to (classes_num-1)"""
     global classes_num, indices, braid_indices, batch_size
 
     indices = [[] for _ in range(classes_num)]

@@ -15,7 +15,7 @@ def parse_target(target):
     elif isinstance(target, torch.Tensor):
         target = target.view(-1).numpy().tolist()
     else:
-        raise NotImplementedError
+        raise TypeError
 
     indices = [[] for _ in range(classes_num)]
     for i, e in enumerate(target):

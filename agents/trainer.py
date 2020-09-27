@@ -858,6 +858,9 @@ class BraidPairTrainer(_Trainer):
         self.pair2bi = Pair2Bi()
         self.bi2pair = Bi2Pair()
 
+        # for stable_bn
+        Labels.classes_num = 2
+
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs
 
@@ -865,25 +868,8 @@ class BraidPairTrainer(_Trainer):
         self.data = (imgs_a.cuda(), imgs_b.cuda())
         self.target = torch.tensor(target).cuda().unsqueeze(1)
 
-        # for di_bn
+        # for stable_bn
         Labels.parse_target(target)
-        # indices_0 = []
-        # indices_1 = []
-        # for i, e in enumerate(target):
-        #     if e == 0.:
-        #         indices_0.append(i)
-        #     elif e == 1.:
-        #         indices_1.append(i)
-        #     else:
-        #         raise ValueError
-        #
-        # batch_size = len(target)
-        # braid_indices_0 = indices_0 + [i + batch_size for i in indices_0]
-        # braid_indices_1 = indices_1 + [i + batch_size for i in indices_1]
-        #
-        # Labels.indices = [indices_0, indices_1]
-        # Labels.braid_indices = [braid_indices_0, braid_indices_1]
-        # Labels.batch_size = batch_size
 
     def _extract_feature(self, data):
         return self.model(data, mode='extract')

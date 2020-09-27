@@ -1,17 +1,12 @@
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
-from SampleRateLearning.distribution_invariant_batchnorm import global_variables as batch_labels
+from SampleRateLearning.stable_batchnorm import global_variables as batch_labels
 
-'''bias-corrected BN'''
+'''reimplement BN in module but not function'''
 
 
 class _BatchNorm(origin_BN):
-    def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True,
-                 track_running_stats=True):
-        super(_BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
-        self.running_var = torch.zeros(num_features)
-
     @staticmethod
     def expand(stat, target_size):
         if len(target_size) == 4:
@@ -28,13 +23,21 @@ class _BatchNorm(origin_BN):
 
     def forward(self, input: torch.Tensor):
         self._check_input_dim(input)
+        exponential_average_factor = 0.0
+        if self.training and self.track_running_stats:
+            if self.num_batches_tracked is not None:
+                self.num_batches_tracked += 1
+                if self.momentum is None:  # use cumulative moving average
+                    exponential_average_factor = 1.0 / float(self.num_batches_tracked)
+                else:  # use exponential moving average
+                    exponential_average_factor = self.momentum
 
         sz = input.size()
         if self.training:
             if input.dim() == 4:
                 reduced_dim = (0, 2, 3)
             elif input.dim() == 2:
-                reduced_dim = (0,)
+                reduced_dim = (0, )
             else:
                 raise NotImplementedError
 
@@ -44,24 +47,19 @@ class _BatchNorm(origin_BN):
             di_var = torch.var(data, dim=reduced_dim, keepdim=False, unbiased=False)
 
             if self.track_running_stats:
-
-                if self.num_batches_tracked is not None:
-                    self.num_batches_tracked += 1
-                    if self.momentum is None:
-                        raise ValueError
-                else:
-                    raise ValueError
-
-                self.running_mean = (1. - self.momentum) * self.running_mean + self.momentum * di_mean
-                self.running_var = (1. - self.momentum) * self.running_var + self.momentum * di_var
+                self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean
+                self.running_var = (1 - exponential_average_factor) * self.running_var + exponential_average_factor * di_var
 
             else:
-                raise NotImplementedError
+                self.running_mean = di_mean
+                self.running_var = di_var
 
-        correction_factor = 1. - (1. - self.momentum) ** self.num_batches_tracked
+            y = (input - self.expand(di_mean, sz)) \
+                / self.expand(torch.sqrt(self.eps + di_var), sz)
 
-        y = (input - self.expand(self.running_mean / correction_factor, sz)) \
-            / self.expand(torch.sqrt(self.eps + self.running_var / correction_factor), sz)
+        else:
+            y = (input - self.expand(self.running_mean, sz)) \
+                / self.expand(torch.sqrt(self.eps + self.running_var), sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

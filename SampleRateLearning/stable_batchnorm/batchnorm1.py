@@ -1,16 +1,11 @@
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from warnings import warn
-from SampleRateLearning.distribution_invariant_batchnorm import global_variables as batch_labels
+from SampleRateLearning.stable_batchnorm import global_variables as batch_labels
 
-'''average stds but not vars of all classes'''
-
+'''average means and vars of all classes'''
 
 class _BatchNorm(origin_BN):
-    def __init__(self, *args, **kwargs):
-        super(_BatchNorm, self).__init__(*args, **kwargs)
-        self.eps = pow(self.eps, 0.5)
-
     @staticmethod
     def expand(stat, target_size):
         if len(target_size) == 4:
@@ -39,7 +34,7 @@ class _BatchNorm(origin_BN):
         sz = input.size()
         if self.training:
             means = []
-            stds = []
+            vars = []
             if input.dim() == 4:
                 reduced_dim = (0, 2, 3)
             elif input.dim() == 2:
@@ -59,30 +54,28 @@ class _BatchNorm(origin_BN):
                     continue
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                std = torch.std(samples, dim=reduced_dim, keepdim=False, unbiased=False)
+                var = torch.var(samples, dim=reduced_dim, keepdim=False, unbiased=False)
 
                 means.append(mean)
-                stds.append(std)
+                vars.append(var)
 
             di_mean = sum(means) / len(means)
-            di_std = sum(std) / len(stds)
+            di_var = sum(vars) / len(vars)
 
             if self.track_running_stats:
                 self.running_mean = (1 - exponential_average_factor) * self.running_mean + exponential_average_factor * di_mean
-                # the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
-                self.running_var = (1 - exponential_average_factor) * self.running_var + exponential_average_factor * di_std
+                self.running_var = (1 - exponential_average_factor) * self.running_var + exponential_average_factor * di_var
 
             else:
                 self.running_mean = di_mean
-                self.running_var = di_std
+                self.running_var = di_var
 
             y = (input - self.expand(di_mean, sz)) \
-                / self.expand(self.eps + di_std, sz)
+                / self.expand(torch.sqrt(self.eps + di_var), sz)
 
         else:
-            # the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
             y = (input - self.expand(self.running_mean, sz)) \
-                / self.expand(self.eps + self.running_var, sz)
+                / self.expand(torch.sqrt(self.eps + self.running_var), sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

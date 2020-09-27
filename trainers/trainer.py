@@ -22,7 +22,7 @@ from utils.loss import CrossSimilarityLBCELoss
 
 from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
-from SampleRateLearning.distribution_invariant_batchnorm import global_variables as Labels
+from SampleRateLearning.stable_batchnorm import global_variables as Labels
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
 

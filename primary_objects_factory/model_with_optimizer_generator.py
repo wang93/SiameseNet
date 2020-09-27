@@ -209,41 +209,41 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from utils.sync_batchnorm.batchnorm import convert_model
         model = convert_model(model)
 
-    elif opt.di_bn0:
-        print('BN layers in Braid & FC structures are in distribution-invariant version 0.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm0 import convert_model
+    elif opt.stable_bn0:
+        print('BN layers in Braid & FC structures are in stable version 0.')
+        from SampleRateLearning.stable_batchnorm.batchnorm0 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 
-    elif opt.di_bn1:
-        print('BN layers in Braid & FC structures are in distribution-invariant version 1.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm1 import convert_model
+    elif opt.stable_bn1:
+        print('BN layers in Braid & FC structures are in stable version 1.')
+        from SampleRateLearning.stable_batchnorm.batchnorm1 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 
-    elif opt.di_bn2:
-        print('BN layers in Braid & FC structures are in distribution-invariant version 2.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm2 import convert_model
+    elif opt.stable_bn2:
+        print('BN layers in Braid & FC structures are in stable version 2.')
+        from SampleRateLearning.stable_batchnorm.batchnorm2 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 
-    elif opt.di_bn3:
-        print('BN layers in Braid & FC structures are in distribution-invariant version 3.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm3 import convert_model
+    elif opt.stable_bn3:
+        print('BN layers in Braid & FC structures are in stable version 3.')
+        from SampleRateLearning.stable_batchnorm.batchnorm3 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 
-    elif opt.di_bn4:
-        print('BN layers in Braid & FC structures are in distribution-invariant version 4, which uses bias-corrected '
+    elif opt.stable_bn4:
+        print('BN layers in Braid & FC structures are in stable version 4, which uses bias-corrected '
               'running mean & var all the time.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm4 import convert_model
+        from SampleRateLearning.stable_batchnorm.batchnorm4 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 
-    elif opt.di_bn5:
-        print('BN layers in Braid & FC structures are in distribution-invariant version 5, which /max(mean(stds), '
+    elif opt.stable_bn5:
+        print('BN layers in Braid & FC structures are in stable version 5, which /max(mean(stds), '
               'sqrt(eps)) and uses bias-corrected running mean & std all the time.')
-        from SampleRateLearning.distribution_invariant_batchnorm.batchnorm5 import convert_model
+        from SampleRateLearning.stable_batchnorm.batchnorm5 import convert_model
         model.module.braid = convert_model(model.module.braid)
         model.module.fc = convert_model(model.module.fc)
 

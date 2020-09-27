@@ -36,12 +36,12 @@ class DefaultConfig(object):
     margin = None
 
     sync_bn = False
-    di_bn0 = False
-    di_bn1 = False
-    di_bn2 = False
-    di_bn3 = False
-    di_bn4 = False
-    di_bn5 = False
+    stable_bn0 = False
+    stable_bn1 = False
+    stable_bn2 = False
+    stable_bn3 = False
+    stable_bn4 = False
+    stable_bn5 = False
 
     # sample rate learning options
     srl = False

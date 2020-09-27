@@ -42,7 +42,7 @@ def get_trainer(opt):
         else:
             raise NotImplementedError
 
-        from trainers.trainer import BraidPairTrainer
+        from agents.trainer import BraidPairTrainer
         reid_trainer = BraidPairTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                         summary_writer, opt.train_phase_num, done_epoch)
 
@@ -66,7 +66,7 @@ def get_trainer(opt):
         else:
             raise NotImplementedError
 
-        from trainers.trainer import BraidCrossTrainer
+        from agents.trainer import BraidCrossTrainer
         reid_trainer = BraidCrossTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                          summary_writer, opt.train_phase_num, done_epoch)
 
@@ -80,7 +80,7 @@ def get_trainer(opt):
         else:
             raise NotImplementedError
 
-        from trainers.trainer import BraidCrossIDETrainer
+        from agents.trainer import BraidCrossIDETrainer
         reid_trainer = BraidCrossIDETrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy,
                                             criterion,
                                             summary_writer, opt.train_phase_num, done_epoch)
@@ -97,7 +97,7 @@ def get_trainer(opt):
         else:
             raise NotImplementedError
 
-        from trainers.trainer import NormalTrainer
+        from agents.trainer import NormalTrainer
         reid_trainer = NormalTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                      summary_writer, opt.train_phase_num, done_epoch)
 

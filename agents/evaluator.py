@@ -427,7 +427,7 @@ class ReIDEvaluator:
         print("CMC curve")
         for r in self.ranks:
             print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
-        print("EER: {:.1%}, with threshold: {:.3f}".format(eer, threshold))
+        print("EER: {:.3%}, with threshold: {:.3f}".format(eer, threshold))
         print("----------------------------------------")
 
         torch.cuda.empty_cache()

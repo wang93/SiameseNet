@@ -7,7 +7,8 @@
 averages running stds but not vars of all classes,
 computes stds through running mean,
 .../max(eps, std),
-bias-corrected
+bias-corrected,
+unfinished...
 """
 
 import torch
@@ -69,7 +70,7 @@ class _BatchNorm(origin_BN):
                 stds.append(std)
 
             di_mean = sum(means) / len(means)
-            di_std = sum(std) / len(stds)
+            di_std = sum(stds) / len(stds)
 
             self.num_batches_tracked += 1
             self.running_mean = (1 - self.momentum) * self.running_mean + self.momentum * di_mean

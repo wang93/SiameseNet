@@ -59,7 +59,7 @@ class _BatchNorm(origin_BN):
                 stds.append(std)
 
             di_mean = sum(means) / len(means)
-            di_std = sum(std) / len(stds)
+            di_std = sum(stds) / len(stds)
 
             if self.track_running_stats:
                 self.num_batches_tracked += 1

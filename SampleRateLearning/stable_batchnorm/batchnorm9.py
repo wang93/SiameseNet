@@ -1,12 +1,12 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/9/29 8:36
+# datetime:2020/9/29 9:08
 
 """
 std is computed with running mean,
 average stds of all classes,
-.../(eps + std),
+.../sqrt(eps + var),
 bias-corrected
 """
 import torch
@@ -132,3 +132,4 @@ def convert_model(module):
         mod.add_module(name, convert_model(child))
 
     return mod
+

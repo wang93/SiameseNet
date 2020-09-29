@@ -6,7 +6,7 @@
 """
 std is computed with running mean,
 average stds of all classes,
-.../sqrt(eps + var),
+.../max(eps, std),
 bias-corrected
 """
 import torch
@@ -83,8 +83,9 @@ class _BatchNorm(origin_BN):
         correction_factor = 1. - (1. - self.momentum) ** self.num_batches_tracked
 
         # Note: the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
-        y = (input - self.expand(self.running_mean/correction_factor, sz)) \
-            / self.expand(self.running_var/correction_factor + self.eps, sz)
+        denominator = torch.full_like(self.running_var, self.eps).max(self.running_var / correction_factor)
+        y = (input - self.expand(self.running_mean / correction_factor, sz)) \
+            / self.expand(denominator, sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

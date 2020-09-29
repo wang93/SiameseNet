@@ -29,9 +29,8 @@ class _BatchNorm(origin_BN):
 
     def forward(self, input: torch.Tensor):
         self._check_input_dim(input)
-        self.num_batches_tracked += 1
-
         sz = input.size()
+
         if self.training:
             if input.dim() == 4:
                 reduced_dim = (0, 2, 3)
@@ -39,6 +38,8 @@ class _BatchNorm(origin_BN):
                 reduced_dim = (0, )
             else:
                 raise NotImplementedError
+
+            self.num_batches_tracked += 1
 
             data = input.detach()
             if input.size(0) == batch_labels.batch_size:

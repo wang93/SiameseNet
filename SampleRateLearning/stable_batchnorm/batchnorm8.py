@@ -70,7 +70,7 @@ class _BatchNorm(origin_BN):
             self.running_mean = (1 - self.momentum) * self.running_mean + self.momentum * di_mean
 
             stds = []
-            data = (data - self.expand(self.running_mean/correction_factor, sz)).detach()
+            data = (data - self.expand(self.running_mean.detach()/correction_factor, sz))
             for group in indices:
                 samples = data[group]
                 std = samples.square().mean(dim=reduced_dim, keepdim=False).sqrt()

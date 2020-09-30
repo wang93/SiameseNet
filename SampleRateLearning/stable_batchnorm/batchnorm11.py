@@ -1,12 +1,12 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/9/29 9:32
+# datetime:2020/9/30 8:08
 
 """
-MAE is computed with running mean,
-average MAEs of all classes,
-.../max(eps, MAE),
+MAPE is computed with running mean,
+average MAPEs of all classes,
+.../max(eps, MAPE),
 bias-corrected
 """
 import torch
@@ -21,6 +21,7 @@ class _BatchNorm(origin_BN):
         super(_BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
         self.running_var = torch.zeros(num_features)
         self.eps = pow(self.eps, 0.5)
+        self.relu = torch.nn.functional.relu
 
     @staticmethod
     def expand(stat, target_size):
@@ -69,20 +70,20 @@ class _BatchNorm(origin_BN):
             di_mean = sum(means) / len(means)
             self.running_mean = (1 - self.momentum) * self.running_mean + self.momentum * di_mean
 
-            MAEs = []
+            MAPEs = []
             data = (data - self.expand(self.running_mean.detach()/correction_factor, sz))
             for group in indices:
                 samples = data[group]
-                MAE = samples.abs().mean(dim=reduced_dim, keepdim=False)
-                MAEs.append(MAE)
+                MAPE = self.relu(samples).mean(dim=reduced_dim, keepdim=False)
+                MAPEs.append(MAPE)
 
-            di_MAE = sum(MAEs) / len(MAEs)
-            # Note: the running_var is running_MAE indeed, for convenience of external calling, it has not been renamed.
-            self.running_var = (1 - self.momentum) * self.running_var + self.momentum * di_MAE
+            di_MAPE = sum(MAPEs) / len(MAPEs)
+            # Note: the running_var is running_MAPE indeed, for convenience of external calling, it has not been renamed.
+            self.running_var = (1 - self.momentum) * self.running_var + self.momentum * di_MAPE
 
         correction_factor = 1. - (1. - self.momentum) ** self.num_batches_tracked
 
-        # Note: the running_var is running_MAE indeed, for convenience of external calling, it has not been renamed.
+        # Note: the running_var is running_MAPE indeed, for convenience of external calling, it has not been renamed.
         denominator = torch.full_like(self.running_var, self.eps).max(self.running_var / correction_factor)
         y = (input - self.expand(self.running_mean / correction_factor, sz)) \
             / self.expand(denominator, sz)

@@ -426,7 +426,7 @@ class ReIDEvaluator:
         print("mAP: {:.3%}".format(mAP))
         print("CMC curve")
         for r in self.ranks:
-            print("Rank-{:<3}: {:.1%}".format(r, cmc[r - 1]))
+            print("Rank-{:<3}: {:.2%}".format(r, cmc[r - 1]))
         print("EER: {:.3%}, with threshold: {:.3f}".format(eer, threshold))
         print("----------------------------------------")
 
@@ -488,7 +488,7 @@ class ReIDEvaluator:
                 raise ValueError
 
         end = curtime()
-        print('it costs {:.3f} s to compute distance matrix'
+        print('it costs {:.0f} s to compute distance matrix'
               .format(end - start))
 
         return q_g_dist.cpu()

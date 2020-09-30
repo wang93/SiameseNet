@@ -72,7 +72,7 @@ class _BatchNorm(origin_BN):
 
             correction_factors = (1. - (1. - self.momentum) ** self.num_batches_tracked)
             self.running_mean = (self.running_cls_means / correction_factors).mean(dim=1, keepdim=False)
-            data -= self.expand(self.running_mean, sz)
+            data = data - self.expand(self.running_mean, sz)
 
             for c, group in enumerate(indices):
                 if len(group) == 0:

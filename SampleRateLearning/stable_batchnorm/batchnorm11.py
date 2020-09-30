@@ -71,10 +71,10 @@ class _BatchNorm(origin_BN):
             self.running_mean = (1 - self.momentum) * self.running_mean + self.momentum * di_mean
 
             MAPEs = []
-            data = (data - self.expand(self.running_mean.detach()/correction_factor, sz))
+            data = self.relu(data - self.expand(self.running_mean.detach()/correction_factor, sz))
             for group in indices:
                 samples = data[group]
-                MAPE = self.relu(samples).mean(dim=reduced_dim, keepdim=False)
+                MAPE = samples.mean(dim=reduced_dim, keepdim=False)
                 MAPEs.append(MAPE)
 
             di_MAPE = sum(MAPEs) / len(MAPEs)

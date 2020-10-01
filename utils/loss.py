@@ -217,7 +217,7 @@ class PairSimilarityCELoss(object):
         self.ce_loss = nn.CrossEntropyLoss()
 
     def __call__(self, scores, labels):
-        loss = self.ce_loss(scores, labels.to(dtype=torch.long))
+        loss = self.ce_loss(scores, labels.to(dtype=torch.long).view(-1))
         return loss
 
 

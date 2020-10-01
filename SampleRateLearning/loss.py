@@ -49,13 +49,13 @@ class SRL_BCELoss(nn.Module):
 
     def get_losses(self, scores, labels: torch.Tensor):
         losses = self.loss_fun(scores.sigmoid(), labels)
-        return losses
-
-    def forward(self, scores, labels: torch.Tensor):
-        losses = self.get_losses(scores, labels)
         is_pos = labels.type(torch.bool)
         pos_loss = losses[is_pos].mean()
         neg_loss = losses[~is_pos].mean()
+        return losses, pos_loss, neg_loss
+
+    def forward(self, scores, labels: torch.Tensor):
+        losses, pos_loss, neg_loss = self.get_losses(scores, labels)
 
         # if torch.isnan(pos_loss):
         #     loss = neg_loss
@@ -83,7 +83,11 @@ class SRL_CELoss(SRL_BCELoss):
         self.loss_fun = nn.CrossEntropyLoss(reduction='none')
 
     def get_losses(self, scores, labels: torch.Tensor):
-        losses = self.loss_fun(scores, labels.to(dtype=torch.long).view(-1))
-        return losses
+        labels = labels.to(dtype=torch.long).view(-1)
+        losses = self.loss_fun(scores, labels)
+        is_pos = labels.type(torch.bool)
+        pos_loss = losses[is_pos].mean()
+        neg_loss = losses[~is_pos].mean()
+        return losses, pos_loss, neg_loss
 
 

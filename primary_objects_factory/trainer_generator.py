@@ -45,8 +45,8 @@ def get_trainer(opt):
                                        momentum=opt.srl_momentum,
                                        weight_decay=opt.srl_weight_decay)
             else:
-                from torch.nn import CrossEntropyLoss
-                criterion = CrossEntropyLoss()
+                from utils.loss import PairSimilarityCELoss
+                criterion = PairSimilarityCELoss()
 
         else:
             raise NotImplementedError

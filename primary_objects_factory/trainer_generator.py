@@ -29,7 +29,8 @@ def get_trainer(opt):
                                         optim=opt.srl_optim,
                                         lr=opt.srl_lr,
                                         momentum=opt.srl_momentum,
-                                        weight_decay=opt.srl_weight_decay)
+                                        weight_decay=opt.srl_weight_decay,
+                                        norm=opt.srl_norm)
 
             else:
                 from utils.loss import PairSimilarityBCELoss
@@ -43,7 +44,8 @@ def get_trainer(opt):
                                        optim=opt.srl_optim,
                                        lr=opt.srl_lr,
                                        momentum=opt.srl_momentum,
-                                       weight_decay=opt.srl_weight_decay)
+                                       weight_decay=opt.srl_weight_decay,
+                                       norm=opt.srl_norm)
             else:
                 from utils.loss import PairSimilarityCELoss
                 criterion = PairSimilarityCELoss()

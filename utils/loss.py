@@ -212,6 +212,15 @@ class PairSimilarityBCELoss(object):
         return loss
 
 
+class PairSimilarityCELoss(object):
+    def __init__(self):
+        self.ce_loss = nn.CrossEntropyLoss()
+
+    def __call__(self, scores, labels):
+        loss = self.ce_loss(scores, labels.to(dtype=torch.long))
+        return loss
+
+
 class CrossSimilarityCELoss(object):
     def __init__(self):
         self.ce_loss = nn.CrossEntropyLoss()

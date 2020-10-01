@@ -83,7 +83,7 @@ class SRL_CELoss(SRL_BCELoss):
         self.loss_fun = nn.CrossEntropyLoss(reduction='none')
 
     def get_losses(self, scores, labels: torch.Tensor):
-        losses = self.loss_fun(scores, labels)
+        losses = self.loss_fun(scores, labels.to(dtype=torch.long))
         return losses
 
 

@@ -23,7 +23,7 @@ def get_trainer(opt):
     if opt.train_mode == 'pair':
         if opt.loss == 'bce':
             if opt.srl:
-                print('The BCE Loss Supports Sample Rate Learning!')
+                print('The BCE Loss Supports Sample Rate Learning.')
                 from SampleRateLearning.loss import SRL_BCELoss
                 criterion = SRL_BCELoss(sampler=data_loaders['trainloader'].sampler,
                                         optim=opt.srl_optim,
@@ -38,7 +38,7 @@ def get_trainer(opt):
 
         elif opt.loss == 'ce':
             if opt.srl:
-                print('The CE Loss Supports Sample Rate Learning!')
+                print('The CE Loss Supports Sample Rate Learning.')
                 from SampleRateLearning.loss import SRL_CELoss
                 criterion = SRL_CELoss(sampler=data_loaders['trainloader'].sampler,
                                        optim=opt.srl_optim,

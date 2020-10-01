@@ -35,11 +35,11 @@ class SampleRateSampler(Sampler):
             '''positive pair'''
             pid = randchoice(self.pids)
             candidates = self.index_dic[pid]
-            chosen = tuple(randchoice(candidates, size=2, replace=True))
+            chosen = tuple(randchoice(candidates, size=2, replace=False))
 
         else:
             '''negative pair'''
-            pid_pair = tuple(randchoice(self.pids, size=2, replace=False))
+            pid_pair = tuple(randchoice(self.pids, size=2, replace=True))
             chosen = tuple([randchoice(self.index_dic[pid]) for pid in pid_pair])
 
         return chosen

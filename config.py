@@ -58,6 +58,7 @@ class DefaultConfig(object):
     # sample rate learning options
     srl = False
     srl_optim = 'sgd'
+    srl_norm = False
     srl_lr = 0.1
     srl_momentum = 0.
     srl_weight_decay = 0.

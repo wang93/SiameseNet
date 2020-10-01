@@ -5,17 +5,17 @@ from .sampler import SampleRateSampler
 
 
 class SRL_BCELoss(nn.Module):
-    def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0.):
+    def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0., norm=False):
         if not isinstance(sampler, SampleRateSampler):
             raise TypeError
 
         super(SRL_BCELoss, self).__init__()
 
-        self.loss_fun = nn.BCELoss(reduction='none')
         self.alpha = nn.Parameter(torch.tensor(0.).cuda())
         self.pos_rate = self.alpha.sigmoid()
         self.sampler = sampler
         self.sampler.update(self.pos_rate)
+        self.norm = norm
 
         param_groups = [{'params': [self.alpha]}]
         if optim == "sgd":
@@ -47,23 +47,20 @@ class SRL_BCELoss(nn.Module):
 
         self.optimizer = optimizer
 
-    def get_losses(self, scores, labels: torch.Tensor):
-        losses = self.loss_fun(scores.sigmoid(), labels)
-        is_pos = labels.type(torch.bool)
+    def forward(self, scores, labels: torch.Tensor):
+        losses, is_pos = self.get_losses(scores, labels)
         pos_loss = losses[is_pos].mean()
         neg_loss = losses[~is_pos].mean()
-        return losses, pos_loss, neg_loss
 
-    def forward(self, scores, labels: torch.Tensor):
-        losses, pos_loss, neg_loss = self.get_losses(scores, labels)
-
-        # if torch.isnan(pos_loss):
-        #     loss = neg_loss
-        # elif torch.isnan((neg_loss)):
-        #     loss = pos_loss
-        # else:
-        #     loss = (pos_loss + neg_loss) / 2.
-        loss = losses.mean()
+        if self.norm:
+            if torch.isnan(pos_loss):
+                loss = neg_loss
+            elif torch.isnan((neg_loss)):
+                loss = pos_loss
+            else:
+                loss = (pos_loss + neg_loss) / 2.
+        else:
+            loss = losses.mean()
 
         # update pos_rate
         grad = (neg_loss - pos_loss).detach()
@@ -76,18 +73,17 @@ class SRL_BCELoss(nn.Module):
 
         return loss
 
+    def get_losses(self, scores, labels: torch.Tensor):
+        losses = nn.BCELoss(reduction='none')(scores.sigmoid(), labels)
+        is_pos = labels.type(torch.bool)
+        return losses, is_pos
+
 
 class SRL_CELoss(SRL_BCELoss):
-    def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0.):
-        super(SRL_CELoss, self).__init__(sampler, optim, lr, momentum, weight_decay)
-        self.loss_fun = nn.CrossEntropyLoss(reduction='none')
-
     def get_losses(self, scores, labels: torch.Tensor):
         labels = labels.to(dtype=torch.long).view(-1)
-        losses = self.loss_fun(scores, labels)
+        losses = nn.CrossEntropyLoss(reduction='none')(scores, labels)
         is_pos = labels.type(torch.bool)
-        pos_loss = losses[is_pos].mean()
-        neg_loss = losses[~is_pos].mean()
-        return losses, pos_loss, neg_loss
+        return losses, is_pos
 
 

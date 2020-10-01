@@ -23,7 +23,7 @@ def get_trainer(opt):
     if opt.train_mode == 'pair':
         if opt.loss == 'bce':
             if opt.srl:
-                print('Make Loss With Sample Rate Learning!')
+                print('Make BCE Loss With Sample Rate Learning!')
                 from SampleRateLearning.loss import SRL_BCELoss
                 criterion = SRL_BCELoss(sampler=data_loaders['trainloader'].sampler,
                                         optim=opt.srl_optim,
@@ -36,8 +36,17 @@ def get_trainer(opt):
                 criterion = PairSimilarityBCELoss()
 
         elif opt.loss == 'ce':
-            from torch.nn import CrossEntropyLoss
-            criterion = CrossEntropyLoss()
+            if opt.srl:
+                print('Make CE Loss With Sample Rate Learning!')
+                from SampleRateLearning.loss import SRL_CELoss
+                criterion = SRL_CELoss(sampler=data_loaders['trainloader'].sampler,
+                                       optim=opt.srl_optim,
+                                       lr=opt.srl_lr,
+                                       momentum=opt.srl_momentum,
+                                       weight_decay=opt.srl_weight_decay)
+            else:
+                from torch.nn import CrossEntropyLoss
+                criterion = CrossEntropyLoss()
 
         else:
             raise NotImplementedError

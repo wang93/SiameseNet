@@ -3,15 +3,15 @@ import torch
 from torch.optim import SGD, Adam, AdamW
 from .sampler import SampleRateSampler
 
+
 class SRL_BCELoss(nn.Module):
     def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0.):
-        print('using SRL_BCELoss')
         if not isinstance(sampler, SampleRateSampler):
             raise TypeError
 
         super(SRL_BCELoss, self).__init__()
 
-        self.bce_loss = nn.BCELoss(reduction='none')
+        self.loss_fun = nn.BCELoss(reduction='none')
         self.alpha = nn.Parameter(torch.tensor(0.).cuda())
         self.pos_rate = self.alpha.sigmoid()
         self.sampler = sampler
@@ -47,8 +47,12 @@ class SRL_BCELoss(nn.Module):
 
         self.optimizer = optimizer
 
+    def get_losses(self, scores, labels: torch.Tensor):
+        losses = self.loss_fun(scores.sigmoid(), labels)
+        return losses
+
     def forward(self, scores, labels: torch.Tensor):
-        losses = self.bce_loss(scores.sigmoid(), labels)
+        losses = self.get_losses(scores, labels)
         is_pos = labels.type(torch.bool)
         pos_loss = losses[is_pos].mean()
         neg_loss = losses[~is_pos].mean()
@@ -71,3 +75,15 @@ class SRL_BCELoss(nn.Module):
             self.sampler.update(self.pos_rate)
 
         return loss
+
+
+class SRL_CELoss(SRL_BCELoss):
+    def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0.):
+        super(SRL_CELoss, self).__init__(sampler, optim, lr, momentum, weight_decay)
+        self.loss_fun = nn.CrossEntropyLoss(reduction='none')
+
+    def get_losses(self, scores, labels: torch.Tensor):
+        losses = self.loss_fun(scores, labels)
+        return losses
+
+

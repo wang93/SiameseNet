@@ -63,14 +63,15 @@ def get_dataloaders(opt, model_meta):
     elif opt.train_mode == 'pair':
         if opt.srl:
             print('Sampler supports SRL!')
-            from SampleRateLearning.sampler import SampleRateSampler
-            sampler = SampleRateSampler(data_source=dataset.train,
-                                        sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
+            from SampleRateLearning.sampler import SampleRateBatchSampler #SampleRateSampler
+            batch_sampler = SampleRateBatchSampler(data_source=dataset.train,
+                                                   sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch,
+                                                   batch_size=opt.train_batch)
             trainloader = DataLoader(
                 PreLoadedImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
-                sampler=sampler,
-                batch_size=opt.train_batch, num_workers=0,
-                pin_memory=pin_memory, drop_last=True
+                batch_sampler=batch_sampler,
+                num_workers=0,
+                pin_memory=pin_memory,
             )
             print('num_workers=0 in the training loader.')
 

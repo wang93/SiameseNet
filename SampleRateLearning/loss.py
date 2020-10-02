@@ -1,12 +1,12 @@
 from torch import nn
 import torch
 from torch.optim import SGD, Adam, AdamW
-from .sampler import SampleRateSampler
+from .sampler import SampleRateSampler, SampleRateBatchSampler
 
 
 class SRL_BCELoss(nn.Module):
     def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0., norm=False):
-        if not isinstance(sampler, SampleRateSampler):
+        if not isinstance(sampler, (SampleRateSampler, SampleRateBatchSampler)):
             raise TypeError
 
         super(SRL_BCELoss, self).__init__()

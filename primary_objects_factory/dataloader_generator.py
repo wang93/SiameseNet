@@ -70,7 +70,7 @@ def get_dataloaders(opt, model_meta):
                 PreLoadedImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
                 sampler=sampler,
                 batch_size=opt.train_batch, num_workers=0,
-                pin_memory=pin_memory, drop_last=False
+                pin_memory=pin_memory, drop_last=True
             )
             print('num_workers=0 in the training loader.')
 

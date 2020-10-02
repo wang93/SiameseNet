@@ -302,6 +302,12 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 
+    elif opt.stable_bn18:
+        print('BN layers in Braid & FC structures are in stable version 18.')
+        from SampleRateLearning.stable_batchnorm.batchnorm18 import convert_model
+        model.braid = convert_model(model.braid)
+        model.fc = convert_model(model.fc)
+
     start_epoch = 0
     optimizer_state_dict = None
     if not opt.disable_resume:

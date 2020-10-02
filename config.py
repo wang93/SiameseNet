@@ -110,9 +110,9 @@ class DefaultConfig(object):
 
         self.datatype = 'person'
 
-        if self.srl:
-            print('In SRL mode, the num of workers is set to 0.')
-            self.workers = 0
+        # if self.srl:
+        #     print('In SRL mode, the num of workers is set to 0.')
+        #     self.workers = 0
 
         if isinstance(self.gpus, int):
             self.gpus = (self.gpus,)

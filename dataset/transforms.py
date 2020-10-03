@@ -106,6 +106,7 @@ class TrainTransform(object):
         return x
 
     def post_process(self, x):
+        x = x.clone()  # for security
         x = T.RandomHorizontalFlip()(x)
         x = self.augment(x)
         return x

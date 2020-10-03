@@ -46,7 +46,7 @@ class PreLoadedImageData(Dataset):
             img = read_image(img)
             img = self.transform.pre_process(img)
             self.dataset.append((img, pid, camid))
-        print('done!')
+        print('done.')
 
     def __getitem__(self, item):
         if isinstance(item, (list, tuple)):

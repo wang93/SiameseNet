@@ -56,7 +56,7 @@ class SRL_BCELoss(nn.Module):
             if torch.isnan(pos_loss):
                 print('pos_loss is nan!')
                 loss = neg_loss * 0.
-            elif torch.isnan((neg_loss)):
+            elif torch.isnan(neg_loss):
                 print('neg_loss is nan!')
                 loss = pos_loss * 0.
             else:

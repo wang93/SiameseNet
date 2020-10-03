@@ -60,11 +60,11 @@ class SRL_BCELoss(nn.Module):
                 print('neg_loss is nan!')
                 loss = pos_loss * 0.
             else:
-                pos_num = is_pos.sum()
-                batch_size = scores.size(0)
-                real_pos_rate = pos_num / float(batch_size)
-                scale_correction_factor = torch.sqrt(real_pos_rate * (1. - real_pos_rate))
-                loss = (pos_loss + neg_loss) * scale_correction_factor
+                # pos_num = is_pos.sum()
+                # batch_size = scores.size(0)
+                # real_pos_rate = pos_num / float(batch_size)
+                # scale_correction_factor = torch.sqrt(real_pos_rate * (1. - real_pos_rate))
+                loss = (pos_loss + neg_loss)# * scale_correction_factor
 
         else:
             loss = losses.mean()

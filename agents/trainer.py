@@ -125,21 +125,21 @@ class _Trainer:
 
         param_group = self.optimizer.param_groups
 
-        if self.opt.srl and self.opt.srl_norm:
-            if hasattr(self.train_loader.batch_sampler, 'pos_rate'):
-                pos_rate = self.train_loader.batch_sampler.pos_rate
-            else:
-                pos_rate = self.train_loader.sampler.pos_rate
-
-            correction_factor = ((pos_rate * (1 - pos_rate)) ** 0.5) * 2.
-
-            print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
-                  'Calibrated Loss {:.6f}\tLr {:.2e}'
-                  .format(epoch, batch_time.sum, losses.mean, losses.mean/correction_factor, param_group[0]['lr']))
-        else:
-            print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
-                  'Lr {:.2e}'
-                  .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
+        # if self.opt.srl and self.opt.srl_norm:
+        #     if hasattr(self.train_loader.batch_sampler, 'pos_rate'):
+        #         pos_rate = self.train_loader.batch_sampler.pos_rate
+        #     else:
+        #         pos_rate = self.train_loader.sampler.pos_rate
+        #
+        #     correction_factor = ((pos_rate * (1 - pos_rate)) ** 0.5) * 2.
+        #
+        #     print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
+        #           'Calibrated Loss {:.6f}\tLr {:.2e}'
+        #           .format(epoch, batch_time.sum, losses.mean, losses.mean/correction_factor, param_group[0]['lr']))
+        # else:
+        print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
+              'Lr {:.2e}'
+              .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
 
         if isinstance(self.criterion, CrossSimilarityLBCELoss):
             print(

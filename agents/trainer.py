@@ -131,7 +131,7 @@ class _Trainer:
             else:
                 pos_rate = self.train_loader.sampler.pos_rate
 
-            correction_factor = (pos_rate * (1 - pos_rate)) ** 0.5
+            correction_factor = ((pos_rate * (1 - pos_rate)) ** 0.5) * 2.
 
             print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
                   'Calibrated Loss {:.6f}\tLr {:.2e}'

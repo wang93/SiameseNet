@@ -106,7 +106,8 @@ class SampleRateBatchSampler(SampleRateSampler):
         if self.cur_idx >= self.length:
             raise StopIteration
 
-        pos_num = binomial(self.batch_size, self.pos_rate)
+        # pos_num = binomial(self.batch_size, self.pos_rate)
+        pos_num = round(self.batch_size * self.pos_rate)
         pos_num = int(clip(pos_num, 1, self.batch_size-1))
         neg_num = self.batch_size - pos_num
         batch = [self._get_pos_sample() for _ in range(pos_num)] + [self._get_neg_sample() for _ in range(neg_num)]

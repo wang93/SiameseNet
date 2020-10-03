@@ -126,7 +126,7 @@ class _Trainer:
         param_group = self.optimizer.param_groups
 
         if self.opt.srl and self.opt.srl_norm:
-            if self.train_loader.sampler is None:
+            if hasattr(self.train_loader.batch_sampler, 'pos_rate'):
                 pos_rate = self.train_loader.batch_sampler.pos_rate
             else:
                 pos_rate = self.train_loader.sampler.pos_rate

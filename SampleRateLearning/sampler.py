@@ -55,29 +55,29 @@ class SampleRateSampler(Sampler):
         return self.sample_num_per_epoch
 
 
-class _HalfQueue(object):
-    def __init__(self, elements: list, num=1):
-        num_elements = len(elements)
-        max_recent_num = num_elements // 2
-        self.recent = Queue(maxsize=max_recent_num)
-        self.selection_pool = set(elements)
-        self.num = num
-
-    def _update(self, new_element):
-        self.selection_pool.remove(new_element)
-
-        if self.recent.full():
-            old_element = self.recent.get()
-            self.selection_pool.add(old_element)
-
-        self.recent.put(new_element)
-
-    def select(self):
-        res = randsample(self.selection_pool, self.num)
-        for e in res:
-            self._update(e)
-
-        return res
+# class _HalfQueue(object):
+#     def __init__(self, elements: list, num=1):
+#         num_elements = len(elements)
+#         max_recent_num = num_elements // 2
+#         self.recent = Queue(maxsize=max_recent_num)
+#         self.selection_pool = set(elements)
+#         self.num = num
+#
+#     def _update(self, new_element):
+#         self.selection_pool.remove(new_element)
+#
+#         if self.recent.full():
+#             old_element = self.recent.get()
+#             self.selection_pool.add(old_element)
+#
+#         self.recent.put(new_element)
+#
+#     def select(self):
+#         res = randsample(self.selection_pool, self.num)
+#         for e in res:
+#             self._update(e)
+#
+#         return res
 
 
 class SampleRateBatchSampler(SampleRateSampler):
@@ -86,18 +86,20 @@ class SampleRateBatchSampler(SampleRateSampler):
 
         self.batch_size = batch_size
 
-        self.pos_agent = _HalfQueue(self.pids, 1)
-        self.neg_agent = _HalfQueue(self.pids, 2)
+        # self.pos_agent = _HalfQueue(self.pids, 1)
+        # self.neg_agent = _HalfQueue(self.pids, 2)
 
         self.length = (self.sample_num_per_epoch + self.batch_size - 1) // self.batch_size
 
     def _get_pos_sample(self):
-        pid = self.pos_agent.select()[0]
+        #pid = self.pos_agent.select()[0]
+        pid = randchoice(self.pids)
         chosen = tuple(randchoice(self.index_dic[pid], size=2, replace=True))
         return chosen
 
     def _get_neg_sample(self):
-        pid_pair = self.neg_agent.select()
+        #pid_pair = self.neg_agent.select()
+        pid_pair = randchoice(self.pids, size=2, replace=False)
         chosen = tuple([randchoice(self.index_dic[pid]) for pid in pid_pair])
         return chosen
 

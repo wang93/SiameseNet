@@ -112,12 +112,14 @@ class _Trainer:
             # tensorboard
             global_step = (epoch - 1) * len(self.train_loader) + i
             self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
-            self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
             if isinstance(self.criterion, SRL_BCELoss):
                 final_layer = self.model.module.fc[-1].fc
                 self.summary_writer.add_scalar('bias_to_pos', final_layer.bias[-1].item(), global_step)
-                self.summary_writer.add_scalar('weight_shift_to_pos', final_layer.weight[-1, :].mean().item(), global_step)
+                weight_to_pos = final_layer.weight[-1, :]
+                self.summary_writer.add_scalar('relative_weight_shift_to_pos',
+                                               weight_to_pos.mean().item() / weight_to_pos.abs().mean().item(),
+                                               global_step)
                 self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
                 self.pos_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[0], global_step)
                 self.neg_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[1], global_step)
@@ -135,7 +137,9 @@ class _Trainer:
             batch_time.update(time.time() - start)
             start = time.time()
 
-        param_group = self.optimizer.param_groups
+        cur_lr = self.optimizer.param_groups[0]['lr']
+
+        self.summary_writer.add_scalar('lr', cur_lr, global_step)
 
         if self.opt.srl and self.opt.srl_norm:
             if hasattr(self.train_loader.batch_sampler, 'pos_rate'):
@@ -147,11 +151,11 @@ class _Trainer:
 
             print('Epoch: [{}]\tEpoch Time {:.0f} s\tLoss {:.6f}\t'
                   'Calibrated Loss {:.6f}\tLr {:.2e}'
-                  .format(epoch, batch_time.sum, losses.mean, losses.mean/correction_factor, param_group[0]['lr']))
+                  .format(epoch, batch_time.sum, losses.mean, losses.mean/correction_factor, cur_lr))
         else:
             print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
                   'Lr {:.2e}'
-                  .format(epoch, batch_time.sum, losses.mean, param_group[0]['lr']))
+                  .format(epoch, batch_time.sum, losses.mean, cur_lr))
 
         if isinstance(self.criterion, CrossSimilarityLBCELoss):
             print(

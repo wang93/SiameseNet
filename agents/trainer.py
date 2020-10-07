@@ -24,11 +24,12 @@ from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
 from SampleRateLearning.stable_batchnorm import global_variables as Labels
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
+from tensorboardX import SummaryWriter
 
 
 class _Trainer:
     def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy,
-                 criterion, summary_writer, phase_num=1, done_epoch=0):
+                 criterion,  phase_num=1, done_epoch=0):
         self.opt = opt
         self.train_loader = train_loader
         self.evaluator = evaluator
@@ -36,7 +37,7 @@ class _Trainer:
         self.optimizer = optimzier
         self.lr_strategy = lr_strategy
         self.criterion = criterion
-        self.summary_writer = summary_writer
+        self.summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log'))
         _, best_epoch, best_rank1 = get_best_model(opt.exp_dir)
         self.best_rank1 = best_rank1
         self.best_epoch = best_epoch

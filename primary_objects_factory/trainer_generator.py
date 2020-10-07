@@ -1,6 +1,5 @@
 from os.path import join as path_join
 
-from tensorboardX import SummaryWriter
 
 from .dataloader_generator import get_dataloaders
 from .evaluator_generator import get_evaluator
@@ -17,7 +16,7 @@ def get_trainer(opt):
 
     evaluator = get_evaluator(opt, model, **data_loaders)
 
-    summary_writer = SummaryWriter(path_join(opt.exp_dir, 'tensorboard_log'))
+
     lr_strategy = get_lr_strategy(opt)
 
     if opt.train_mode == 'pair':
@@ -55,7 +54,7 @@ def get_trainer(opt):
 
         from agents.trainer import BraidPairTrainer
         reid_trainer = BraidPairTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
-                                        summary_writer, opt.train_phase_num, done_epoch)
+                                        opt.train_phase_num, done_epoch)
 
     elif opt.train_mode == 'cross':
         if opt.loss == 'bce':
@@ -79,7 +78,7 @@ def get_trainer(opt):
 
         from agents.trainer import BraidCrossTrainer
         reid_trainer = BraidCrossTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
-                                         summary_writer, opt.train_phase_num, done_epoch)
+                                         opt.train_phase_num, done_epoch)
 
     elif opt.train_mode == 'ide_cross':
         if opt.loss == 'lsce_bce':
@@ -93,8 +92,7 @@ def get_trainer(opt):
 
         from agents.trainer import BraidCrossIDETrainer
         reid_trainer = BraidCrossIDETrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy,
-                                            criterion,
-                                            summary_writer, opt.train_phase_num, done_epoch)
+                                            criterion, opt.train_phase_num, done_epoch)
 
     elif opt.train_mode == 'normal':
         if opt.loss == 'lsce':
@@ -110,7 +108,7 @@ def get_trainer(opt):
 
         from agents.trainer import NormalTrainer
         reid_trainer = NormalTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
-                                     summary_writer, opt.train_phase_num, done_epoch)
+                                     opt.train_phase_num, done_epoch)
 
     else:
         raise NotImplementedError

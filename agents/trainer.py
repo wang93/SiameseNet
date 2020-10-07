@@ -110,6 +110,11 @@ class _Trainer:
             self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
             self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
+            if isinstance(self.criterion, SRL_BCELoss):
+                self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
+                self.summary_writer.add_scalar('pos_loss', self.criterion.recent_losses[0], global_step)
+                self.summary_writer.add_scalar('neg_loss', self.criterion.recent_losses[1], global_step)
+
             # if (i + 1) % self.opt.print_freq == 0:
             #     print('Epoch: [{}][{}/{}]\t'
             #           'Batch Time {:.3f} ({:.3f})\t'

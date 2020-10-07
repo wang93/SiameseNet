@@ -115,6 +115,9 @@ class _Trainer:
             self.summary_writer.add_scalar('lr', self.optimizer.param_groups[0]['lr'], global_step)
 
             if isinstance(self.criterion, SRL_BCELoss):
+                final_layer = self.model.module.fc[-1].fc
+                self.summary_writer.add_scalar('bias_to_pos', final_layer.bias[-1].item(), global_step)
+                self.summary_writer.add_scalar('weight_shift_to_pos', final_layer.weight[-1, :].mean().item(), global_step)
                 self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
                 self.pos_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[0], global_step)
                 self.neg_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[1], global_step)

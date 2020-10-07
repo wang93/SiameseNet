@@ -37,7 +37,7 @@ class _Trainer:
         self.optimizer = optimzier
         self.lr_strategy = lr_strategy
         self.criterion = criterion
-        self.summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log'))
+        self.summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/common'))
         if opt.srl:
             self.pos_summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/pos'))
             self.neg_summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/neg'))

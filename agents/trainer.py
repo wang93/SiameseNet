@@ -112,8 +112,8 @@ class _Trainer:
 
             if isinstance(self.criterion, SRL_BCELoss):
                 self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
-                self.summary_writer.add_scalar('pos_loss', self.criterion.recent_losses[0], global_step)
-                self.summary_writer.add_scalar('neg_loss', self.criterion.recent_losses[1], global_step)
+                self.summary_writer.add_scalar('pos/mean_loss', self.criterion.recent_losses[0], global_step)
+                self.summary_writer.add_scalar('neg/mean_loss', self.criterion.recent_losses[1], global_step)
 
             # if (i + 1) % self.opt.print_freq == 0:
             #     print('Epoch: [{}][{}/{}]\t'

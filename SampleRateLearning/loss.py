@@ -47,10 +47,14 @@ class SRL_BCELoss(nn.Module):
 
         self.optimizer = optimizer
 
+        self.recent_losses = [100., 100.]
+
     def forward(self, scores, labels: torch.Tensor):
         losses, is_pos = self.get_losses(scores, labels)
         pos_loss = losses[is_pos].mean()
         neg_loss = losses[~is_pos].mean()
+
+        self.recent_losses = [pos_loss.cpu().item(), neg_loss.cpu().item()]
 
         if self.norm:
             if torch.isnan(pos_loss):
@@ -64,7 +68,7 @@ class SRL_BCELoss(nn.Module):
                 batch_size = scores.size(0)
                 real_pos_rate = pos_num / float(batch_size)
                 scale_correction_factor = torch.sqrt(real_pos_rate * (1. - real_pos_rate))
-                loss = (pos_loss + neg_loss) * scale_correction_factor # * / 2.
+                loss = (pos_loss + neg_loss) * scale_correction_factor  # * / 2.
 
         else:
             loss = losses.mean()

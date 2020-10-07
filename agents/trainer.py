@@ -133,7 +133,7 @@ class _Trainer:
 
             correction_factor = ((pos_rate * (1 - pos_rate)) ** 0.5) * 2.
 
-            print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
+            print('Epoch: [{}]\tEpoch Time {:.0f} s\tLoss {:.6f}\t'
                   'Calibrated Loss {:.6f}\tLr {:.2e}'
                   .format(epoch, batch_time.sum, losses.mean, losses.mean/correction_factor, param_group[0]['lr']))
         else:
@@ -145,7 +145,9 @@ class _Trainer:
             print(
                 'pos center: {0:.3f}, neg center: {1:.3f}'.format(self.criterion.pos_center, self.criterion.neg_center))
         elif isinstance(self.criterion, SRL_BCELoss):
-            print('pos rate: {:.4f}'.format(self.criterion.sampler.pos_rate))
+            print('pos rate: {:.4f}, pos loss: {:.4f}, neg loss: {:.4f}'.format(self.criterion.sampler.pos_rate,
+                                                                                self.criterion.recent_losses[0],
+                                                                                self.criterion.recent_losses[1]))
 
         if self.opt.eval_step > 0 and epoch % self.opt.eval_step == 0 or epoch == self.opt.max_epoch:
             rank1 = self.evaluate(eval_flip=False)

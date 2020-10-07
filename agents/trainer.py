@@ -38,6 +38,9 @@ class _Trainer:
         self.lr_strategy = lr_strategy
         self.criterion = criterion
         self.summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log'))
+        if opt.srl:
+            self.pos_summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/pos'))
+            self.neg_summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/neg'))
         _, best_epoch, best_rank1 = get_best_model(opt.exp_dir)
         self.best_rank1 = best_rank1
         self.best_epoch = best_epoch
@@ -113,8 +116,8 @@ class _Trainer:
 
             if isinstance(self.criterion, SRL_BCELoss):
                 self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
-                self.summary_writer.add_scalar('pos/mean_loss', self.criterion.recent_losses[0], global_step)
-                self.summary_writer.add_scalar('neg/mean_loss', self.criterion.recent_losses[1], global_step)
+                self.pos_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[0], global_step)
+                self.neg_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[1], global_step)
 
             # if (i + 1) % self.opt.print_freq == 0:
             #     print('Epoch: [{}][{}/{}]\t'

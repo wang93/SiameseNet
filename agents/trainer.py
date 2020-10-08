@@ -115,7 +115,9 @@ class _Trainer:
 
             if isinstance(self.criterion, SRL_BCELoss):
                 final_layer = self.model.module.fc[-1].fc
-                self.summary_writer.add_scalar('bias_to_pos', final_layer.bias[-1].item(), global_step)
+                final_bias = final_layer.bias
+                if final_bias is not None:
+                    self.summary_writer.add_scalar('bias_to_pos', final_bias[-1].item(), global_step)
                 weight_to_pos = final_layer.weight[-1, :]
                 weight_shift_to_pos = weight_to_pos.mean().item()
                 self.summary_writer.add_scalar('weight_shift_to_pos',

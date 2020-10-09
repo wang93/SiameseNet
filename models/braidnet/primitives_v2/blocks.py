@@ -700,10 +700,10 @@ class AA4Block(nn.Module):
 
 
 class FCBlock(nn.Module):
-    def __init__(self, channel_in, channel_out, is_tail=False):
+    def __init__(self, channel_in, channel_out, is_tail=False, bias=False):
         super(FCBlock, self).__init__()
         self.is_tail = is_tail
-        self.fc = nn.Linear(channel_in, channel_out, bias=self.is_tail)
+        self.fc = nn.Linear(channel_in, channel_out, bias=bias)
         if not self.is_tail:
             self.bn = BatchNorm1d(channel_out,
                                   eps=1e-05,

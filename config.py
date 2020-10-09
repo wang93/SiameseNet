@@ -65,8 +65,11 @@ class DefaultConfig(object):
     srl_weight_decay = 0.
 
     # weight modification options
-    WC = False  # weight cetralization
-    WRC = False  # weight recentralize
+    wc = False  # weight cetralization
+    wrc = False  # weight recentralize
+
+    gc = False  # gradient cetralization
+    gc_loc = False  # gradient cetralization only on current gradients but not cumulated ones
 
     # evaluation optionsgit
     savefig = False

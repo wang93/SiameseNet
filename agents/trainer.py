@@ -100,7 +100,7 @@ class _Trainer:
         losses = AverageMeter()
         self.lr_strategy(self.optimizer, epoch)
 
-        if self.opt.WRC:
+        if self.opt.wrc:
             recentralize(self.model)
 
         for i, inputs in enumerate(self.train_loader):

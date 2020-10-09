@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 import torch.nn as nn
 from torch.nn import BatchNorm3d, BatchNorm2d, BatchNorm1d
-from torch.optim import SGD, Adam, AdamW
+
 
 
 def weights_init_kaiming(m: nn.Module):
@@ -56,50 +56,101 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                 # else:
                 #     self.reg_params.append(v)
 
-    def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005):
+    def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005, gc=False, gc_loc=False):
         self.divide_params()
+        if gc:
+            if optim == "sgd":
+                from WeightModification.optimizers import SGD
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
+                optimizer = SGD(param_groups, **default, use_gc=gc)
 
-        if optim == "sgd":
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
-            optimizer = SGD(param_groups, **default)
+            elif optim == "sgdw":
+                raise NotImplementedError
 
-        elif optim == "sgdw":
-            from utils.optim.sgdw import SGDW
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
-            optimizer = SGDW(param_groups, **default)
+            elif optim == 'adam':
+                from WeightModification.optimizers import Adam
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'weight_decay': weight_decay}
+                optimizer = Adam(param_groups, **default,
+                                 betas=(0.9, 0.999),
+                                 eps=1e-8,
+                                 amsgrad=False,
+                                 use_gc=gc,
+                                 gc_loc=gc_loc)
 
-        elif optim == 'adam':
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'weight_decay': weight_decay}
-            optimizer = Adam(param_groups, **default,
-                             betas=(0.9, 0.999),
-                             eps=1e-8,
-                             amsgrad=False)
+            elif optim == 'amsgrad':
+                from WeightModification.optimizers import Adam
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'weight_decay': weight_decay}
+                optimizer = Adam(param_groups, **default,
+                                 betas=(0.9, 0.999),
+                                 eps=1e-8,
+                                 amsgrad=True,
+                                 use_gc=gc,
+                                 gc_loc=gc_loc)
 
-        elif optim == 'amsgrad':
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'weight_decay': weight_decay}
-            optimizer = Adam(param_groups, **default,
-                             betas=(0.9, 0.999),
-                             eps=1e-8,
-                             amsgrad=True)
+            elif optim == 'adamw':
+                from WeightModification.optimizers import AdamW
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'weight_decay': weight_decay}
+                optimizer = AdamW(param_groups, **default,
+                                  betas=(0.9, 0.999),
+                                  eps=1e-8,
+                                  amsgrad=False,
+                                  use_gc=gc,
+                                  gc_loc=gc_loc)
 
-        elif optim == 'adamw':
-            param_groups = [{'params': self.reg_params},
-                            {'params': self.noreg_params, 'weight_decay': 0.}]
-            default = {'lr': lr, 'weight_decay': weight_decay}
-            optimizer = AdamW(param_groups, **default,
-                              betas=(0.9, 0.999),
-                              eps=1e-8,
-                              amsgrad=False)
         else:
-            raise NotImplementedError
+            if optim == "sgd":
+                from torch.optim import SGD
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
+                optimizer = SGD(param_groups, **default)
+
+            elif optim == "sgdw":
+                from utils.optim.sgdw import SGDW
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}
+                optimizer = SGDW(param_groups, **default)
+
+            elif optim == 'adam':
+                from torch.optim import Adam
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'weight_decay': weight_decay}
+                optimizer = Adam(param_groups, **default,
+                                 betas=(0.9, 0.999),
+                                 eps=1e-8,
+                                 amsgrad=False)
+
+            elif optim == 'amsgrad':
+                from torch.optim import Adam
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'weight_decay': weight_decay}
+                optimizer = Adam(param_groups, **default,
+                                 betas=(0.9, 0.999),
+                                 eps=1e-8,
+                                 amsgrad=True)
+
+            elif optim == 'adamw':
+                from torch.optim import AdamW
+                param_groups = [{'params': self.reg_params},
+                                {'params': self.noreg_params, 'weight_decay': 0.}]
+                default = {'lr': lr, 'weight_decay': weight_decay}
+                optimizer = AdamW(param_groups, **default,
+                                  betas=(0.9, 0.999),
+                                  eps=1e-8,
+                                  amsgrad=False)
+            else:
+                raise NotImplementedError
 
         for group in optimizer.param_groups:
             group.setdefault('initial_lr', group['lr'])

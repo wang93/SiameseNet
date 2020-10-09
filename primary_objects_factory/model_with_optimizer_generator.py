@@ -308,7 +308,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 
-    if opt.WC:
+    if opt.wc:
         print('incorporate weight centralization (WC).')
         from WeightModification.centralization import convert_model as convert_model_wc
         model = convert_model_wc(model)
@@ -334,7 +334,9 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     optimizer = model.module.get_optimizer(optim=opt.optim,
                                            lr=opt.lr,
                                            momentum=opt.momentum,
-                                           weight_decay=opt.weight_decay)
+                                           weight_decay=opt.weight_decay,
+                                           gc=opt.gc,
+                                           gc_loc=opt.gc_loc)
 
     if optimizer_state_dict is not None:
         print('optimizer comes to the state after epoch {0}'.format(start_epoch))

@@ -99,7 +99,7 @@ class Adam(Optimizer):
                 if group['weight_decay'] != 0:
                     grad = grad.add(p, alpha=group['weight_decay'])
                 if self.gc_loc:
-                   grad=centralized_gradient(grad,use_gc=self.use_gc,gc_conv_only=self.gc_conv_only)
+                    grad = centralized_gradient(grad,use_gc=self.use_gc,gc_conv_only=self.gc_conv_only)
                     
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
@@ -118,7 +118,7 @@ class Adam(Optimizer):
                 if self.gc_loc==False:       
                     G_grad=centralized_gradient(G_grad,use_gc=self.use_gc,gc_conv_only=self.gc_conv_only)
                 
-                p.add_( G_grad, alpha=-step_size)
+                p.add_(G_grad, alpha=-step_size)
 
         return loss
 
@@ -192,6 +192,9 @@ class AdamW(Optimizer):
                 if p.grad is None:
                     continue
 
+                # Perform weight decay step
+                p.mul_(1 - group['lr'] * group['weight_decay'])
+
                 # Perform optimization step
                 grad = p.grad
                 if grad.is_sparse:
@@ -235,11 +238,11 @@ class AdamW(Optimizer):
 
                 step_size = group['lr'] / bias_correction1
 
-                #GC operation and stepweight decay
-                G_grad=(exp_avg/denom).add(p.data, alpha=group['weight_decay'])
+                #GC operation
+                G_grad = exp_avg/denom
                 if self.gc_loc==False:       
-                    G_grad=centralized_gradient(G_grad,use_gc=self.use_gc,gc_conv_only=self.gc_conv_only)
+                    G_grad=centralized_gradient(G_grad, use_gc=self.use_gc, gc_conv_only=self.gc_conv_only)
                 
-                p.add_( G_grad, alpha=-step_size)
+                p.add_(G_grad, alpha=-step_size)
 
         return loss

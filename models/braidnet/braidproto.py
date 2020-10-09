@@ -59,6 +59,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
     def get_optimizer(self, optim='sgd', lr=0.1, momentum=0.9, weight_decay=0.0005, gc=False, gc_loc=False):
         self.divide_params()
         if gc:
+            print('the optimizer support gradient centralization.')
             if optim == "sgd":
                 from WeightModification.optimizers import SGD
                 param_groups = [{'params': self.reg_params},

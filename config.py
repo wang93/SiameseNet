@@ -64,6 +64,9 @@ class DefaultConfig(object):
     srl_momentum = 0.
     srl_weight_decay = 0.
 
+    # weight modification options
+    WC = False  # weight cetralization
+
     # evaluation optionsgit
     savefig = False
     re_ranking = False

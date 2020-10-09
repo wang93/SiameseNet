@@ -308,6 +308,11 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 
+    if opt.WC:
+        print('incorporate weight centralization (WC).')
+        from WeightModification.centralization import convert_model as convert_model_wc
+        model = convert_model_wc(model)
+
     start_epoch = 0
     optimizer_state_dict = None
     if not opt.disable_resume:

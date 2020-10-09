@@ -7,8 +7,8 @@
 Convolution and fully connected modules which incorporate weight centralization
 """
 
-from torch.nn.modules.conv import Conv2d as normal_conv2d
-from torch.nn.modules.linear import Linear as normal_linear
+from torch.nn import Conv2d as normal_conv2d
+from torch.nn import Linear as normal_linear
 import torch.nn.functional as F
 from torch.nn import DataParallel
 from torch import Tensor

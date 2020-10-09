@@ -26,6 +26,8 @@ from SampleRateLearning.stable_batchnorm import global_variables as Labels
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 from tensorboardX import SummaryWriter
 
+from WeightModification.recentralize import recentralize
+
 
 class _Trainer:
     def __init__(self, opt, train_loader, evaluator, optimzier, lr_strategy,
@@ -97,6 +99,9 @@ class _Trainer:
         data_time = AverageMeter()
         losses = AverageMeter()
         self.lr_strategy(self.optimizer, epoch)
+
+        if self.opt.WRC:
+            recentralize(self.model)
 
         for i, inputs in enumerate(self.train_loader):
             data_time.update(time.time() - start)

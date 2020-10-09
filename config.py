@@ -66,6 +66,7 @@ class DefaultConfig(object):
 
     # weight modification options
     WC = False  # weight cetralization
+    WRC = False  # weight recentralize
 
     # evaluation optionsgit
     savefig = False

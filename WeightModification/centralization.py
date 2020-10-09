@@ -12,13 +12,14 @@ from torch.nn.modules.linear import Linear as normal_linear
 import torch.nn.functional as F
 from torch.nn import DataParallel
 from torch import Tensor
+from warnings import warn
 
 
 class Conv2d(normal_conv2d):
     def __init__(self, *args, **kwargs):
         super(Conv2d, self).__init__(*args, **kwargs)
         if self.bias is not None:
-            raise NotImplementedError
+            warn('A Conv2d layer has bias, which may be not suitable with weight centralization.')
 
     def forward(self, input: Tensor) -> Tensor:
         weight = self.weight
@@ -31,7 +32,7 @@ class Linear(normal_linear):
     def __init__(self, *args, **kwargs):
         super(Linear, self).__init__(*args, **kwargs)
         if self.bias is not None:
-            raise NotImplementedError
+            warn('A Linear layer has bias, which may be not suitable with weight centralization.')
 
     def forward(self, input: Tensor) -> Tensor:
         weight = self.weight

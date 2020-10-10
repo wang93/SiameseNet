@@ -360,7 +360,7 @@ class MMBraidOSNet(BraidOSNet):
         channel_in = feats * 4
         for i, sub_fc in enumerate(fc):
             is_tail = (i + 1 == len(fc))
-            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail, bias=False))
+            fc_blocks.append(FCBlock(channel_in, sub_fc, is_tail=is_tail, bias=is_tail))
             channel_in = sub_fc
         self.fc = nn.Sequential(*fc_blocks)
 

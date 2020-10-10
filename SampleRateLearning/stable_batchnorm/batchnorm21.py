@@ -1,11 +1,11 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/9/30 9:50
+# datetime:2020/10/11 5:43
 
 """
-for braid & fc structure,
-class-wise estimation,
+for bi & braid & fc structure,
+class-wise instance-wise estimation,
 moving-average,
 biased estimation,
 bias-corrected,
@@ -15,7 +15,6 @@ stpds via total running_mean,
 
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
-from warnings import warn
 from SampleRateLearning.stable_batchnorm import global_variables as batch_labels
 
 
@@ -49,14 +48,15 @@ class _BatchNorm(origin_BN):
 
         sz = input.size()
         if self.training:
+            data = input.detach()
+
             if input.dim() == 4:
-                reduced_dim = (0, 2, 3)
+                instance_means = data.mean(dim=(2, 3), keepdim=False)
             elif input.dim() == 2:
-                reduced_dim = (0, )
+                instance_means = data
             else:
                 raise NotImplementedError
 
-            data = input.detach()
             if input.size(0) == batch_labels.batch_size:
                 indices = batch_labels.indices
             else:
@@ -69,8 +69,8 @@ class _BatchNorm(origin_BN):
                 if len(group) == 0:
                     continue
                 self.num_batches_tracked[c] += 1
-                samples = data[group]
-                mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
+                samples = instance_means[group]
+                mean = torch.mean(samples, dim=0, keepdim=False)
                 self.running_cls_means[:, c] = (1 - self.momentum) * self.running_cls_means[:, c] + self.momentum * mean
 
             correction_factors = (1. - (1. - self.momentum) ** self.num_batches_tracked)
@@ -78,11 +78,16 @@ class _BatchNorm(origin_BN):
             data = data - self.expand(self.running_mean, sz)
             data = self.relu(data, inplace=True)
 
+            if input.dim() == 4:
+                instance_stpds = data.square().mean(dim=(2, 3), keepdim=False).sqrt()
+            elif input.dim() == 2:
+                instance_stpds = data.abs()
+
             for c, group in enumerate(indices):
                 if len(group) == 0:
                     continue
-                samples = data[group]
-                stpd = samples.square().mean(dim=reduced_dim, keepdim=False).sqrt()
+                samples = instance_stpds[group]
+                stpd = samples.mean(dim=0, keepdim=False)
                 self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stpds[:, c] + self.momentum * stpd
 
             # Note: the running_var is running_stpd indeed, for convenience of external calling, it has not been renamed.

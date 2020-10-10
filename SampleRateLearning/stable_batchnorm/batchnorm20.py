@@ -4,6 +4,7 @@
 # datetime:2020/10/10 18:38
 
 """
+for extractor (bi structure)
 moving-average,
 biased estimation,
 bias-corrected,
@@ -31,8 +32,8 @@ class _BatchNorm(origin_BN):
         self.running_var = torch.zeros(num_features)
         self.eps = pow(self.eps, 0.5)
 
-        self.num_classes = num_classes
-        #self.num_batches_tracked = torch.zeros(num_classes, dtype=torch.long)
+        # self.num_classes = num_classes
+        # self.num_batches_tracked = torch.zeros(num_classes, dtype=torch.long)
         # self.register_buffer('running_cls_means', torch.zeros(num_features,  num_classes))
         # self.register_buffer('running_cls_stpds', torch.zeros(num_features, num_classes))
 

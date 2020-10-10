@@ -62,6 +62,9 @@ class DefaultConfig(object):
     # for extractor
     stable_bn20 = False
 
+    # for the whole model
+    stable_bn21 = False
+
     # sample rate learning options
     srl = False
     srl_optim = 'sgd'

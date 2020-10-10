@@ -36,6 +36,8 @@ class DefaultConfig(object):
     margin = None
 
     sync_bn = False
+
+    # for braid & fc
     stable_bn0 = False
     stable_bn1 = False
     stable_bn2 = False
@@ -56,6 +58,9 @@ class DefaultConfig(object):
     stable_bn17 = False
     stable_bn18 = False
     stable_bn19 = False
+
+    # for extractor
+    stable_bn20 = False
 
     # sample rate learning options
     srl = False

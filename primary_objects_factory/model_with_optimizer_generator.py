@@ -314,6 +314,11 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 
+    if opt.stable_bn20:
+        print('BN layers in extractor (BI structure) are in stable version 20.')
+        from SampleRateLearning.stable_batchnorm.batchnorm20 import convert_model
+        model.bi = convert_model(model.bi)
+
     if opt.wc:
         print('incorporate weight centralization (WC).')
         from WeightModification.centralization import convert_model as convert_model_wc

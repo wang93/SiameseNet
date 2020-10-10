@@ -308,6 +308,12 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 
+    elif opt.stable_bn19:
+        print('BN layers in Braid & FC structures are in stable version 19.')
+        from SampleRateLearning.stable_batchnorm.batchnorm19 import convert_model
+        model.braid = convert_model(model.braid)
+        model.fc = convert_model(model.fc)
+
     if opt.wc:
         print('incorporate weight centralization (WC).')
         from WeightModification.centralization import convert_model as convert_model_wc

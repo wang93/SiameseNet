@@ -88,7 +88,7 @@ class TrainTransform(object):
             raise NotImplementedError
 
         x = T.RandomHorizontalFlip()(x)
-        x = T.ToTensor()(x)
+        x = T.ToTensor()(x).cuda()
         x = T.Normalize(mean=self.mean, std=self.std)(x)
         x = self.augment(x)
         return x
@@ -106,7 +106,7 @@ class TrainTransform(object):
         return x
 
     def post_process(self, x):
-        x = x.clone()  # to limit the scope of influence of this post_processing.
+        x = x.cuda()  # to limit the scope of influence of this post_processing.
         x = T.RandomHorizontalFlip()(x)
         x = self.augment(x)
         return x
@@ -129,7 +129,7 @@ class TestTransform(object):
 
         if self.flip:
             x = T.functional.hflip(x)
-        x = T.ToTensor()(x)
+        x = T.ToTensor()(x).cuda()
         x = T.Normalize(mean=self.mean, std=self.std)(x)
         return x
 
@@ -149,5 +149,4 @@ class TestTransform(object):
         return x
 
     def post_process(self, x):
-        # x = x.clone()  # to limit the scope of influence of this post_processing.
-        return x
+        return x.cuda()  # to limit the scope of influence of this post_processing.

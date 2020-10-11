@@ -4,7 +4,7 @@
 # datetime:2020/10/11 5:43
 
 """
-for bi & braid & fc structure,
+for bi & braid & fc structures,
 class-wise instance-wise estimation,
 moving-average,
 biased estimation,

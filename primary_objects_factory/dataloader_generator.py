@@ -30,7 +30,7 @@ def get_dataloaders(opt, model_meta):
 
     dataset.print_summary()
 
-    pin_memory = False
+    pin_memory = not opt.srl
 
     if opt.check_discriminant or opt.check_element_discriminant or opt.check_pair_effect or opt.sort_pairs_by_scores:
         trainloader = DataLoader(

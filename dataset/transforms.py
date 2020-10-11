@@ -46,7 +46,7 @@ class Random2DTranslation(object):
 
 
 def pad_shorter(x):
-    h,w = x.size[-2:]
+    h, w = x.size[-2:]
     s = max(h, w) 
     new_im = Image.new("RGB", (s, s))
     new_im.paste(x, ((s-h)//2, (s-w)//2))
@@ -88,7 +88,7 @@ class TrainTransform(object):
             raise NotImplementedError
 
         x = T.RandomHorizontalFlip()(x)
-        x = T.ToTensor()(x).cuda()
+        x = T.ToTensor()(x)
         x = T.Normalize(mean=self.mean, std=self.std)(x)
         x = self.augment(x)
         return x
@@ -129,7 +129,7 @@ class TestTransform(object):
 
         if self.flip:
             x = T.functional.hflip(x)
-        x = T.ToTensor()(x).cuda()
+        x = T.ToTensor()(x)
         x = T.Normalize(mean=self.mean, std=self.std)(x)
         return x
 

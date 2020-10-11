@@ -196,6 +196,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('BN layers in the whole model are in stable version 21.')
         from SampleRateLearning.stable_batchnorm.batchnorm21 import convert_model
         model = convert_model(model)
+    elif opt.stable_bn22:
+        print('BN layers in the whole model are in stable version 22.')
+        from SampleRateLearning.stable_batchnorm.batchnorm22 import convert_model
+        model = convert_model(model)
 
     if opt.stable_bn0:
         print('BN layers in Braid & FC structures are in stable version 0.')

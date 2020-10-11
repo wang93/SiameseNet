@@ -1,7 +1,7 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/10/11 5:43
+# datetime:2020/10/11 10:49
 
 """
 for bi & braid & fc structure,
@@ -9,8 +9,8 @@ class-wise instance-wise estimation,
 moving-average,
 biased estimation,
 bias-corrected,
-stpds via total running_mean,
-.../(eps + stpd)
+psquares via total running_mean,
+.../sqrt(eps + psquare)
 """
 
 import torch
@@ -27,12 +27,11 @@ class _BatchNorm(origin_BN):
         super(_BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
 
         self.running_var = torch.zeros(num_features)
-        self.eps = pow(self.eps, 0.5)
 
         self.num_classes = num_classes
         self.num_batches_tracked = torch.zeros(num_classes, dtype=torch.long)
         self.register_buffer('running_cls_means', torch.zeros(num_features,  num_classes))
-        self.register_buffer('running_cls_stpds', torch.zeros(num_features, num_classes))
+        self.register_buffer('running_cls_psquares', torch.zeros(num_features, num_classes))
 
         self.relu = torch.nn.functional.relu
 
@@ -79,7 +78,7 @@ class _BatchNorm(origin_BN):
             data = self.relu(data, inplace=True)
 
             if input.dim() == 4:
-                instance_stpds = data.square().mean(dim=(2, 3), keepdim=False).sqrt()
+                instance_stpds = data.square().mean(dim=(2, 3), keepdim=False)
             elif input.dim() == 2:
                 instance_stpds = data
 
@@ -87,15 +86,15 @@ class _BatchNorm(origin_BN):
                 if len(group) == 0:
                     continue
                 samples = instance_stpds[group]
-                stpd = samples.mean(dim=0, keepdim=False)
-                self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stpds[:, c] + self.momentum * stpd
+                psquare = samples.mean(dim=0, keepdim=False)
+                self.running_cls_psquares[:, c] = (1 - self.momentum) * self.running_cls_psquares[:, c] + self.momentum * psquare
 
-            # Note: the running_var is running_stpd indeed, for convenience of external calling, it has not been renamed.
-            self.running_var = (self.running_cls_stpds / correction_factors).mean(dim=1, keepdim=False)
+            # Note: the running_var is running_psquare indeed, for convenience of external calling, it has not been renamed.
+            self.running_var = (self.running_cls_psquares / correction_factors).mean(dim=1, keepdim=False)
 
-        # Note: the running_var is running_stpd indeed, for convenience of external calling, it has not been renamed.
+        # Note: the running_var is running_psquare indeed, for convenience of external calling, it has not been renamed.
         y = (input - self.expand(self.running_mean, sz)) \
-            / self.expand((self.running_var + self.eps), sz)
+            / self.expand((self.running_var + self.eps).sqrt(), sz)
 
         if self.affine:
             z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)

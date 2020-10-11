@@ -64,6 +64,7 @@ class DefaultConfig(object):
 
     # for the whole model
     stable_bn21 = False
+    stable_bn22 = False
 
     # sample rate learning options
     srl = False

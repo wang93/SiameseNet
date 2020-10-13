@@ -205,7 +205,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from SampleRateLearning.stable_batchnorm.batchnorm12 import convert_model
         model = convert_model(model)
     elif opt.stable_bn24:
-        print('BN layers in the whole model are in stable version 12.')
+        print('BN layers in the whole model are in stable version 24.')
         from SampleRateLearning.stable_batchnorm.batchnorm24 import convert_model
         model = convert_model(model)
 

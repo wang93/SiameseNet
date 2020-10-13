@@ -85,7 +85,7 @@ class DefaultConfig(object):
     gc = False  # gradient cetralization
     gc_loc = False  # gradient cetralization only on current gradients but not cumulated ones
 
-    # evaluation optionsgit
+    # evaluation options
     savefig = False
     re_ranking = False
     eval_step = 50

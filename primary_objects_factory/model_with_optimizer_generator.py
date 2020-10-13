@@ -341,6 +341,11 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from WeightModification.centralization import convert_model as convert_model_wc
         model = convert_model_wc(model)
 
+    print('set the momentum in all the BN layers to {}'.format(opt.bn_momentum))
+    for child in model.modules():
+        if isinstance(child, torch.nn.modules.batchnorm._BatchNorm):
+            child.momentum = opt.bn_momentum
+
     start_epoch = 0
     optimizer_state_dict = None
     if not opt.disable_resume:

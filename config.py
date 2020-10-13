@@ -35,6 +35,9 @@ class DefaultConfig(object):
     momentum = 0.9
     margin = None
 
+    # Batch Normalization Settings
+    bn_momentum = 0.1
+
     sync_bn = False
 
     # for braid & fc
@@ -67,7 +70,7 @@ class DefaultConfig(object):
     stable_bn22 = False
     stable_bn24 = False
 
-    # sample rate learning options
+    # Sample Rate Learning Settings
     srl = False
     srl_optim = 'sgd'
     srl_norm = False

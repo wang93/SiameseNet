@@ -103,6 +103,10 @@ class _Trainer:
         if self.opt.wrc:
             recentralize(self.model)
 
+        cur_lr = self.optimizer.param_groups[0]['lr']
+        global_step = (epoch - 1) * len(self.train_loader)
+        self.summary_writer.add_scalar('lr', cur_lr, global_step)
+
         for i, inputs in enumerate(self.train_loader):
             data_time.update(time.time() - start)
             # model optimizer
@@ -149,7 +153,6 @@ class _Trainer:
             start = time.time()
 
         cur_lr = self.optimizer.param_groups[0]['lr']
-
         self.summary_writer.add_scalar('lr', cur_lr, global_step)
 
         if self.opt.srl and self.opt.srl_norm:

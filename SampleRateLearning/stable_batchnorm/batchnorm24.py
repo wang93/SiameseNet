@@ -69,7 +69,7 @@ class _BatchNorm(origin_BN)   :
                 self.num_batches_tracked[c] += 1
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                cur_momentum[c] = self.momentum + (1. - self.momentum) ** self.num_batches_tracked
+                cur_momentum[c] = self.momentum + (1. - self.momentum) ** self.num_batches_tracked[c]
                 self.running_cls_means[:, c] = (1. - cur_momentum[c]) * self.running_cls_means[:, c] + cur_momentum[c] * mean
 
               # (1. - (1. - self.momentum) ** self.num_batches_tracked)

@@ -1,7 +1,7 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/9/28 8:14
+# datetime:2020/10/13 14:20
 
 """
 class-wise estimation,
@@ -9,12 +9,12 @@ moving-average,
 biased estimation,
 bias-corrected,
 stds via total running_mean,
+momentum decreases progressively,
 .../(eps + std)
 """
 
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
-from warnings import warn
 from SampleRateLearning.stable_batchnorm import global_variables as batch_labels
 
 
@@ -62,16 +62,18 @@ class _BatchNorm(origin_BN)   :
             if len(indices) != self.num_classes:
                 raise ValueError
 
+            cur_momentum = [1., ] * self.num_classes
             for c, group in enumerate(indices):
                 if len(group) == 0:
                     continue
                 self.num_batches_tracked[c] += 1
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                self.running_cls_means[:, c] = (1 - self.momentum) * self.running_cls_means[:, c] + self.momentum * mean
+                cur_momentum[c] = self.momentum + (1. - self.momentum) ** self.num_batches_tracked
+                self.running_cls_means[:, c] = (1. - cur_momentum[c]) * self.running_cls_means[:, c] + cur_momentum[c] * mean
 
-            correction_factors = (1. - (1. - self.momentum) ** self.num_batches_tracked)
-            self.running_mean = (self.running_cls_means / correction_factors).mean(dim=1, keepdim=False)
+              # (1. - (1. - self.momentum) ** self.num_batches_tracked)
+            self.running_mean = self.running_cls_means.mean(dim=1, keepdim=False)
             data = data - self.expand(self.running_mean, sz)
 
             for c, group in enumerate(indices):
@@ -79,10 +81,10 @@ class _BatchNorm(origin_BN)   :
                     continue
                 samples = data[group]
                 std = samples.square().mean(dim=reduced_dim, keepdim=False).sqrt()
-                self.running_cls_stds[:, c] = (1 - self.momentum) * self.running_cls_stds[:, c] + self.momentum * std
+                self.running_cls_stds[:, c] = (1. - cur_momentum[c]) * self.running_cls_stds[:, c] + cur_momentum[c] * std
 
             # Note: the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
-            self.running_var = (self.running_cls_stds / correction_factors).mean(dim=1, keepdim=False)
+            self.running_var = self.running_cls_stds.mean(dim=1, keepdim=False)
 
         # Note: the running_var is running_std indeed, for convenience of external calling, it has not been renamed.
         y = (input - self.expand(self.running_mean, sz)) \

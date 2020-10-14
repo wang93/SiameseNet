@@ -63,16 +63,19 @@ class _BatchNorm(origin_BN):
             if len(indices) != self.num_classes:
                 raise ValueError
 
+            cur_momentum = [1., ] * self.num_classes
             for c, group in enumerate(indices):
                 if len(group) == 0:
                     continue
                 self.num_batches_tracked[c] += 1
                 samples = data[group]
                 mean = torch.mean(samples, dim=reduced_dim, keepdim=False)
-                self.running_cls_means[:, c] = (1 - self.momentum) * self.running_cls_means[:, c] + self.momentum * mean
+                cur_momentum[c] = self.momentum + (1. - self.momentum) ** self.num_batches_tracked[c]
+                self.running_cls_means[:, c] = (1 - cur_momentum[c]) * self.running_cls_means[:, c] + cur_momentum[c] * mean
 
-            correction_factors = (1. - (1. - self.momentum) ** self.num_batches_tracked)
-            self.running_mean = (self.running_cls_means / correction_factors).mean(dim=1, keepdim=False)
+            #correction_factors = (1. - (1. - self.momentum) ** self.num_batches_tracked)
+            #self.running_mean = (self.running_cls_means / correction_factors).mean(dim=1, keepdim=False)
+            self.running_mean = self.running_cls_means.mean(dim=1, keepdim=False)
             data = data - self.expand(self.running_mean, sz)
             data = self.relu(data, inplace=True)
 
@@ -85,10 +88,11 @@ class _BatchNorm(origin_BN):
 
                 maxes /= 2.
 
-                self.running_cls_maxes[:, c] = (1 - self.momentum) * self.running_cls_maxes[:, c] + self.momentum * maxes
+                self.running_cls_maxes[:, c] = (1 - cur_momentum[c]) * self.running_cls_maxes[:, c] + cur_momentum[c] * maxes
 
             # Note: the running_var is running_max indeed, for convenience of external calling, it has not been renamed.
-            self.running_var, _ = (self.running_cls_maxes / correction_factors).max(dim=1, keepdim=False)
+            # self.running_var, _ = (self.running_cls_maxes / correction_factors).max(dim=1, keepdim=False)
+            self.running_var = self.running_cls_maxes.max(dim=1, keepdim=False)
 
         # Note: the running_var is running_max indeed, for convenience of external calling, it has not been renamed.
         y = (input - self.expand(self.running_mean, sz)) \

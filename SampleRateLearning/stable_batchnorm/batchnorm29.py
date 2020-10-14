@@ -79,8 +79,9 @@ class _BatchNorm(origin_BN):
             for c, group in enumerate(indices):
                 if len(group) == 0:
                     continue
-                samples = data[group]
-                maxes = samples.max(1, False)
+                maxes = data[group]
+                for dim in reduced_dim:
+                    maxes = maxes.max(dim, False)
 
                 self.running_cls_maxes[:, c] = (1 - self.momentum) * self.running_cls_maxes[:, c] + self.momentum * maxes
 

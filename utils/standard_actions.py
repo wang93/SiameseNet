@@ -49,7 +49,7 @@ def prepare_running(**kwargs):
         raise NotImplementedError('This project must be implemented with CUDA!')
 
     sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
-    print('current commit hash: {}'.format(subprocess.check_output(['git', 'rev-parse', 'HEAD'])))
+    print('current commit hash: {}'.format(subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode()))
     opt.print_()
     _random_seed(opt.seed)
     torch.backends.cudnn.benchmark = True

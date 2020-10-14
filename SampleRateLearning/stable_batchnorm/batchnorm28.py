@@ -17,7 +17,7 @@ from torch.nn.modules.batchnorm import _BatchNorm as origin_BN
 from SampleRateLearning.stable_batchnorm import global_variables as batch_labels
 
 
-class _BatchNorm(origin_BN)   :
+class _BatchNorm(origin_BN):
     def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True,
                  track_running_stats=True, num_classes=2):
         if not track_running_stats:
@@ -83,7 +83,10 @@ class _BatchNorm(origin_BN)   :
                 samples = data[group]
                 for i, channel in enumerate(samples.split(1, dim=1)):
                     channel = channel[channel.nonzero(as_tuple=True)]
-                    stpd[i] = channel.square().mean().sqrt()
+                    if len(channel) == 0:
+                        stpd[i] = 0.
+                    else:
+                        stpd[i] = channel.square().mean().sqrt()
                 self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stpds[:, c] + self.momentum * stpd
 
             # Note: the running_var is running_stpd indeed, for convenience of external calling, it has not been renamed.

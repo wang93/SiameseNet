@@ -48,7 +48,7 @@ class _BatchNorm(origin_BN)   :
         sz = input.size()
         if self.training:
             if input.dim() == 4:
-                reduced_dim = (0, 2, 3)
+                reduced_dim = (3, 2, 0)  # do not change the order!
             elif input.dim() == 2:
                 reduced_dim = (0, )
             else:

@@ -8,7 +8,7 @@ class-wise estimation,
 moving-average,
 biased estimation,
 bias-corrected,
-stpds via total running_mean,
+(corrected) stpds via total running_mean,
 .../(eps + stpd)
 """
 
@@ -77,8 +77,10 @@ class _BatchNorm(origin_BN)   :
                 if len(group) == 0:
                     continue
                 samples = data[group]
-                samples = samples[samples.nonzero(as_tuple=True)]
-                stpd = samples.square().mean(dim=reduced_dim, keepdim=False).sqrt()
+                stpd = torch.zeros(self.num_features, device=samples.device, dtype=samples.dtype)
+                for i, channel in enumerate(samples.split(1, dim=1)):
+                    channel = channel[channel.nonzero(as_tuple=True)]
+                    stpd[i] = channel.square().mean().sqrt()
                 self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stds[:, c] + self.momentum * stpd
 
             # Note: the running_var is running_stpd indeed, for convenience of external calling, it has not been renamed.

@@ -33,6 +33,8 @@ class _BatchNorm(origin_BN)   :
         self.register_buffer('running_cls_means', torch.zeros(num_features,  num_classes))
         self.register_buffer('running_cls_stpds', torch.zeros(num_features, num_classes))
 
+        self.relu = torch.nn.functional.relu
+
     def _check_input_dim(self, input):
         raise NotImplementedError
 
@@ -72,6 +74,7 @@ class _BatchNorm(origin_BN)   :
             correction_factors = (1. - (1. - self.momentum) ** self.num_batches_tracked)
             self.running_mean = (self.running_cls_means / correction_factors).mean(dim=1, keepdim=False)
             data = data - self.expand(self.running_mean, sz)
+            data = self.relu(data, inplace=True)
 
             stpd = torch.zeros(self.num_features, device=data.device, dtype=data.dtype)
             for c, group in enumerate(indices):

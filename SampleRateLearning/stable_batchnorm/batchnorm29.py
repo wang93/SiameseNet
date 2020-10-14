@@ -48,7 +48,7 @@ class _BatchNorm(origin_BN):
         sz = input.size()
         if self.training:
             if input.dim() == 4:
-                reduced_dim = (0, 2, 3)
+                reduced_dim = (3, 2, 0) #do not change the order
             elif input.dim() == 2:
                 reduced_dim = (0, )
             else:
@@ -81,7 +81,7 @@ class _BatchNorm(origin_BN):
                     continue
                 maxes = data[group]
                 for dim in reduced_dim:
-                    maxes = maxes.max(dim, False)
+                    maxes, _ = maxes.max(dim, False)
 
                 self.running_cls_maxes[:, c] = (1 - self.momentum) * self.running_cls_maxes[:, c] + self.momentum * maxes
 

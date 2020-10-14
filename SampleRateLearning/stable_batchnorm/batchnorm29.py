@@ -86,7 +86,7 @@ class _BatchNorm(origin_BN):
                 self.running_cls_maxes[:, c] = (1 - self.momentum) * self.running_cls_maxes[:, c] + self.momentum * maxes
 
             # Note: the running_var is running_max indeed, for convenience of external calling, it has not been renamed.
-            self.running_var = (self.running_cls_maxes / correction_factors).mean(dim=1, keepdim=False)
+            self.running_var, _ = (self.running_cls_maxes / correction_factors).max(dim=1, keepdim=False)
 
         # Note: the running_var is running_max indeed, for convenience of external calling, it has not been renamed.
         y = (input - self.expand(self.running_mean, sz)) \

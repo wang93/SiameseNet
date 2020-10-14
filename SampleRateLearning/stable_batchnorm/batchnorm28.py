@@ -81,7 +81,7 @@ class _BatchNorm(origin_BN)   :
                 for i, channel in enumerate(samples.split(1, dim=1)):
                     channel = channel[channel.nonzero(as_tuple=True)]
                     stpd[i] = channel.square().mean().sqrt()
-                self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stds[:, c] + self.momentum * stpd
+                self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stpds[:, c] + self.momentum * stpd
 
             # Note: the running_var is running_stpd indeed, for convenience of external calling, it has not been renamed.
             self.running_var = (self.running_cls_stpds / correction_factors).mean(dim=1, keepdim=False)

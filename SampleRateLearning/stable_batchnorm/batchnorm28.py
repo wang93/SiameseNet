@@ -73,11 +73,11 @@ class _BatchNorm(origin_BN)   :
             self.running_mean = (self.running_cls_means / correction_factors).mean(dim=1, keepdim=False)
             data = data - self.expand(self.running_mean, sz)
 
+            stpd = torch.zeros(self.num_features, device=data.device, dtype=data.dtype)
             for c, group in enumerate(indices):
                 if len(group) == 0:
                     continue
                 samples = data[group]
-                stpd = torch.zeros(self.num_features, device=samples.device, dtype=samples.dtype)
                 for i, channel in enumerate(samples.split(1, dim=1)):
                     channel = channel[channel.nonzero(as_tuple=True)]
                     stpd[i] = channel.square().mean().sqrt()

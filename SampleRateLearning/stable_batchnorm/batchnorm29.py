@@ -80,7 +80,8 @@ class _BatchNorm(origin_BN):
                 if len(group) == 0:
                     continue
                 samples = data[group]
-                maxes = samples.max(dim=reduced_dim, keepdim=False) / 1.4142135623731
+                maxes = samples.max(1, False)
+
                 self.running_cls_maxes[:, c] = (1 - self.momentum) * self.running_cls_maxes[:, c] + self.momentum * maxes
 
             # Note: the running_var is running_max indeed, for convenience of external calling, it has not been renamed.

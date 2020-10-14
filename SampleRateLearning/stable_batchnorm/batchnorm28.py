@@ -77,7 +77,7 @@ class _BatchNorm(origin_BN)   :
                 if len(group) == 0:
                     continue
                 samples = data[group]
-                samples = samples[samples.nonzero(as_tuple=False)]
+                samples = samples[samples.nonzero(as_tuple=True)]
                 stpd = samples.square().mean(dim=reduced_dim, keepdim=False).sqrt()
                 self.running_cls_stpds[:, c] = (1 - self.momentum) * self.running_cls_stds[:, c] + self.momentum * stpd
 

@@ -1,15 +1,15 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/10/14 15:12
+# datetime:2020/10/14 16:17
 
 """
 class-wise estimation,
 moving-average,
 biased estimation,
 bias-corrected,
-maximums via total running_mean,
-.../(eps + max)
+half_maximums via total running_mean,
+.../(eps + half_max)
 """
 
 import torch
@@ -83,6 +83,8 @@ class _BatchNorm(origin_BN):
                 for dim in reduced_dim:
                     maxes, _ = maxes.max(dim, False)
 
+                maxes /= 2.
+
                 self.running_cls_maxes[:, c] = (1 - self.momentum) * self.running_cls_maxes[:, c] + self.momentum * maxes
 
             # Note: the running_var is running_max indeed, for convenience of external calling, it has not been renamed.
@@ -150,3 +152,4 @@ def convert_model(module):
         mod.add_module(name, convert_model(child))
 
     return mod
+

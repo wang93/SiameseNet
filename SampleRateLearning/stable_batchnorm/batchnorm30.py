@@ -26,7 +26,7 @@ class _BatchNorm(origin_BN):
         super(_BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
 
         self.running_var = torch.zeros(num_features)
-        #self.eps = pow(self.eps, 0.5)
+        self.eps = pow(self.eps, 0.5)
 
         self.num_classes = num_classes
         self.num_batches_tracked = torch.zeros(num_classes, dtype=torch.long)

@@ -18,7 +18,7 @@ class _BatchNorm(origin_BN):
             raise NotImplementedError
 
         super(_BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
-        self.weight.fill_(0.)
+        self.weight.data.fill_(0.)
 
     def _check_input_dim(self, input):
         raise NotImplementedError

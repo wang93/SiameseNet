@@ -76,6 +76,8 @@ class DefaultConfig(object):
     stable_bn29 = False
     stable_bn30 = False
     stable_bn31 = False
+    stable_bn32 = False
+    stable_bn33 = False
 
     # Sample Rate Learning Settings
     srl = False

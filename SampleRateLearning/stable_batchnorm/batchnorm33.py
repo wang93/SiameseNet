@@ -1,10 +1,10 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/10/15 8:49
+# datetime:2020/10/15 8:45
 
 """
-affine: x * exp_scaling + bias
+affine：(x + bias) * exp_scaling
 """
 
 import torch
@@ -31,7 +31,7 @@ class _BatchNorm(origin_BN):
         self._check_input_dim(input)
         sz = input.size()
         if self.affine:
-            z = input * self.expand(self.weight.exp(), sz) + self.expand(self.bias, sz)
+            z = (input + self.expand(self.bias, sz)) * self.expand(self.weight.exp(), sz)
         else:
             z = input
 
@@ -88,4 +88,3 @@ def convert_model(module):
         mod.add_module(name, convert_model(child))
 
     return mod
-

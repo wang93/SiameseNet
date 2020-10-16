@@ -458,9 +458,8 @@ class MinMaxY(SumY):
     def forward(self, x_from_braid):
         if len(x_from_braid) != 2:
             raise NotImplementedError
-        x = x_from_braid
-        y_min = torch.min(*x)
-        y_max = torch.max(*x)
+        y_min = torch.min(*x_from_braid)
+        y_max = torch.max(*x_from_braid)
         y = torch.cat((y_min, y_max), dim=1)
         y = self.bn(y)
         return y.view(y.size(0), -1)

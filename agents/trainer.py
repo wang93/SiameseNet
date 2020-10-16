@@ -135,6 +135,23 @@ class _Trainer:
                 self.summary_writer.add_scalar('relative_weight_shift_to_pos',
                                                weight_shift_to_pos / weight_to_pos.abs().mean().item(),
                                                global_step)
+
+                final_w = self.model.module.braid.wlinear
+                final_w_p = final_w.conv_p
+                final_w_q = final_w.conv_q
+                final_w_bias = final_w_p.bias
+                if final_w_bias is not None:
+                    final_w_bias = final_w_bias.data
+                    final_w_bias_avg = final_w_bias.mean().item()
+                    final_w_bias_max = final_w_bias.max().item()
+                    final_w_bias_min = final_w_bias.min().item()
+                    self.summary_writer.add_scalar('final_w_bias_avg', final_w_bias_avg, global_step)
+                    self.summary_writer.add_scalar('final_w_bias_max', final_w_bias_max, global_step)
+                    self.summary_writer.add_scalar('final_w_bias_min', final_w_bias_min, global_step)
+
+                final_w_weight_shift = torch.cat((final_w_p.weight.data, final_w_q.weight.data), dim=0).mean().item()
+                self.summary_writer.add_scalar('final_w_weight_shift', final_w_weight_shift, global_step)
+
                 self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
                 self.pos_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[0], global_step)
                 self.neg_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[1], global_step)

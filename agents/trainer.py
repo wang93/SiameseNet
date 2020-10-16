@@ -25,7 +25,6 @@ from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
 from SampleRateLearning.stable_batchnorm import global_variables as Labels
 from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
-# from tensorboardX import SummaryWriter
 
 from WeightModification.recentralize import recentralize
 
@@ -42,10 +41,6 @@ class _Trainer:
         self.criterion = criterion
 
         self.recorder = SummaryWriters(opt)
-        # self.summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/common'))
-        # if opt.srl:
-        #     self.pos_summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/pos'))
-        #     self.neg_summary_writer = SummaryWriter(os.path.join(opt.exp_dir, 'tensorboard_log/neg'))
 
         _, best_epoch, best_rank1 = get_best_model(opt.exp_dir)
         self.best_rank1 = best_rank1

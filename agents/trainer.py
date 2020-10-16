@@ -140,6 +140,9 @@ class _Trainer:
                 final_w_p = final_w.conv_p
                 final_w_q = final_w.conv_q
                 final_w_bias = final_w_p.bias
+                final_wbn = self.model.module.braid.wbn
+                final_wbn_bias = final_wbn.bias
+
                 if final_w_bias is not None:
                     final_w_bias = final_w_bias.data
                     final_w_bias_avg = final_w_bias.mean().item()
@@ -149,8 +152,25 @@ class _Trainer:
                     self.summary_writer.add_scalar('final_w_bias_max', final_w_bias_max, global_step)
                     self.summary_writer.add_scalar('final_w_bias_min', final_w_bias_min, global_step)
 
+                if final_wbn_bias is not None:
+                    final_wbn_bias = final_wbn_bias.data
+                    final_wbn_bias_avg = final_wbn_bias.mean().item()
+                    final_wbn_bias_max = final_wbn_bias.max().item()
+                    final_wbn_bias_min = final_wbn_bias.min().item()
+                    self.summary_writer.add_scalar('final_wbn_bias_avg', final_wbn_bias_avg, global_step)
+                    self.summary_writer.add_scalar('final_wbn_bias_max', final_wbn_bias_max, global_step)
+                    self.summary_writer.add_scalar('final_wbn_bias_min', final_wbn_bias_min, global_step)
+
                 final_w_weight_shift = torch.cat((final_w_p.weight.data, final_w_q.weight.data), dim=0).mean().item()
                 self.summary_writer.add_scalar('final_w_weight_shift', final_w_weight_shift, global_step)
+
+                final_wbn_weight = final_wbn.weight.data
+                final_wbn_weight_avg = final_wbn_weight.mean().item()
+                final_wbn_weight_max = final_wbn_weight.max().item()
+                final_wbn_weight_min = final_wbn_weight.min().item()
+                self.summary_writer.add_scalar('final_wbn_weight_avg', final_wbn_weight_avg, global_step)
+                self.summary_writer.add_scalar('final_wbn_weight_max', final_wbn_weight_max, global_step)
+                self.summary_writer.add_scalar('final_wbn_weight_min', final_wbn_weight_min, global_step)
 
                 self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
                 self.pos_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[0], global_step)

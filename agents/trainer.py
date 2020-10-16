@@ -140,7 +140,7 @@ class _Trainer:
                 final_w_p = final_w.conv_p
                 final_w_q = final_w.conv_q
                 final_w_bias = final_w_p.bias
-                final_wbn = self.model.module.braid.wbn
+                final_wbn = self.model.module.braid.wbn.bn
                 final_wbn_bias = final_wbn.bias
 
                 if final_w_bias is not None:

@@ -112,8 +112,6 @@ class _Trainer:
                              criterion=self.criterion,
                              optimizer=self.optimizer,
                              global_step=global_step)
-        # cur_lr = self.optimizer.param_groups[0]['lr']
-        # self.summary_writer.add_scalar('lr', cur_lr, global_step)
 
         for i, inputs in enumerate(self.train_loader):
             data_time.update(time.time() - start)
@@ -133,77 +131,11 @@ class _Trainer:
                                  optimizer=self.optimizer,
                                  loss=self.loss,
                                  global_step=global_step)
-            # self.summary_writer.add_scalar('loss', self.loss.item(), global_step)
-            #
-            # if isinstance(self.criterion, SRL_BCELoss):
-            #     final_layer = self.model.module.fc[-1].fc
-            #     final_bias = final_layer.bias
-            #     if final_bias is not None:
-            #         self.summary_writer.add_scalar('bias_to_pos', final_bias[-1].item(), global_step)
-            #     weight_to_pos = final_layer.weight[-1, :]
-            #     weight_shift_to_pos = weight_to_pos.mean().item()
-            #     self.summary_writer.add_scalar('weight_shift_to_pos',
-            #                                    weight_shift_to_pos,
-            #                                    global_step)
-            #     self.summary_writer.add_scalar('relative_weight_shift_to_pos',
-            #                                    weight_shift_to_pos / weight_to_pos.abs().mean().item(),
-            #                                    global_step)
-            #
-            #     final_w = self.model.module.braid.wlinear
-            #     final_w_p = final_w.conv_p
-            #     final_w_q = final_w.conv_q
-            #     final_w_bias = final_w_p.bias
-            #     final_wbn = self.model.module.braid.wbn.bn
-            #     final_wbn_bias = final_wbn.bias
-            #
-            #     if final_w_bias is not None:
-            #         final_w_bias = final_w_bias.data
-            #         final_w_bias_avg = final_w_bias.mean().item()
-            #         final_w_bias_max = final_w_bias.max().item()
-            #         final_w_bias_min = final_w_bias.min().item()
-            #         self.summary_writer.add_scalar('final_w_bias_avg', final_w_bias_avg, global_step)
-            #         self.summary_writer.add_scalar('final_w_bias_max', final_w_bias_max, global_step)
-            #         self.summary_writer.add_scalar('final_w_bias_min', final_w_bias_min, global_step)
-            #
-            #     if final_wbn_bias is not None:
-            #         final_wbn_bias = final_wbn_bias.data
-            #         final_wbn_bias_avg = final_wbn_bias.mean().item()
-            #         final_wbn_bias_max = final_wbn_bias.max().item()
-            #         final_wbn_bias_min = final_wbn_bias.min().item()
-            #         self.summary_writer.add_scalar('final_wbn_bias_avg', final_wbn_bias_avg, global_step)
-            #         self.summary_writer.add_scalar('final_wbn_bias_max', final_wbn_bias_max, global_step)
-            #         self.summary_writer.add_scalar('final_wbn_bias_min', final_wbn_bias_min, global_step)
-            #
-            #     final_w_weight_shift = torch.cat((final_w_p.weight.data, final_w_q.weight.data), dim=0).mean().item()
-            #     self.summary_writer.add_scalar('final_w_weight_shift', final_w_weight_shift, global_step)
-            #
-            #     final_wbn_weight = final_wbn.weight.data
-            #     final_wbn_weight_avg = final_wbn_weight.mean().item()
-            #     final_wbn_weight_max = final_wbn_weight.max().item()
-            #     final_wbn_weight_min = final_wbn_weight.min().item()
-            #     self.summary_writer.add_scalar('final_wbn_weight_avg', final_wbn_weight_avg, global_step)
-            #     self.summary_writer.add_scalar('final_wbn_weight_max', final_wbn_weight_max, global_step)
-            #     self.summary_writer.add_scalar('final_wbn_weight_min', final_wbn_weight_min, global_step)
-            #
-            #     self.summary_writer.add_scalar('pos_rate', self.criterion.sampler.pos_rate, global_step)
-            #     self.pos_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[0], global_step)
-            #     self.neg_summary_writer.add_scalar('mean_loss', self.criterion.recent_losses[1], global_step)
-
-            # if (i + 1) % self.opt.print_freq == 0:
-            #     print('Epoch: [{}][{}/{}]\t'
-            #           'Batch Time {:.3f} ({:.3f})\t'
-            #           'Data Time {:.3f} ({:.3f})\t'
-            #           'Loss {:.3f} ({:.3f})\t'
-            #           .format(epoch, i + 1, len(self.train_loader),
-            #                   batch_time.val, batch_time.mean,
-            #                   data_time.val, data_time.mean,
-            #                   losses.val, losses.mean))
 
             batch_time.update(time.time() - start)
             start = time.time()
 
         cur_lr = self.optimizer.param_groups[0]['lr']
-        # self.summary_writer.add_scalar('lr', cur_lr, global_step)
 
         if self.opt.srl and self.opt.srl_norm:
             if hasattr(self.train_loader.batch_sampler, 'pos_rate'):

@@ -81,5 +81,6 @@ class SummaryWriters(object):
 
         if isinstance(criterion, SRL_BCELoss):
             self.summary_writer.add_scalar('pos_rate', criterion.sampler.pos_rate, global_step)
-            self.pos_summary_writer.add_scalar('mean_loss', criterion.recent_losses[0], global_step)
-            self.neg_summary_writer.add_scalar('mean_loss', criterion.recent_losses[1], global_step)
+            if criterion.recent_losses is not None:
+                self.pos_summary_writer.add_scalar('mean_loss', criterion.recent_losses[0], global_step)
+                self.neg_summary_writer.add_scalar('mean_loss', criterion.recent_losses[1], global_step)

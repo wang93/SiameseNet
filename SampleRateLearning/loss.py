@@ -47,7 +47,7 @@ class SRL_BCELoss(nn.Module):
 
         self.optimizer = optimizer
 
-        self.recent_losses = [100., 100.]
+        self.recent_losses = None
 
     def forward(self, scores, labels: torch.Tensor):
         losses, is_pos = self.get_losses(scores, labels)

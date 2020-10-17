@@ -886,7 +886,7 @@ class BraidPairTrainer(_Trainer):
     def _parse_data(self, inputs):
         (imgs_a, pids_a, _), (imgs_b, pids_b, _) = inputs
 
-        target = [1. if a == b else 0. for a, b in zip(pids_a, pids_b)]
+        target = [0. if a == b else 1. for a, b in zip(pids_a, pids_b)]
         self.data = (imgs_a.cuda(), imgs_b.cuda())
         self.target = torch.tensor(target).cuda().unsqueeze(1)
 

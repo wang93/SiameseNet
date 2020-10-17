@@ -13,7 +13,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
 
     if opt.loss in ['bce', 'lbce']:
         fc = (opt.tail_times,)
-        score2prob = lambda x: x.mean(dim=1)
+        score2prob = lambda x: - x.mean(dim=1)
         # score2prob = lambda x: nn.Sigmoid()(x).mean(dim=1)
 
     elif opt.loss == 'triplet':

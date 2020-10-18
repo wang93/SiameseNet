@@ -144,7 +144,7 @@ class _Trainer:
                   'Calibrated Loss {:.6f}\tLr {:.2e}'
                   .format(epoch, batch_time.sum, losses.mean, losses.mean/correction_factor, cur_lr))
         else:
-            print('Epoch: [{}]\tEpoch Time {:.1f} s\tLoss {:.6f}\t'
+            print('Epoch: [{}]\tEpoch Time {:.0f} s\tLoss {:.6f}\t'
                   'Lr {:.2e}'
                   .format(epoch, batch_time.sum, losses.mean, cur_lr))
 

@@ -33,13 +33,13 @@ class SummaryWriters(object):
         final_layer = model.module.fc[-1].fc
         final_bias = final_layer.bias
         if final_bias is not None:
-            self.summary_writer.add_scalar('bias_to_pos', final_bias[-1].item(), global_step)
+            self.summary_writer.add_scalar('final_bias', final_bias[-1].item(), global_step)
         weight_to_pos = final_layer.weight[-1, :]
         weight_shift_to_pos = weight_to_pos.mean().item()
-        self.summary_writer.add_scalar('weight_shift_to_pos',
+        self.summary_writer.add_scalar('final_weight_shift',
                                        weight_shift_to_pos,
                                        global_step)
-        self.summary_writer.add_scalar('relative_weight_shift_to_pos',
+        self.summary_writer.add_scalar('relative_final_weight_shift',
                                        weight_shift_to_pos / weight_to_pos.abs().mean().item(),
                                        global_step)
 
@@ -59,6 +59,9 @@ class SummaryWriters(object):
             self.max_summary_writer.add_scalar('final_w_bias', final_w_bias_max, global_step)
             self.min_summary_writer.add_scalar('final_w_bias', final_w_bias_min, global_step)
 
+        final_w_weight_shift = torch.cat((final_w_p.weight.data, final_w_q.weight.data), dim=0).mean().item()
+        self.summary_writer.add_scalar('final_w_weight_shift', final_w_weight_shift, global_step)
+
         if final_wbn_bias is not None:
             final_wbn_bias = final_wbn_bias.data
             final_wbn_bias_avg = final_wbn_bias.mean().item()
@@ -67,9 +70,6 @@ class SummaryWriters(object):
             self.avg_summary_writer.add_scalar('final_wbn_bias', final_wbn_bias_avg, global_step)
             self.max_summary_writer.add_scalar('final_wbn_bias', final_wbn_bias_max, global_step)
             self.min_summary_writer.add_scalar('final_wbn_bias', final_wbn_bias_min, global_step)
-
-        final_w_weight_shift = torch.cat((final_w_p.weight.data, final_w_q.weight.data), dim=0).mean().item()
-        self.summary_writer.add_scalar('final_w_weight_shift', final_w_weight_shift, global_step)
 
         final_wbn_weight = final_wbn.weight.data
         final_wbn_weight_avg = final_wbn_weight.mean().item()

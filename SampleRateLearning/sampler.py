@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from numpy.random import choice as randchoice
 from numpy.random import uniform as randuniform
-from numpy.random import binomial
 from numpy import clip
 from torch.utils.data.sampler import Sampler
 
@@ -108,12 +107,12 @@ class SampleRateBatchSampler(SampleRateSampler):
 
         # pos_num = binomial(self.batch_size, self.pos_rate)
 
-        # pos_num = round(self.batch_size * self.pos_rate)
-        # pos_num = int(clip(pos_num, 1, self.batch_size-1))
-        # neg_num = self.batch_size - pos_num
-        neg_num = round(self.batch_size * self.pos_rate)
-        neg_num = int(clip(neg_num, 1, self.batch_size-1))
-        pos_num = self.batch_size - neg_num
+        pos_num = round(self.batch_size * self.pos_rate)
+        pos_num = int(clip(pos_num, 1, self.batch_size-1))
+        neg_num = self.batch_size - pos_num
+        # neg_num = round(self.batch_size * self.pos_rate)
+        # neg_num = int(clip(neg_num, 1, self.batch_size-1))
+        # pos_num = self.batch_size - neg_num
         batch = [self._get_pos_sample() for _ in range(pos_num)] + [self._get_neg_sample() for _ in range(neg_num)]
 
         return batch

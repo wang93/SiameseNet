@@ -99,6 +99,9 @@ class _Trainer:
         losses = AverageMeter()
         self.lr_strategy(self.optimizer, epoch)
 
+        if self.opt.srl and self.opt.srl_syn_lr:
+            self.lr_strategy(self.criterion.optimizer, epoch)
+
         if self.opt.wrc:
             recentralize(self.model)
 

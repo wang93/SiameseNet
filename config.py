@@ -84,6 +84,7 @@ class DefaultConfig(object):
     srl_optim = 'sgd'
     srl_norm = False
     srl_lr = 0.1
+    srl_syn_lr = False  # srl_lr=model_lr
     srl_momentum = 0.
     srl_weight_decay = 0.
 

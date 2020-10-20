@@ -16,7 +16,6 @@ def get_trainer(opt):
 
     evaluator = get_evaluator(opt, model, **data_loaders)
 
-
     lr_strategy = get_lr_strategy(opt)
 
     if opt.train_mode == 'pair':
@@ -24,9 +23,13 @@ def get_trainer(opt):
             if opt.srl:
                 print('The BCE Loss Supports Sample Rate Learning.')
                 from SampleRateLearning.loss import SRL_BCELoss
+                if opt.srl_syn_lr:
+                    lr = opt.lr
+                else:
+                    lr = opt.srl_lr
                 criterion = SRL_BCELoss(sampler=data_loaders['trainloader'].batch_sampler,
                                         optim=opt.srl_optim,
-                                        lr=opt.srl_lr,
+                                        lr=lr,
                                         momentum=opt.srl_momentum,
                                         weight_decay=opt.srl_weight_decay,
                                         norm=opt.srl_norm)

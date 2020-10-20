@@ -45,6 +45,9 @@ class SRL_BCELoss(nn.Module):
         else:
             raise NotImplementedError
 
+        for group in optimizer.param_groups:
+            group.setdefault('initial_lr', group['lr'])
+
         self.optimizer = optimizer
 
         self.recent_losses = None

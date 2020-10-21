@@ -65,6 +65,7 @@ class DefaultConfig(object):
 
     # for extractor
     stable_bn20 = False
+    stable_bn35 = False
 
     # for the whole model
     stable_bn21 = False

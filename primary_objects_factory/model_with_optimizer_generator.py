@@ -377,6 +377,10 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('BN layers in extractor (BI structure) are in stable version 20.')
         from SampleRateLearning.stable_batchnorm.batchnorm20 import convert_model
         model.bi = convert_model(model.bi)
+    elif opt.stable_bn35:
+        print('BN layers in extractor (BI structure) are in version 35 (BN with no bias).')
+        from SampleRateLearning.stable_batchnorm.batchnorm35 import convert_model
+        model.bi = convert_model(model.bi)
 
     if opt.wc:
         print('incorporate weight centralization (WC).')

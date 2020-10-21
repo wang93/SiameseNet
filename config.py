@@ -60,12 +60,13 @@ class DefaultConfig(object):
     stable_bn17 = False
     stable_bn18 = False
     stable_bn19 = False
+    stable_bn12 = False
+    stable_bn34 = False
 
     # for extractor
     stable_bn20 = False
 
     # for the whole model
-    stable_bn12 = False
     stable_bn21 = False
     stable_bn22 = False
     stable_bn24 = False

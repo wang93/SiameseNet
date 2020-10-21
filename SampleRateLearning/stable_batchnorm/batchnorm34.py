@@ -1,7 +1,7 @@
 # encoding: utf-8
 # author: Yicheng Wang
 # contact: wyc@whu.edu.cn
-# datetime:2020/9/28 8:14
+# datetime:2020/10/21 16:24
 
 """
 class-wise estimation,
@@ -9,7 +9,8 @@ moving-average,
 biased estimation,
 bias-corrected,
 stds via total running_mean,
-.../(eps + std)
+.../(eps + std),
+no bias in affine
 """
 
 import torch
@@ -88,7 +89,7 @@ class _BatchNorm(origin_BN)   :
             / self.expand((self.running_var + self.eps), sz)
 
         if self.affine:
-            z = y * self.expand(self.weight, sz) + self.expand(self.bias, sz)
+            z = y * self.expand(self.weight, sz)
         else:
             z = y
 

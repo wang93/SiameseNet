@@ -62,6 +62,7 @@ class DefaultConfig(object):
     stable_bn19 = False
     stable_bn12 = False
     stable_bn34 = False
+    stable_bn26 = False
 
     # for extractor
     stable_bn20 = False
@@ -72,7 +73,6 @@ class DefaultConfig(object):
     stable_bn22 = False
     stable_bn24 = False
     stable_bn25 = False
-    stable_bn26 = False
     stable_bn27 = False
     stable_bn28 = False
     stable_bn29 = False

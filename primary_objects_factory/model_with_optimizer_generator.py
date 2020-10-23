@@ -212,10 +212,6 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('BN layers in the whole model are in stable version 25 (only affine).')
         from SampleRateLearning.stable_batchnorm.batchnorm25 import convert_model
         model = convert_model(model)
-    elif opt.stable_bn26:
-        print('BN layers in the whole model are in stable version 26 (only affine).')
-        from SampleRateLearning.stable_batchnorm.batchnorm26 import convert_model
-        model = convert_model(model)
     elif opt.stable_bn27:
         print('BN layers in the whole model are in stable version 27 (centralization with affine).')
         from SampleRateLearning.stable_batchnorm.batchnorm27 import convert_model
@@ -370,6 +366,12 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     elif opt.stable_bn19:
         print('BN layers in Braid & FC structures are in stable version 19.')
         from SampleRateLearning.stable_batchnorm.batchnorm19 import convert_model
+        model.braid = convert_model(model.braid)
+        model.fc = convert_model(model.fc)
+
+    elif opt.stable_bn26:
+        print('BN layers in Braid & FC structures are in stable version 26 (only affine).')
+        from SampleRateLearning.stable_batchnorm.batchnorm26 import convert_model
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 

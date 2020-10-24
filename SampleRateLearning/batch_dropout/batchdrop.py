@@ -21,6 +21,8 @@ class _BatchDrop(origin_BN):
         self.register_buffer('running_max', torch.ones(num_features))
         self.register_buffer('running_min', -torch.ones(num_features))
 
+        self.eps = self.eps ** 0.5
+
     def _check_input_dim(self, input):
         raise NotImplementedError
 
@@ -54,7 +56,7 @@ class _BatchDrop(origin_BN):
                 raise NotImplementedError
 
             cur_max = self._max(data, dims=reduced_dim, keepdim=False)
-            cur_min = self._max(data, dims=reduced_dim, keepdim=False)
+            cur_min = self._min(data, dims=reduced_dim, keepdim=False)
 
             self.running_max = (1 - self.momentum) * self.running_max + self.momentum * cur_max
             self.running_min = (1 - self.momentum) * self.running_min + self.momentum * cur_min
@@ -63,7 +65,7 @@ class _BatchDrop(origin_BN):
             cur_max = self.running_max
             cur_min = self.running_min
 
-        intensity = (input - self.expand(cur_min, sz)) / self.expand(cur_max - cur_min, sz)
+        intensity = (input - self.expand(cur_min, sz)) / self.expand(cur_max - cur_min + self.eps, sz)
         if self.affine:
             intensity = intensity + self.expand(self.bias, sz)
         rand = torch.rand(*sz, dtype=input.dtype, device=input.device)

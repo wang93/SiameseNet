@@ -68,7 +68,7 @@ class _BatchDrop(origin_BN):
         intensity = (data - self.expand(cur_min, sz)) / self.expand(cur_max - cur_min + self.eps, sz)
         # if self.affine:
         #     intensity = intensity + self.expand(self.bias, sz)
-        rand = torch.rand_like(data).detach()
+        rand = torch.rand_like(data, requires_grad=False)
         mask = (intensity > rand).float().detach()
         y = input * mask
 

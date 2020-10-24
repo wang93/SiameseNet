@@ -65,12 +65,12 @@ class _BatchDrop(origin_BN):
             cur_max = self.running_max
             cur_min = self.running_min
 
-        intensity = (input - self.expand(cur_min, sz)) / self.expand(cur_max - cur_min + self.eps, sz)
-        if self.affine:
-            intensity = intensity + self.expand(self.bias, sz)
+        intensity = (data - self.expand(cur_min, sz)) / self.expand(cur_max - cur_min + self.eps, sz)
+        # if self.affine:
+        #     intensity = intensity + self.expand(self.bias, sz)
         rand = torch.rand_like(input)
         mask = (intensity > rand).float().detach()
-        y = intensity * mask
+        y = input * mask
 
         if self.affine:
             z = y * self.expand(self.weight, sz)

@@ -83,7 +83,7 @@ class DefaultConfig(object):
 
     # Batch Dropout Settings
     batch_drop = False
-    no_relu = False
+    pass_relu = False
 
     # Sample Rate Learning Settings
     srl = False

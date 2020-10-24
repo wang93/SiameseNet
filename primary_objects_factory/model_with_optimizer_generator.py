@@ -389,7 +389,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from SampleRateLearning.batch_dropout.batchdrop import convert_model
         model = convert_model(model)
 
-    if opt.no_relu:
+    if opt.pass_relu:
         print('ReLU layers in the whole model are removed.')
         from SampleRateLearning.batch_dropout.norelu import convert_model
         model = convert_model(model)

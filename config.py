@@ -81,6 +81,10 @@ class DefaultConfig(object):
     stable_bn32 = False
     stable_bn33 = False
 
+    # Batch Dropout Settings
+    batch_drop = False
+    no_relu = False
+
     # Sample Rate Learning Settings
     srl = False
     srl_optim = 'sgd'

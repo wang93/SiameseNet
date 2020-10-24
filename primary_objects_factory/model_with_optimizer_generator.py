@@ -384,6 +384,16 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from SampleRateLearning.stable_batchnorm.batchnorm35 import convert_model
         model.bi = convert_model(model.bi)
 
+    if opt.batch_drop:
+        print('BN layers in the whole model are changed to BatchDrop layers.')
+        from SampleRateLearning.batch_dropout.batchdrop import convert_model
+        model = convert_model(model)
+
+    if opt.no_relu:
+        print('ReLU layers in the whole model are removed.')
+        from SampleRateLearning.batch_dropout.norelu import convert_model
+        model = convert_model(model)
+
     if opt.wc:
         print('incorporate weight centralization (WC).')
         from WeightModification.centralization import convert_model as convert_model_wc

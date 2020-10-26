@@ -115,7 +115,7 @@ class BraidProto(nn.Module, metaclass=ABCMeta):
                 optimizer = SGD(param_groups, **default)
 
             elif optim == "sgdw":
-                from utils.optim.sgdw import SGDW
+                from Utils.optim.sgdw import SGDW
                 param_groups = [{'params': self.reg_params},
                                 {'params': self.noreg_params, 'weight_decay': 0.}]
                 default = {'lr': lr, 'momentum': momentum, 'weight_decay': weight_decay}

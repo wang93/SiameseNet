@@ -8,7 +8,7 @@ class DefaultConfig(object):
     seed = 0
     gpus = [0, 1]
 
-    # dataset options
+    # Dataset options
     dataset = 'market1501'
     datatype = 'person'
     augmentation = None  # 'Cutout' or 'RandomErasing' or None

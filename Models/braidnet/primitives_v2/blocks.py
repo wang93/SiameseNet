@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn import BatchNorm1d as BatchNorm1d
 from torch.nn import BatchNorm2d as BatchNorm2d
 
-from utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair, dimidiation_tensor
+from Utils.tensor_section_functions import cat_tensor_pair, combine_tensor_pair, dimidiation_tensor
 from .subblocks import *
 
 __all__ = ['BiBlock', 'Bi2Braid', 'Pair2Braid', 'Pair2Bi', 'CatBraids', 'LinearMin2Block', 'LinearMinBNBlock',

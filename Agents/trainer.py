@@ -13,18 +13,18 @@ from sklearn import preprocessing
 from sklearn import svm
 from sklearn.metrics import confusion_matrix
 
-from dataset.attributes import get_market_attributes
-from utils.meters import AverageMeter
-from utils.serialization import save_best_model, save_current_status, get_best_model
-from utils.standard_actions import print_time
-from utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cuda, tensor_cpu
-from utils.loss import CrossSimilarityLBCELoss
-from utils.summary_writers import SummaryWriters
+from Dataset.attributes import get_market_attributes
+from Utils.meters import AverageMeter
+from Utils.serialization import save_best_model, save_current_status, get_best_model
+from Utils.standard_actions import print_time
+from Utils.tensor_section_functions import slice_tensor, tensor_size, tensor_cuda, tensor_cpu
+from Utils.loss import CrossSimilarityLBCELoss
+from Utils.summary_writers import SummaryWriters
 
 from SampleRateLearning.serialization import save_current_srl_status
 from SampleRateLearning.loss import SRL_BCELoss
 from SampleRateLearning.stable_batchnorm import global_variables as Labels
-from models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
+from Models.braidnet.primitives_v2.blocks import Pair2Bi, Bi2Pair
 
 from WeightModification.recentralize import recentralize
 

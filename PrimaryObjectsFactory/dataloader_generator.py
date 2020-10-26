@@ -1,8 +1,8 @@
 from torch.utils.data import DataLoader
 
-from dataset import data_info
-from dataset.data_image import ImageData, PreLoadedImageData
-from dataset.transforms import TestTransform, TrainTransform
+from Dataset import data_info
+from Dataset.data_image import ImageData, PreLoadedImageData
+from Dataset.transforms import TestTransform, TrainTransform
 
 
 def get_dataloaders(opt, model_meta):
@@ -76,7 +76,7 @@ def get_dataloaders(opt, model_meta):
             print('num_workers=0 in the training loader.')
 
         else:
-            from dataset.samplers import PosNegPairSampler
+            from Dataset.samplers import PosNegPairSampler
             sampler = PosNegPairSampler(data_source=dataset.train,
                                         pos_rate=opt.pos_rate,
                                         sample_num_per_epoch=opt.iter_num_per_epoch * opt.train_batch)
@@ -89,7 +89,7 @@ def get_dataloaders(opt, model_meta):
             )
 
     elif opt.train_mode in ['cross', 'ide_cross']:
-        from dataset.samplers import RandomIdentitySampler
+        from Dataset.samplers import RandomIdentitySampler
         trainloader = DataLoader(
             ImageData(dataset.train, TrainTransform(opt.datatype, model_meta, augmentaion=opt.augmentation)),
             sampler=RandomIdentitySampler(dataset.train, opt.num_instances),

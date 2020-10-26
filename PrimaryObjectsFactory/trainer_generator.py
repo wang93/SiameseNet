@@ -35,7 +35,7 @@ def get_trainer(opt):
                                         norm=opt.srl_norm)
 
             else:
-                from utils.loss import PairSimilarityBCELoss
+                from Utils.loss import PairSimilarityBCELoss
                 criterion = PairSimilarityBCELoss()
 
         elif opt.loss == 'ce':
@@ -49,57 +49,57 @@ def get_trainer(opt):
                                        weight_decay=opt.srl_weight_decay,
                                        norm=opt.srl_norm)
             else:
-                from utils.loss import PairSimilarityCELoss
+                from Utils.loss import PairSimilarityCELoss
                 criterion = PairSimilarityCELoss()
 
         else:
             raise NotImplementedError
 
-        from agents.trainer import BraidPairTrainer
+        from Agents.trainer import BraidPairTrainer
         reid_trainer = BraidPairTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                         opt.train_phase_num, done_epoch)
 
     elif opt.train_mode == 'cross':
         if opt.loss == 'bce':
-            from utils.loss import CrossSimilarityBCELoss
+            from Utils.loss import CrossSimilarityBCELoss
             criterion = CrossSimilarityBCELoss()
 
         elif opt.loss == 'lbce':
-            from utils.loss import CrossSimilarityLBCELoss
+            from Utils.loss import CrossSimilarityLBCELoss
             criterion = CrossSimilarityLBCELoss()
 
         elif opt.loss == 'triplet':
-            from utils.loss import TripletLoss4Braid
+            from Utils.loss import TripletLoss4Braid
             criterion = TripletLoss4Braid(opt.margin)
 
         elif opt.loss == 'ce':
-            from utils.loss import CrossSimilarityCELoss
+            from Utils.loss import CrossSimilarityCELoss
             criterion = CrossSimilarityCELoss()
 
         else:
             raise NotImplementedError
 
-        from agents.trainer import BraidCrossTrainer
+        from Agents.trainer import BraidCrossTrainer
         reid_trainer = BraidCrossTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                          opt.train_phase_num, done_epoch)
 
     elif opt.train_mode == 'ide_cross':
         if opt.loss == 'lsce_bce':
-            from utils.loss import CrossEntropyLabelSmooth
-            from utils.loss import CrossSimilarityBCELoss
+            from Utils.loss import CrossEntropyLabelSmooth
+            from Utils.loss import CrossSimilarityBCELoss
             criterion = [CrossEntropyLabelSmooth(num_classes=train_id_num),
                          CrossSimilarityBCELoss()]
 
         else:
             raise NotImplementedError
 
-        from agents.trainer import BraidCrossIDETrainer
+        from Agents.trainer import BraidCrossIDETrainer
         reid_trainer = BraidCrossIDETrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy,
                                             criterion, opt.train_phase_num, done_epoch)
 
     elif opt.train_mode == 'normal':
         if opt.loss == 'lsce':
-            from utils.loss import CrossEntropyLabelSmooth
+            from Utils.loss import CrossEntropyLabelSmooth
             criterion = CrossEntropyLabelSmooth(num_classes=train_id_num)
 
         elif opt.loss == 'ce':
@@ -109,7 +109,7 @@ def get_trainer(opt):
         else:
             raise NotImplementedError
 
-        from agents.trainer import NormalTrainer
+        from Agents.trainer import NormalTrainer
         reid_trainer = NormalTrainer(opt, data_loaders['trainloader'], evaluator, optimizer, lr_strategy, criterion,
                                      opt.train_phase_num, done_epoch)
 

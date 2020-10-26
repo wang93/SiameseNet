@@ -1,4 +1,4 @@
-from utils.serialization import save_checkpoint, CHECKPOINT_DIR
+from Utils.serialization import save_checkpoint, CHECKPOINT_DIR
 from .loss import SRL_BCELoss
 
 import os

@@ -4,8 +4,8 @@ from warnings import warn
 import torch
 import torch.nn as nn
 
-from models.braidnet.primitives_v2.blocks import *
-from models.osnet import osnet_x1_0, init_pretrained_weights
+from Models.braidnet.primitives_v2.blocks import *
+from Models.osnet import osnet_x1_0, init_pretrained_weights
 from .braidproto import BraidProto, weights_init_kaiming
 
 

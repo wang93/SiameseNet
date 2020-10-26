@@ -2,7 +2,7 @@
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
-from models.braidnet.primitives_v2.blocks import *
+from Models.braidnet.primitives_v2.blocks import *
 from .braidproto import BraidProto, weights_init_kaiming
 
 model_urls = {

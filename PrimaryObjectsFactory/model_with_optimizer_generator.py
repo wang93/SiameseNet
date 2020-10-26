@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
-from utils.data_parallel import DataParallel
-from utils.serialization import parse_checkpoints
+from Utils.data_parallel import DataParallel
+from Utils.serialization import parse_checkpoints
 
 __all__ = ['get_model_with_optimizer', ]
 
@@ -39,27 +39,27 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('the setting of fc layers is {0}'.format(fc))
 
     if opt.model_name == 'braidnet':
-        from models.braidnet import BraidNet
+        from Models.braidnet import BraidNet
         model = BraidNet(bi=(64, 128), braid=(128, 128, 128, 128), fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'braidmgn':
-        from models.braidnet.braidmgn import BraidMGN
+        from Models.braidnet.braidmgn import BraidMGN
         model = BraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'mmbraidmgn':
-        from models.braidnet.braidmgn import MMBraidMGN
+        from Models.braidnet.braidmgn import MMBraidMGN
         model = MMBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'densebraidmgn':
-        from models.braidnet.braidmgn import DenseBraidMGN
+        from Models.braidnet.braidmgn import DenseBraidMGN
         model = DenseBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'resbraidmgn':
-        from models.braidnet.braidmgn import ResBraidMGN
+        from Models.braidnet.braidmgn import ResBraidMGN
         model = ResBraidMGN(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'osnet':
-        from models.braidnet.braidosnet import OSNet
+        from Models.braidnet.braidosnet import OSNet
         model = OSNet(feats=opt.feats, num_classes=id_num)
 
     # elif opt.model_name == 'eulideanosnet':
@@ -67,103 +67,103 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     #     model = EulideanOSNet(feats=opt.feats, num_classes=id_num)
 
     elif opt.model_name == 'squareosnet':
-        from models.braidnet.braidosnet import SquareOSNet
+        from Models.braidnet.braidosnet import SquareOSNet
         model = SquareOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'bbosnet':
-        from models.braidnet.braidosnet import BBOSNet
+        from Models.braidnet.braidosnet import BBOSNet
         model = BBOSNet(feats=opt.feats,
                         fc=fc,
                         num_classes=id_num,
                         score2prob=score2prob)
 
     elif opt.model_name == 'bbmosnet':
-        from models.braidnet.braidosnet import BBMOSNet
+        from Models.braidnet.braidosnet import BBMOSNet
         model = BBMOSNet(feats=opt.feats,
                          fc=fc,
                          num_classes=id_num,
                          score2prob=score2prob)
 
     elif opt.model_name == 'wbbmosnet':
-        from models.braidnet.braidosnet import WBBMOSNet
+        from Models.braidnet.braidosnet import WBBMOSNet
         model = WBBMOSNet(feats=opt.feats,
                           fc=fc,
                           num_classes=id_num,
                           score2prob=score2prob)
 
     elif opt.model_name == 'sumsquareosnet':
-        from models.braidnet.braidosnet import SumSquareOSNet
+        from Models.braidnet.braidosnet import SumSquareOSNet
         model = SumSquareOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'meansquareosnet':
-        from models.braidnet.braidosnet import MeanSquareOSNet
+        from Models.braidnet.braidosnet import MeanSquareOSNet
         model = MeanSquareOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'aabraidosnet':
-        from models.braidnet.braidosnet import AABraidOSNet
+        from Models.braidnet.braidosnet import AABraidOSNet
         model = AABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'aaabraidosnet':
-        from models.braidnet.braidosnet import AAABraidOSNet
+        from Models.braidnet.braidosnet import AAABraidOSNet
         model = AAABraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'aaasbraidosnet':
-        from models.braidnet.braidosnet import AAASBraidOSNet
+        from Models.braidnet.braidosnet import AAASBraidOSNet
         model = AAASBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'aaboss':
-        from models.braidnet.braidosnet import AABOSS
+        from Models.braidnet.braidosnet import AABOSS
         model = AABOSS(feats=opt.feats, w_num=opt.w_num, fc=fc, score2prob=score2prob, num_classes=id_num)
 
     elif opt.model_name == 'wbboss':
-        from models.braidnet.braidosnet import WBBOSS
+        from Models.braidnet.braidosnet import WBBOSS
         model = WBBOSS(feats=opt.feats,
                        fc=fc,
                        num_classes=id_num,
                        score2prob=score2prob)
 
     elif opt.model_name == 'aa2braidosnet':
-        from models.braidnet.braidosnet import AA2BraidOSNet
+        from Models.braidnet.braidosnet import AA2BraidOSNet
         model = AA2BraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'aa3braidosnet':
-        from models.braidnet.braidosnet import AA3BraidOSNet
+        from Models.braidnet.braidosnet import AA3BraidOSNet
         model = AA3BraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'aa4braidosnet':
-        from models.braidnet.braidosnet import AA4BraidOSNet
+        from Models.braidnet.braidosnet import AA4BraidOSNet
         model = AA4BraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'minmaxosnet':
-        from models.braidnet.braidosnet import MinMaxOSNet
+        from Models.braidnet.braidosnet import MinMaxOSNet
         model = MinMaxOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'minwmaxybraidosnet':
-        from models.braidnet.braidosnet import MinWMaxYBraidOSNet
+        from Models.braidnet.braidosnet import MinWMaxYBraidOSNet
         model = MinWMaxYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'minwmmybraidosnet':
-        from models.braidnet.braidosnet import MinWMMYBraidOSNet
+        from Models.braidnet.braidosnet import MinWMMYBraidOSNet
         model = MinWMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'min2wmmybraidosnet':
-        from models.braidnet.braidosnet import Min2WMMYBraidOSNet
+        from Models.braidnet.braidosnet import Min2WMMYBraidOSNet
         model = Min2WMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'minbnwmmybraidosnet':
-        from models.braidnet.braidosnet import MinBNWMMYBraidOSNet
+        from Models.braidnet.braidosnet import MinBNWMMYBraidOSNet
         model = MinBNWMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'minbn2wmmybraidosnet':
-        from models.braidnet.braidosnet import MinBN2WMMYBraidOSNet
+        from Models.braidnet.braidosnet import MinBN2WMMYBraidOSNet
         model = MinBN2WMMYBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'mmbraidosnet':
-        from models.braidnet.braidosnet import MMBraidOSNet
+        from Models.braidnet.braidosnet import MMBraidOSNet
         model = MMBraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     elif opt.model_name == 'braidosnet':
-        from models.braidnet.braidosnet import BraidOSNet
+        from Models.braidnet.braidosnet import BraidOSNet
         model = BraidOSNet(feats=opt.feats, fc=fc, score2prob=score2prob)
 
     else:
@@ -189,7 +189,7 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     print('model size: {:.5f}M'.format(sum(p.numel() for p in model.parameters()) / 1e6))
 
     if opt.sync_bn:
-        from utils.sync_batchnorm.batchnorm import convert_model
+        from Utils.sync_batchnorm.batchnorm import convert_model
         model = convert_model(model)
 
     if opt.stable_bn21:
@@ -386,12 +386,12 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
 
     if opt.batch_drop:
         print('BN layers in the whole model are changed to BatchDrop layers.')
-        from SampleRateLearning.batch_dropout.batchdrop import convert_model
+        from BatchDropout.batchdrop import convert_model
         model = convert_model(model)
 
     if opt.pass_relu:
         print('ReLU layers in the whole model are removed.')
-        from SampleRateLearning.batch_dropout.norelu import convert_model
+        from BatchDropout import convert_model
         model = convert_model(model)
 
     if opt.wc:

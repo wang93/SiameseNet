@@ -1,6 +1,6 @@
 # encoding: utf-8
-from primary_objects_factory import get_trainer
-from utils.standard_actions import prepare_running
+from PrimaryObjectsFactory import get_trainer
+from Utils.standard_actions import prepare_running
 
 
 def train(**kwargs):

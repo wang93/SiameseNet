@@ -17,10 +17,10 @@ from collections import defaultdict
 from random import choice as randchoice
 from time import time as curtime
 
-from utils.tensor_section_functions import *
+from Utils.tensor_section_functions import *
 
-from utils.adaptive_batchsize import get_optimized_batchsize
-from dataset.samplers import PosNegPairSampler
+from Utils.adaptive_batchsize import get_optimized_batchsize
+from Dataset.samplers import PosNegPairSampler
 
 
 class ReIDEvaluator:

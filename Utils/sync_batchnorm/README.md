@@ -41,7 +41,7 @@ difference with typical usage of the `nn.DataParallel`.
 Use it with a provided, customized data parallel wrapper:
 
 ```python
-from utils.sync_batchnorm import SynchronizedBatchNorm1d, DataParallelWithCallback
+from Utils.sync_batchnorm import SynchronizedBatchNorm1d, DataParallelWithCallback
 
 sync_bn = SynchronizedBatchNorm1d(10, eps=1e-5, affine=False)
 sync_bn = DataParallelWithCallback(sync_bn, device_ids=[0, 1])
@@ -51,7 +51,7 @@ Or, if you are using a customized data parallel module, you can use this library
 
 ```python
 from torch.nn import DataParallel  # or your customized DataParallel module
-from utils.sync_batchnorm import SynchronizedBatchNorm1d, patch_replication_callback
+from Utils.sync_batchnorm import SynchronizedBatchNorm1d, patch_replication_callback
 
 sync_bn = SynchronizedBatchNorm1d(10, eps=1e-5, affine=False)
 sync_bn = DataParallel(sync_bn, device_ids=[0, 1])
@@ -62,7 +62,7 @@ You can use `convert_model` to convert your model to use Synchronized BatchNorm 
 
 ```python
 from torchvision import models
-from utils.sync_batchnorm import convert_model
+from Utils.sync_batchnorm import convert_model
 
 m = models.resnet18(pretrained=True)
 m = convert_model(m)

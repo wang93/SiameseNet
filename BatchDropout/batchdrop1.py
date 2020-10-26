@@ -96,7 +96,7 @@ class BatchDrop(origin_BN):
         y = batch_dropout(input, cur_min, cur_max, self.eps)
 
         if self.affine:
-            z = y * self.expand(self.weight, sz)
+            z = y * expand(self.weight, sz)
         else:
             z = y
 

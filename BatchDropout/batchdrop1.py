@@ -93,7 +93,7 @@ class BatchDrop(origin_BN):
             cur_max = self.running_max
             cur_min = self.running_min
 
-        y = batch_dropout(input, cur_min, cur_max, self.eps)
+        y = batch_dropout.apply(input, cur_min, cur_max, self.eps)
 
         if self.affine:
             z = y * expand(self.weight, sz)

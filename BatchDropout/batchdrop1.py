@@ -34,7 +34,7 @@ class batch_dropout(Function):
 
         intensity = (data - expand(mines, sz)) / expand(maxes - mines + eps, sz)
         rand = torch.rand_like(data, requires_grad=False)
-        y = (intensity > rand).float().detach()
+        y = (intensity > rand).float().detach() * 2
         ctx.save_for_backward(y)
 
         return y

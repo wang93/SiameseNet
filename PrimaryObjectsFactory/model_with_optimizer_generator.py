@@ -384,9 +384,13 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         from SampleRateLearning.stable_batchnorm.batchnorm35 import convert_model
         model.bi = convert_model(model.bi)
 
-    if opt.batch_drop:
-        print('BN layers in the whole model are changed to BatchDrop layers.')
-        from BatchDropout.batchdrop import convert_model
+    if opt.batch_drop0:
+        print('BN layers in the whole model are changed to BatchDrop0 layers.')
+        from BatchDropout.batchdrop0 import convert_model
+        model = convert_model(model)
+    elif opt.batch_drop1:
+        print('BN layers in the whole model are changed to BatchDrop1 layers. (outputs are 0. or 1. before scaling)')
+        from BatchDropout.batchdrop1 import convert_model
         model = convert_model(model)
 
     if opt.pass_relu:

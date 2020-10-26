@@ -82,7 +82,8 @@ class DefaultConfig(object):
     stable_bn33 = False
 
     # Batch Dropout Settings
-    batch_drop = False
+    batch_drop0 = False
+    batch_drop1 = False
     pass_relu = False
 
     # Sample Rate Learning Settings

@@ -240,6 +240,12 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('BN layers in the whole model are in stable version 33.')
         from SampleRateLearning.stable_batchnorm.batchnorm33 import convert_model
         model = convert_model(model)
+    elif opt.stable_bn4:
+        print('BN layers in the whole model are in stable version 4, which uses bias-corrected '
+              'running mean & var all the time.')
+        from SampleRateLearning.stable_batchnorm.batchnorm4 import convert_model
+        model.braid = convert_model(model.braid)
+        model.fc = convert_model(model.fc)
 
     if opt.stable_bn0:
         print('BN layers in Braid & FC structures are in stable version 0.')
@@ -262,13 +268,6 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
     elif opt.stable_bn3:
         print('BN layers in Braid & FC structures are in stable version 3.')
         from SampleRateLearning.stable_batchnorm.batchnorm3 import convert_model
-        model.braid = convert_model(model.braid)
-        model.fc = convert_model(model.fc)
-
-    elif opt.stable_bn4:
-        print('BN layers in Braid & FC structures are in stable version 4, which uses bias-corrected '
-              'running mean & var all the time.')
-        from SampleRateLearning.stable_batchnorm.batchnorm4 import convert_model
         model.braid = convert_model(model.braid)
         model.fc = convert_model(model.fc)
 

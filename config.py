@@ -45,7 +45,6 @@ class DefaultConfig(object):
     stable_bn1 = False
     stable_bn2 = False
     stable_bn3 = False
-    stable_bn4 = False
     stable_bn5 = False
     stable_bn6 = False
     stable_bn7 = False
@@ -80,6 +79,7 @@ class DefaultConfig(object):
     stable_bn31 = False
     stable_bn32 = False
     stable_bn33 = False
+    stable_bn4 = False
 
     # Batch Dropout Settings
     batch_drop0 = False

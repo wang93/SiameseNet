@@ -80,6 +80,7 @@ class DefaultConfig(object):
     stable_bn32 = False
     stable_bn33 = False
     stable_bn4 = False
+    stable_bn36 = False
 
     # Batch Dropout Settings
     batch_drop0 = False

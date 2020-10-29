@@ -381,11 +381,11 @@ def get_model_with_optimizer(opt, id_num=1, naive=False):
         print('BN layers in extractor (BI structure) are in version 4, which uses bias-corrected '
               'running mean & var all the time.')
         from SampleRateLearning.stable_batchnorm.batchnorm4 import convert_model
-        model = convert_model(model)
+        model.bi = convert_model(model.bi)
     elif opt.stable_bn36:
         print('BN layers in extractor (BI structure) are in version 36')
         from SampleRateLearning.stable_batchnorm.batchnorm36 import convert_model
-        model = convert_model(model)
+        model.bi = convert_model(model.bi)
 
     if opt.batch_drop0:
         print('BN layers in the whole model are changed to BatchDrop0 layers.')

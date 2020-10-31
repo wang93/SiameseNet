@@ -5,7 +5,7 @@ from .sampler import SampleRateSampler, SampleRateBatchSampler
 
 
 class SRL_BCELoss(nn.Module):
-    def __init__(self, sampler: SampleRateSampler, optim='sgd', lr=0.1, momentum=0., weight_decay=0., norm=False):
+    def __init__(self, sampler: SampleRateSampler, optim='adam', lr=0.1, momentum=0., weight_decay=0., norm=False):
         if not isinstance(sampler, (SampleRateSampler, SampleRateBatchSampler)):
             raise TypeError
 

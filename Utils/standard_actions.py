@@ -20,27 +20,6 @@ def _random_seed(seed):
     torch.backends.cudnn.deterministic = True  # cudnn
 
 
-# def prepare_running(func):
-#     def wrapper(**kwargs):
-#         opt.parse_(kwargs)
-#
-#         os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in opt.gpus])
-#
-#         if not torch.cuda.is_available():
-#             raise NotImplementedError('This project must be implemented with CUDA!')
-#
-#         sys.stdout = Logger(os.path.join(opt.exp_dir, 'log_train.txt'))
-#         print('current commit hash: {}'.format(subprocess.check_output(['git', 'rev-parse', 'HEAD'])))
-#         opt.print_()
-#         _random_seed(opt.seed)
-#         torch.backends.cudnn.benchmark = True
-#
-#         func_return = func(opt)
-#
-#         return func_return
-#
-#     return wrapper
-
 def prepare_running(**kwargs):
     opt.parse_(kwargs)
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in opt.gpus])
